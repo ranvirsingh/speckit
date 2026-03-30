@@ -1,0 +1,283 @@
+---
+name: speckit-plan
+description: >-
+  Design the architecture and update the GitHub Issue with a task checklist — all in one flow.
+  Use this skill when the user wants to plan a feature, design the architecture, create a data model,
+  or define API contracts. Requires a GitHub Issue (created by speckit-specify).
+  Generate plan artifacts only when needed — update docs/data-model.md for schema changes,
+  docs/contracts/*.md for new APIs. Skip docs/research.md unless the domain is unfamiliar.
+---
+
+## Next Steps
+
+After planning is complete, suggest: **speckit-implement** — "Start implementing the tasks."
+
+## Complexity Gate
+
+This skill applies to **any work type** (feature, bug, or chore) when the spec involves schema changes, new/changed APIs, or an unfamiliar domain. If none of these signals are present, the user should skip directly to **speckit-implement**.
+
+Before proceeding, check the GitHub Issue for labels and body to confirm the complexity signal warrants planning. If the work is simple and scoped (e.g., a typo fix, a one-file bug), suggest skipping to **speckit-implement** instead.
+
+## User Input
+
+```text
+$ARGUMENTS
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+The input should include a GitHub Issue number (e.g. `#18`). If not provided, ask the user for it.
+
+## Pre-Execution Checks
+
+### Load Living Context
+
+Before starting, load these living documents for context (if they exist):
+- **`docs/retro.md`**: Scan for patterns from previous features — what worked, what didn't, process ideas that should apply to this plan.
+- **`docs/constitution.md`**: Keep principles in mind for architecture decisions.
+- **`docs/data-model.md`**: Understand the current data model before proposing changes.
+
+**Check for extension hooks (before planning)**:
+- Check if `.specify/extensions.yml` exists in the project root.
+- If it exists, read it and look for entries under the `hooks.before_plan` key
+- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
+- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
+- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
+  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
+  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
+- For each executable hook, output the following based on its `optional` flag:
+  - **Optional hook** (`optional: true`):
+    ```
+    ## Extension Hooks
+
+    **Optional Pre-Hook**: {extension}
+    Command: `/{command}`
+    Description: {description}
+
+    Prompt: {prompt}
+    To execute: `/{command}`
+    ```
+  - **Mandatory hook** (`optional: false`):
+    ```
+    ## Extension Hooks
+
+    **Automatic Pre-Hook**: {extension}
+    Executing: `/{command}`
+    EXECUTE_COMMAND: {command}
+
+    Wait for the result of the hook command before proceeding.
+    ```
+- If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
+
+---
+
+## Pipeline Overview
+
+This skill runs 2 steps sequentially:
+
+```
+Step 1: Design (research, data model, contracts) — generate only what's needed
+Step 2: Update GitHub Issue — add design notes and task checklist to the existing issue
+```
+
+After Step 1 (design complete), pause and ask the user: **"Design is ready for review. Ready to update the GitHub Issue with design notes and task checklist?"** before proceeding to Step 2.
+
+---
+
+## Step 1: Design — Research & Architecture
+
+### Setup
+
+1. **Load the spec**: Read the GitHub Issue body to get the feature specification:
+   ```bash
+   gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body,title,labels
+   ```
+
+2. **Load context**: Read `docs/constitution.md` (if it exists).
+
+3. **Determine current branch**: `git branch --show-current` — use this to identify the feature context.
+
+### Phase 0: Outline & Research
+
+1. **Extract unknowns from the spec**:
+   - For each unclear area → research task
+   - For each dependency → best practices task
+   - For each integration → patterns task
+
+2. **Research**: For each unknown, investigate the codebase and external docs.
+
+3. **Consolidate findings**: If the domain is unfamiliar or there are significant decisions, update `docs/research.md` with findings. Format:
+   - Decision: [what was chosen]
+   - Rationale: [why chosen]
+   - Alternatives considered: [what else evaluated]
+
+   If research is trivial (well-known patterns, small scope), skip the file and keep notes inline.
+
+### Phase 1: Design & Contracts
+
+1. **Data model changes** → update `docs/data-model.md` (if file doesn't exist, initialize from this skill's `assets/data-model-template.md`):
+   - Add or modify entity definitions, fields, relationships
+   - Add validation rules from requirements
+   - Add state transitions if applicable
+   - Preserve existing content — append or update, don't replace
+
+2. **Interface contracts** (if the feature adds/changes external interfaces) → create/update files in `docs/contracts/`:
+   - Document the contract format appropriate for the project type
+   - Examples: public APIs for libraries, endpoints for web services, SDK interfaces
+   - Skip if feature is purely internal
+
+3. Re-evaluate Constitution Check post-design (if constitution exists).
+
+**Output**: Updated living docs in `docs/` (data-model.md, contracts/, research.md — only those that apply)
+
+---
+
+## Step 2: Update GitHub Issue
+
+### Prerequisites
+
+1. Get the Git remote by running: `git config --get remote.origin.url`
+
+> [!CAUTION]
+> ONLY PROCEED IF THE REMOTE IS A GITHUB URL
+
+2. Extract the `owner` and `repo` from the remote URL.
+
+### Find the Existing Issue
+
+1. Use the issue number from the user input. If not provided, find it by label:
+   ```bash
+   gh issue list --repo {owner}/{repo} --label "spec:{spec-number}" --state open --json number,title
+   ```
+2. If no issue is found: **STOP**. Display: "No issue found. Run `/speckit-specify` first."
+3. Capture the issue number as `ISSUE_NUMBER`.
+
+### Build the Task Checklist
+
+From the spec (issue body) and design artifacts, create a task checklist:
+
+1. Extract user stories / requirements from the issue body
+2. Break each into implementable tasks
+3. Group tasks into phases:
+   - **Setup**: Project initialization, dependencies, configuration
+   - **Per User Story**: One group per story in priority order
+   - **Polish**: Documentation, cross-cutting concerns
+4. Format as a markdown checklist:
+
+   ```markdown
+   ### Tasks
+
+   **Setup**
+   - [ ] T001 — {description}
+   - [ ] T002 — {description}
+
+   **US1 — {story title}**
+   - [ ] T003 — {description}
+   - [ ] T004 — {description}
+
+   **US2 — {story title}**
+   - [ ] T005 — {description}
+
+   **Polish**
+   - [ ] T006 — {description}
+   ```
+
+### Validate Plan Consistency
+
+Before publishing to the GitHub Issue, run these checks. If any fail, fix them before proceeding.
+
+1. **Task coverage**: Every requirement / acceptance criterion in the spec must map to at least one task. List any uncovered requirements.
+2. **No orphan tasks**: Every task must trace back to a requirement, setup need, or polish item. Flag tasks with no clear origin.
+3. **Ambiguity check**: Scan the task descriptions for vague terms (`various`, `etc.`, `as needed`, `TBD`, `some`). Rewrite to be specific.
+4. **Constitution alignment** (if `docs/constitution.md` exists): Verify the design does not violate any MUST principles. Flag violations.
+5. **Dependency order**: Tasks within each phase should be sequenced so no task depends on a later task. Flag circular or misordered dependencies.
+
+If issues are found, fix them inline. Report a brief validation summary (pass/fail with counts) before asking the user to review.
+
+### Update the Issue Description
+
+1. Read the current issue body:
+   ```bash
+   gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body
+   ```
+
+2. Compose the updated body by appending design notes and the task checklist:
+
+   ```markdown
+   {existing issue body}
+
+   ---
+
+   ## Design Notes
+
+   **Approach**: {key architecture decisions}
+   **Living docs updated**: {list — e.g. docs/data-model.md, docs/contracts/api.md}
+
+   {tasks checklist from above}
+
+   ---
+   _Design notes added by speckit-plan._
+   ```
+
+3. Update the issue:
+   ```bash
+   gh issue edit {ISSUE_NUMBER} --repo {owner}/{repo} --body "{updated body}"
+   ```
+
+4. Add the `plan` label (create if it doesn't exist):
+   ```bash
+   gh label create plan --repo {owner}/{repo} --description "Has a design plan" --color "0E8A16" 2>/dev/null
+   gh issue edit {ISSUE_NUMBER} --repo {owner}/{repo} --add-label "plan"
+   ```
+
+### Report
+
+Output a summary:
+- Issue URL and number
+- Task count and phase breakdown
+- List of updated living docs
+- Suggest next step: `/speckit-implement #{ISSUE_NUMBER}`
+
+---
+
+## Post-Execution Hooks
+
+After all steps complete, check if `.specify/extensions.yml` exists in the project root.
+- If it exists, read it and look for entries under the `hooks.after_plan` key
+- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
+- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
+- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
+  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
+  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
+- For each executable hook, output the following based on its `optional` flag:
+  - **Optional hook** (`optional: true`):
+    ```
+    ## Extension Hooks
+
+    **Optional Hook**: {extension}
+    Command: `/{command}`
+    Description: {description}
+
+    Prompt: {prompt}
+    To execute: `/{command}`
+    ```
+  - **Mandatory hook** (`optional: false`):
+    ```
+    ## Extension Hooks
+
+    **Automatic Hook**: {extension}
+    Executing: `/{command}`
+    EXECUTE_COMMAND: {command}
+    ```
+- If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
+
+---
+
+## Key Rules
+
+- Use absolute paths when reading/writing files
+- ERROR on gate failures or unresolved clarifications
+- Update living docs in `docs/` — do not create per-feature artifact folders
+- Generate plan artifacts only when needed (data-model.md for schema, contracts/ for APIs)
+- Skip research.md unless the domain is unfamiliar
+- ONE GitHub Issue per spec — no sub-issues
+- Task checklist lives in the issue description
