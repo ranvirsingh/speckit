@@ -31,6 +31,13 @@ Simple & scoped?                       specify → implement → retro
 | **Retro** | `speckit-retro` | Implementation complete — update living docs, triage TODOs |
 | **Constitution** | `speckit-constitution` | Setting up or updating project governance principles |
 
+### Internal Subagents (invoked by skills, not directly by users)
+
+| Subagent | Used By | Purpose |
+|----------|---------|---------|
+| `speckit-codebase-scanner` | `speckit-plan` | Read-only codebase exploration — returns distilled findings for design research |
+| `speckit-living-docs-loader` | All pipeline skills | Loads and compresses living docs into a focused context summary |
+
 ## Routing Logic
 
 1. **No issue yet?** → Route to `speckit-specify`

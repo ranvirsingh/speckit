@@ -56,6 +56,15 @@ Add to `.vscode/settings.json` so VS Code discovers the nested sub-skills:
 | speckit-retro | `/speckit-retro` | Post-implementation retrospective |
 | speckit-constitution | `/speckit-constitution` | Project governance setup |
 
+### Internal Subagents
+
+These skills are invoked automatically by the pipeline skills — not called directly by users:
+
+| Subagent | Used By | Purpose |
+|----------|---------|---------|
+| speckit-codebase-scanner | speckit-plan | Read-only codebase exploration for design research |
+| speckit-living-docs-loader | All pipeline skills | Compresses living docs into a focused context summary |
+
 ## Pipeline Flow
 
 ```

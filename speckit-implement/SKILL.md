@@ -40,14 +40,13 @@ This skill **requires a GitHub issue number** as input. The issue number can be 
 3. Validate the issue exists: `gh issue view {number} --repo {owner}/{repo} --json number,title,state,labels,body`
 4. If the issue does not exist or is closed: **STOP** and report.
 
-### Context Loading from Retro
+### Context Loading
 
-Before starting work, load `docs/retro.md` if it exists. Scan for patterns relevant to the current work:
-- **Recurring pain points** that might apply to this task
-- **What worked well** in similar previous tasks
-- **Process ideas** that should be applied
+Delegate to **speckit-living-docs-loader** to load and summarize living documents:
+- **Docs to load**: `docs/retro.md`, `docs/data-model.md`, `docs/contracts/*`
+- **Work context**: The issue title and work type
 
-Briefly note any relevant retro insights before proceeding.
+Use the returned summary for retro insights and implementation context. Do not read these files directly.
 
 ---
 
@@ -97,10 +96,8 @@ Skip all steps below — they are for the Full Implementation Flow only.
    For backward compatibility, fall back to the appended `## Design Notes` / `### Tasks` section if
    the markers are absent.
 
-2. **Load implementation context from living docs**:
-   - **IF EXISTS**: Read `docs/data-model.md` for entities and relationships
-   - **IF EXISTS**: Read `docs/contracts/*.md` for API specifications and test requirements
-   - **IF EXISTS**: Read `docs/research.md` for technical decisions and constraints
+2. **Load implementation context**: Use the living-docs-loader summary from the Context Loading step (Pre-Execution Checks). The data model, contracts, and research findings are already available.
+   - **IF EXISTS**: Read `docs/research.md` for technical decisions and constraints (if not already covered by the summary)
 
 3. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:

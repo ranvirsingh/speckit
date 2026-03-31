@@ -33,10 +33,11 @@ The input should include a GitHub Issue number (e.g. `#18`). If not provided, as
 
 ### Load Living Context
 
-Before starting, load these living documents for context (if they exist):
-- **`docs/retro.md`**: Scan for patterns from previous features — what worked, what didn't, process ideas that should apply to this plan.
-- **`docs/constitution.md`**: Keep principles in mind for architecture decisions.
-- **`docs/data-model.md`**: Understand the current data model before proposing changes.
+Delegate to **speckit-living-docs-loader** to load and summarize living documents:
+- **Docs to load**: `docs/retro.md`, `docs/constitution.md`, `docs/data-model.md`, `docs/contracts/*`
+- **Work context**: The spec title and summary from the GitHub Issue
+
+Use the returned summary for retro insights, constitution principles, and current schema understanding. Do not read these files directly.
 
 **Check for extension hooks (before planning)**:
 Follow the [hook execution procedure](../references/HOOKS.md) with `hookKey = hooks.before_plan`.
@@ -65,18 +66,23 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
    gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body,title,labels
    ```
 
-2. **Load context**: Read `docs/constitution.md` (if it exists).
+2. **Load context**: Constitution principles are already available from the living-docs-loader summary (loaded in Pre-Execution Checks).
 
 3. **Determine current branch**: `git branch --show-current` — use this to identify the feature context.
 
 ### Phase 0: Outline & Research
 
 1. **Extract unknowns from the spec**:
-   - For each unclear area → research task
-   - For each dependency → best practices task
-   - For each integration → patterns task
+   - For each unclear area → research question
+   - For each dependency → best practices question
+   - For each integration → patterns question
 
-2. **Research**: For each unknown, investigate the codebase and external docs.
+2. **Research**: Delegate to **speckit-codebase-scanner** with:
+   - **Spec body**: The feature specification from the GitHub Issue
+   - **Research questions**: The list of unknowns extracted above
+   - **Codebase root**: Current working directory
+
+   Use the scanner's structured findings to inform design decisions. Do not manually scan the codebase.
 
 3. **Consolidate findings**: If the domain is unfamiliar or there are significant decisions, update `docs/research.md` with findings. Format:
    - Decision: [what was chosen]

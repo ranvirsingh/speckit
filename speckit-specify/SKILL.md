@@ -26,9 +26,11 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ### Load Living Context
 
-Before starting, load these living documents for context (if they exist):
-- **`docs/retro.md`**: Scan for recurring pain points, patterns that worked, and process ideas relevant to the current work type. Note any findings that should influence spec quality.
-- **`docs/constitution.md`**: Load principles that govern specification writing.
+Delegate to **speckit-living-docs-loader** to load and summarize living documents:
+- **Docs to load**: `docs/retro.md`, `docs/constitution.md`
+- **Work context**: The user's feature/bug/chore description from `$ARGUMENTS`
+
+Use the returned summary for retro insights and constitution principles. Do not read these files directly.
 
 **Check for extension hooks (before specification)**:
 Follow the [hook execution procedure](../references/HOOKS.md) with `hookKey = hooks.before_specify`.
