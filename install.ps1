@@ -60,6 +60,7 @@ $Skills = @(
     'speckit-implement'
     'speckit-retro'
     'speckit-constitution'
+    'speckit-verify'
 )
 
 # Subagents: link into .github/agents/

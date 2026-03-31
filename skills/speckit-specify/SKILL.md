@@ -203,11 +203,19 @@ Given that feature description, do this:
   - No template placeholders or boilerplate remain
   - If validation fails, fix the issue body: `gh issue edit {ISSUE_NUMBER} --body "{fixed content}"`
 
-7. Report completion with branch name, issue number, and readiness:
+7. **Constitution compliance check**: Extract constitution rules and verify the spec complies:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   ```
+   For each MUST and NON-NEGOTIABLE rule, check whether the spec content satisfies it.
+   If any NON-NEGOTIABLE rule is violated, fix the spec before proceeding.
+   Report any SHOULD violations as warnings.
+
+8. Report completion with branch name, issue number, and readiness:
    - **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Suggest `/speckit-plan #{issue-number}`
    - **Simple & scoped**: Suggest `/speckit-implement #{issue-number}`
 
-8. **Check for extension hooks (after specification)**:
+9. **Check for extension hooks (after specification)**:
    Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_specify` (post-hook variant).
 
 ## Key Rules

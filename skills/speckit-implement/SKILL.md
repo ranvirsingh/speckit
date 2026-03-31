@@ -152,7 +152,14 @@ Skip all steps below — they are for the Full Implementation Flow only.
     - Validate that tests pass and coverage meets requirements
     - Report final status with summary of completed work
 
-10. **Commit & Push** (automated — no user prompt needed):
+10. **Constitution compliance check** before committing:
+    ```powershell
+    powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+    ```
+    For each MUST and NON-NEGOTIABLE rule, verify the implementation complies (e.g., tests exist if required, naming conventions followed, documentation updated).
+    If any NON-NEGOTIABLE rule is violated, fix the code before proceeding to commit.
+
+11. **Commit & Push** (automated — no user prompt needed):
     - Stage all changes: `git add -A`
     - Generate a conventional commit message based on the changes:
       - **Type**: `feat` for features, `fix` for bugs, `chore` for chores

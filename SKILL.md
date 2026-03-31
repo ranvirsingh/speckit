@@ -54,6 +54,7 @@ Simple & scoped?                       specify → implement → retro
 | **Implement** | `speckit-implement` | Ready to code — has a GitHub Issue number |
 | **Retro** | `speckit-retro` | Implementation complete — update living docs, triage TODOs |
 | **Constitution** | `speckit-constitution` | Setting up or updating project governance principles |
+| **Verify** | `speckit-verify` | Check compliance of specs, plans, or code against the constitution |
 
 ### Internal Subagents (`.agent.md` — invoked by skills via `runSubagent`, not directly by users)
 
@@ -69,6 +70,7 @@ Simple & scoped?                       specify → implement → retro
 3. **Issue exists, ready to code?** → Route to `speckit-implement`
 4. **Code done, PR created?** → Route to `speckit-retro`
 5. **Setting up project governance?** → Route to `speckit-constitution`
+6. **Checking compliance?** → Route to `speckit-verify`
 
 ## Plan Gate
 
