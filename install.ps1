@@ -36,7 +36,7 @@ $AgentsDir = Join-Path (Join-Path $WorkspaceRoot '.github') 'agents'
 
 # --- Pull latest submodule ----------------------------------------------------
 $gitModulesPath = Join-Path $WorkspaceRoot '.gitmodules'
-$submodulePath = Join-Path (Join-Path '.github' 'skills') 'speckit'
+$submodulePath = '.github/skills/speckit'
 if ((Test-Path $gitModulesPath) -and -not $Uninstall) {
     $gitModulesContent = Get-Content $gitModulesPath -Raw -ErrorAction SilentlyContinue
     if ($gitModulesContent -match [regex]::Escape($submodulePath)) {
