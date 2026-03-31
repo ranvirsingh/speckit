@@ -224,19 +224,15 @@ Extract the resource changes, additions, and deletions into a readable summary.
    ```
 
 2. **Upload screenshot images to GitHub** so they render in the PR description.
-   For each screenshot file, upload it as a GitHub issue/PR image asset:
+   Commit and push screenshots to the branch first so they exist on GitHub:
    ```bash
-   # Upload each screenshot and capture the returned URL
-   # GitHub does not have a dedicated image upload API via gh CLI,
-   # so use the raw GitHub user-content trick:
-   # Commit screenshots to the branch first, then reference them via raw URL.
    git add e2e/screenshots/
    git commit -m "test(e2e): add screenshots for #{issue-number}"
    git push
    ```
-   Then build image URLs using the raw content path:
+   Then build image URLs using the blob path with `?raw=true` (works for authenticated viewers on both public and private repos):
    ```
-   https://raw.githubusercontent.com/{owner}/{repo}/{branch}/e2e/screenshots/e2e-{issue-number}/sc1.png
+   https://github.com/{owner}/{repo}/blob/{branch}/e2e/screenshots/e2e-{issue-number}/sc1.png?raw=true
    ```
 
 3. Format the e2e section for the PR body:
@@ -251,7 +247,7 @@ Extract the resource changes, additions, and deletions into a readable summary.
 
    | Scenario | Screenshot |
    |----------|----------|
-   | US1-SC1: {description} | ![screenshot](https://raw.githubusercontent.com/{owner}/{repo}/{branch}/e2e/screenshots/e2e-{issue-number}/sc1.png) |
+   | US1-SC1: {description} | ![screenshot](https://github.com/{owner}/{repo}/blob/{branch}/e2e/screenshots/e2e-{issue-number}/sc1.png?raw=true) |
 
    Video recording available in `test-results/` after running:
    ```
