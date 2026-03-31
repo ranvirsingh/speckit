@@ -64,6 +64,7 @@ Simple & scoped?                       specify → implement → test → demo �
 |----------|---------|---------|
 | `speckit-codebase-scanner` | `speckit-plan` | Read-only codebase exploration — returns distilled findings for design research |
 | `speckit-living-docs-loader` | All pipeline skills | Loads and compresses living docs into a focused context summary |
+| `speckit-demo-recorder` | `speckit-demo` | Browser automation for UI project demo recording via Playwright |
 
 ## Routing Logic
 

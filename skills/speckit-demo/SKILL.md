@@ -68,70 +68,24 @@ Read the spec from the GitHub Issue body and extract the acceptance scenarios (G
 
 ---
 
-#### Web UI Projects — Playwright Video Recording
+#### Web UI Projects — Playwright Video Recording (via subagent)
 
-##### 3a. Ensure Playwright is Available
+For UI projects, delegate browser automation to the **speckit-demo-recorder** subagent via `runSubagent`:
 
-Check if Playwright is installed:
+- **issueNumber**: The GitHub Issue number
+- **title**: The issue title
+- **scenarios**: The extracted acceptance scenarios (Given/When/Then)
+- **baseUrl**: The application URL (detect from dev server config or ask the user)
+- **screenshotDir**: `e2e/screenshots/demo-{issue-number}/`
 
-```powershell
-npx playwright --version 2>&1
-```
+The subagent will:
+1. Ensure Playwright is installed (install if missing)
+2. Create `e2e/demo-{issue-number}.spec.ts` with one test per scenario
+3. Configure video recording
+4. Run the tests and capture screenshots
+5. Return test results, screenshot paths, and video location
 
-If not available, install it:
-
-```bash
-npm install -D @playwright/test
-npx playwright install chromium
-```
-
-##### 3b. Create Playwright Test File
-
-Create a test file at `e2e/demo-{issue-number}.spec.ts`:
-
-```typescript
-import { test, expect } from '@playwright/test';
-
-test.describe('Demo — #{issue-number}: {title}', () => {
-  // One test per acceptance scenario
-  test('US1-SC1: {scenario description}', async ({ page }) => {
-    // Given: {initial state}
-    await page.goto('{url}');
-    // When: {action}
-    await page.{action};
-    // Then: {expected outcome}
-    await expect(page.{locator}).{assertion};
-  });
-
-  // ... additional scenarios
-});
-```
-
-##### 3c. Configure Video Recording
-
-Create or update `playwright.config.ts` to enable video recording for this test only:
-
-```typescript
-// Add to projects or use:
-use: {
-  video: 'on',
-  trace: 'on',
-},
-```
-
-If a `playwright.config.ts` already exists, do **not** overwrite it. Instead, add video/trace settings only if they're not already present.
-
-##### 3d. Run the Test with Recording
-
-```bash
-npx playwright test e2e/demo-{issue-number}.spec.ts --project=chromium
-```
-
-Collect the video file(s) from `test-results/` directory.
-
-##### 3e. Capture Screenshots for PR
-
-For each key state in each scenario, capture a screenshot. Store in `e2e/screenshots/demo-{issue-number}/`.
+If the subagent reports the application server is not running, start it first using the detected dev command from `package.json`.
 
 ---
 

@@ -69,6 +69,7 @@ $Skills = @(
 $Agents = @(
     'speckit-codebase-scanner'
     'speckit-living-docs-loader'
+    'speckit-demo-recorder'
 )
 
 # --- Helpers ------------------------------------------------------------------
