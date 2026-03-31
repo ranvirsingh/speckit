@@ -21,32 +21,24 @@ Plus a **Constitution** skill for setting up project governance.
 # Add as submodule at the standard skills location
 git submodule add https://github.com/ranvirsingh/speckit.git .github/skills/speckit
 
-# Configure VS Code to discover nested skills
-# Add to .vscode/settings.json:
-# "chat.agentSkillsLocations": { ".github/skills/speckit": true }
+# Run the installer to link sub-skills and subagents into VS Code default paths
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ```
+
+The installer creates directory junctions (Windows) or symlinks (macOS/Linux) so VS Code discovers everything automatically:
+- Sub-skills → `.github/skills/speckit-specify`, `speckit-plan`, etc.
+- Subagents → `.github/agents/speckit-codebase-scanner`, `speckit-living-docs-loader`
+- Updates `.gitignore` to exclude the generated links
+
+To uninstall: `powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1 -Uninstall`
 
 ### Manual copy
 
 ```bash
 # Copy the entire folder into your project
 cp -r speckit/ your-project/.github/skills/speckit/
-```
-
-## VS Code Configuration
-
-Add to `.vscode/settings.json` so VS Code discovers the nested sub-skills and subagents:
-
-```json
-{
-  "chat.agentSkillsLocations": {
-    ".github/skills/speckit": true
-  },
-  "chat.agentFilesLocations": {
-    ".github/skills/speckit/speckit-codebase-scanner": true,
-    ".github/skills/speckit/speckit-living-docs-loader": true
-  }
-}
+# Then run the installer
+powershell -ExecutionPolicy Bypass -File your-project/.github/skills/speckit/install.ps1
 ```
 
 ## Skills

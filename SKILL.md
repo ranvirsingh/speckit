@@ -38,8 +38,6 @@ Simple & scoped?                       specify → implement → retro
 | `speckit-codebase-scanner` | `speckit-plan` | Read-only codebase exploration — returns distilled findings for design research |
 | `speckit-living-docs-loader` | All pipeline skills | Loads and compresses living docs into a focused context summary |
 
-> **Setup**: Consuming projects must add the subagent directories to `chat.agentFilesLocations` in VS Code settings so the `.agent.md` files are discoverable. See the README for details.
-
 ## Routing Logic
 
 1. **No issue yet?** → Route to `speckit-specify`
