@@ -9,8 +9,8 @@ description: >-
 
 ## Next Steps
 
-After implementation is complete (including commit and push), run the retrospective to update living documents and triage discovered TODOs.
-Suggest: **speckit-retro** — "Update living docs, close issues, and triage any discovered TODOs."
+After implementation is complete (including commit and push), run user acceptance testing to verify the implementation matches the spec.
+Suggest: **speckit-test #{issue-number}** — "Verify the implementation satisfies the spec's acceptance scenarios and requirements."
 
 ## User Input
 

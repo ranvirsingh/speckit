@@ -41,8 +41,8 @@ This applies to both greenfield and brownfield projects.
 ## Pipeline Flow
 
 ```
-Complex work (schema/API/unfamiliar)?  specify → plan → implement → retro
-Simple & scoped?                       specify → implement → retro
+Complex work (schema/API/unfamiliar)?  specify → plan → implement → test → retro
+Simple & scoped?                       specify → implement → test → retro
 ```
 
 ## When to Use Each Sub-Skill
@@ -52,7 +52,8 @@ Simple & scoped?                       specify → implement → retro
 | **Specify** | `speckit-specify` | Starting new work — write spec, create GitHub Issue |
 | **Plan** | `speckit-plan` | Work involves schema changes, new/changed APIs, or unfamiliar domain |
 | **Implement** | `speckit-implement` | Ready to code — has a GitHub Issue number |
-| **Retro** | `speckit-retro` | Implementation complete — update living docs, triage TODOs |
+| **Test** | `speckit-test` | Implementation done — verify it satisfies the spec (UAT) |
+| **Retro** | `speckit-retro` | UAT passed — update living docs, triage TODOs |
 | **Constitution** | `speckit-constitution` | Setting up or updating project governance principles |
 | **Verify** | `speckit-verify` | Check compliance of specs, plans, or code against the constitution |
 
@@ -68,9 +69,10 @@ Simple & scoped?                       specify → implement → retro
 1. **No issue yet?** → Route to `speckit-specify`
 2. **Issue exists, needs design?** → Route to `speckit-plan`
 3. **Issue exists, ready to code?** → Route to `speckit-implement`
-4. **Code done, PR created?** → Route to `speckit-retro`
-5. **Setting up project governance?** → Route to `speckit-constitution`
-6. **Checking compliance?** → Route to `speckit-verify`
+4. **Code done, needs UAT?** → Route to `speckit-test`
+5. **UAT passed, PR created?** → Route to `speckit-retro`
+6. **Setting up project governance?** → Route to `speckit-constitution`
+7. **Checking compliance?** → Route to `speckit-verify`
 
 ## Plan Gate
 

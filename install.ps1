@@ -58,6 +58,7 @@ $Skills = @(
     'speckit-specify'
     'speckit-plan'
     'speckit-implement'
+    'speckit-test'
     'speckit-retro'
     'speckit-constitution'
     'speckit-verify'
