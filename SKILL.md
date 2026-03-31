@@ -66,6 +66,7 @@ Simple & scoped?                       specify → implement → test → e2e �
 | `speckit-codebase-scanner` | `speckit-plan` | Read-only codebase exploration — returns distilled findings for design research |
 | `speckit-living-docs-loader` | All pipeline skills | Loads and compresses living docs into a focused context summary |
 | `speckit-e2e-recorder` | `speckit-e2e` | Browser automation for UI project e2e testing via Playwright |
+| `speckit-pipeline-checker` | `speckit-verify` | Checks PR status checks (CI green/red/pending) |
 
 ## Routing Logic
 

@@ -64,6 +64,7 @@ These are custom agents (`.agent.md` files) invoked automatically by the pipelin
 | speckit-codebase-scanner | speckit-plan | Read-only codebase exploration for design research |
 | speckit-living-docs-loader | All pipeline skills | Compresses living docs into a focused context summary |
 | speckit-e2e-recorder | speckit-e2e | Browser automation for UI project e2e testing via Playwright |
+| speckit-pipeline-checker | speckit-verify | Checks PR status checks (CI green/red/pending) |
 
 > **Note**: The installer links subagents into `.github/agents/` for automatic discovery. No `settings.json` changes are needed.
 

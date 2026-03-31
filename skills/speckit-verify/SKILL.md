@@ -109,10 +109,18 @@ Beyond extracted text rules, verify these common constitution-enforced patterns:
 2. ...
 ```
 
-### Step 6: Report Result
+### Step 6: Check Pipeline Status
 
-- If **PASS**: Report the compliance summary. Suggest proceeding to the next pipeline step.
-- If **FAIL**: List all violations with suggested fixes. Do not allow proceeding until violations are resolved. Ask the user to fix the violations and re-run verification.
+After constitution compliance passes, check whether the CI pipeline is green using the `runSubagent` tool with `agentName: "speckit-pipeline-checker"` and provide:
+- **prNumber**: The PR number (if known from Step 2)
+
+Include the pipeline status in the final report.
+
+### Step 7: Report Result
+
+- If **PASS** (constitution + pipeline green): Report the compliance summary. Suggest the PR is ready for merge.
+- If **constitution PASS but pipeline FAIL/PENDING**: Report constitution compliance passes but pipeline has issues. List failing/pending checks.
+- If **constitution FAIL**: List all violations with suggested fixes. Do not allow proceeding until violations are resolved. Ask the user to fix the violations and re-run verification.
 
 ## Gotchas
 

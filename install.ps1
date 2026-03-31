@@ -87,6 +87,7 @@ $Agents = @(
     'speckit-codebase-scanner'
     'speckit-living-docs-loader'
     'speckit-e2e-recorder'
+    'speckit-pipeline-checker'
 )
 
 # --- Helpers ------------------------------------------------------------------
