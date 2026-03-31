@@ -143,6 +143,14 @@ if ($Uninstall) {
         Remove-Link (Join-Path $AgentsDir $agent)
     }
 
+    # Remove manifest
+    $manifestPath = Join-Path (Join-Path $WorkspaceRoot '.github') 'speckit-manifest.json'
+    if (Test-Path $manifestPath) {
+        Remove-Item $manifestPath -Force
+        Write-Host ''
+        Write-Host "  [removed] .github/speckit-manifest.json" -ForegroundColor Yellow
+    }
+
     Write-Host ''
     Write-Host "Done. Speckit links removed." -ForegroundColor Green
     return
@@ -200,6 +208,59 @@ if ($newEntries.Count -gt 0) {
     $block += ($newEntries -join "`n") + "`n"
     Add-Content -Path $gitignorePath -Value $block -NoNewline
     Write-Host "  [updated] .gitignore - added $($newEntries.Count) entries" -ForegroundColor Green
+}
+
+# --- Write manifest -----------------------------------------------------------
+$manifestPath = Join-Path (Join-Path $WorkspaceRoot '.github') 'speckit-manifest.json'
+
+# Resolve submodule commit hash
+$submoduleHash = $null
+Push-Location $SpeckitRoot
+try {
+    $submoduleHash = (git rev-parse HEAD 2>$null)
+    if ($LASTEXITCODE -ne 0) { $submoduleHash = $null }
+}
+catch { $submoduleHash = $null }
+finally { Pop-Location }
+
+$linkedSkills = @()
+foreach ($skill in $Skills) {
+    $linkPath = Join-Path $SkillsDir $skill
+    if (Test-Path $linkPath) {
+        $linkedSkills += @{
+            name   = $skill
+            link   = ".github/skills/$skill"
+            target = ".github/skills/speckit/$skill"
+        }
+    }
+}
+
+$linkedAgents = @()
+foreach ($agent in $Agents) {
+    $linkPath = Join-Path $AgentsDir $agent
+    if (Test-Path $linkPath) {
+        $linkedAgents += @{
+            name   = $agent
+            link   = ".github/agents/$agent"
+            target = ".github/skills/speckit/$agent"
+        }
+    }
+}
+
+$manifest = @{
+    version        = 1
+    installedAt    = (Get-Date -Format 'o')
+    submoduleHash  = $submoduleHash
+    submodulePath  = $submodulePath
+    skills         = $linkedSkills
+    agents         = $linkedAgents
+}
+
+$manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
+Write-Host ''
+Write-Host "Manifest written to .github/speckit-manifest.json" -ForegroundColor Cyan
+if ($submoduleHash) {
+    Write-Host "  Submodule hash: $submoduleHash" -ForegroundColor DarkGray
 }
 
 Write-Host ''
