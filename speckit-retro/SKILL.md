@@ -61,8 +61,11 @@ After implementation is complete, ensure all living documents reflect the actual
 
 ### Step 2: Verify Completion
 
-- For **Features**: Check the GitHub Issue checklist — all tasks should be marked `[x]`
-  1. Read the issue body and parse for unchecked items (`- [ ]`)
+- For **Features**: Check the appended speckit plan block in the GitHub Issue body — all tasks should be marked `[x]`
+   1. Read the issue body and locate the appended plan block.
+   2. Prefer `<!-- speckit-plan:start --> ... <!-- speckit-plan:end -->` when present.
+   3. For backward compatibility, fall back to the appended `## Design Notes` / `### Tasks` section.
+   4. Parse unchecked task items (`- [ ]`) from that plan block only.
 - For **Bugs/Chores**: Check that all verification items in the issue body are marked complete
 - If incomplete items exist, list them and proceed with the retro (flag the incomplete items in the retro entry).
 
@@ -148,10 +151,12 @@ If no issues found, report: "All docs are current — no hygiene issues detected
 
 For each flagged doc, ask the user whether to:
 1. **Delete** — remove the file entirely
-2. **Archive** — move to a `docs/archive/` directory
-3. **Keep** — leave as-is
+2. **Keep and update in place** — retain it as a living doc in `docs/`
+3. **Keep as-is** — leave unchanged for now
 
-Do NOT delete docs without user confirmation. For other fixes (misleading content, outdated refs), apply the correction directly.
+Do **not** create archive folders. Living docs stay in `docs/`, and stale docs are deleted only
+with user confirmation. For other fixes (misleading content, outdated refs), apply the
+correction directly.
 
 #### 5c. Apply fixes
 
@@ -162,6 +167,9 @@ For docs flagged as "Misleading" or "Outdated" where the fix is clear, apply the
 ### Step 6: Append to Living Retrospective Log
 
 The project maintains a **living retrospective document** at `docs/retro.md`.
+
+If `docs/` or `docs/retro.md` does not exist yet, create `docs/` and initialize `docs/retro.md`
+from this skill's `assets/retro-template.md` before appending the new entry.
 
 #### 6a. Observe and reflect (automated — no user prompt)
 

@@ -1,8 +1,17 @@
-# Feature Specification: [FEATURE NAME]
+<!--
+This template is a guide for the GitHub Issue body created by speckit-specify.
 
-**Feature Branch**: `[###-feature-name]`  
-**Created**: [DATE]  
-**Status**: Draft  
+Do not create a local spec file from this template.
+Do not create `specs/` or `spec.md`.
+Living documents belong in `docs/` and are updated later by speckit-plan / speckit-retro.
+-->
+
+# [TITLE]
+
+**Type**: Feature
+**Branch**: `[###-feature-name]`
+**Created**: [DATE]
+**Status**: Draft
 **Input**: User description: "$ARGUMENTS"
 
 ## User Scenarios & Testing *(mandatory)*
@@ -83,7 +92,7 @@
   If this is a Bug or Chore, replace this section with:
   [NOT APPLICABLE] — {reason, e.g., "This is a chore; scope and acceptance criteria above fully describe the work."}
   
-  NEVER leave placeholder text like "System MUST [specific capability]" in the final spec.
+  NEVER leave placeholder text like "System MUST [specific capability]" in the final issue body.
 -->
 
 ### Functional Requirements
@@ -106,7 +115,7 @@
 <!--
   Define measurable success criteria.
   These must be technology-agnostic and measurable.
-  NEVER leave placeholder examples in the final spec.
+  NEVER leave placeholder examples in the final issue body.
 -->
 
 ### Measurable Outcomes

@@ -3,7 +3,8 @@ name: speckit-plan
 description: >-
   Design the architecture and update the GitHub Issue with a task checklist — all in one flow.
   Use this skill when the user wants to plan a feature, design the architecture, create a data model,
-  or define API contracts. Requires a GitHub Issue (created by speckit-specify).
+   or define API contracts. Requires a GitHub Issue (created by speckit-specify).
+   Append design notes and tasks beneath the existing issue-backed spec; do not replace it.
   Generate plan artifacts only when needed — update docs/data-model.md for schema changes,
   docs/contracts/*.md for new APIs. Skip docs/research.md unless the domain is unfamiliar.
 ---
@@ -114,6 +115,10 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
 
 ### Phase 1: Design & Contracts
 
+0. **Living docs root** → before writing any living document, ensure `docs/` exists.
+   Create `docs/` (and `docs/contracts/` when needed) if missing. Do **not** create `specs/`
+   or a local `spec.md`.
+
 1. **Data model changes** → update `docs/data-model.md` (if file doesn't exist, initialize from this skill's `assets/data-model-template.md`):
    - Add or modify entity definitions, fields, relationships
    - Add validation rules from requirements
@@ -195,18 +200,31 @@ If issues are found, fix them inline. Report a brief validation summary (pass/fa
 
 ### Update the Issue Description
 
+#### Preservation Rule
+
+Treat the current GitHub Issue body as the canonical spec created by **speckit-specify**.
+
+- Never overwrite or rewrite the original spec sections when adding plan details.
+- Append the plan beneath the existing spec in the same issue body.
+- If a plan block already exists, replace **only** that appended plan block.
+- Issue comments may be used for discussion, but the canonical plan consumed by downstream skills
+  must remain in the issue body.
+
 1. Read the current issue body:
    ```bash
    gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body
    ```
 
-2. Compose the updated body by appending design notes and the task checklist:
+2. Compose the updated body by appending design notes and the task checklist beneath the spec.
+   Use the existing issue body as-is above the plan block. If a previous speckit plan block exists,
+   replace only the text inside that block.
 
    ```markdown
-   {existing issue body}
+   {existing issue body without old speckit-plan block}
 
    ---
 
+   <!-- speckit-plan:start -->
    ## Design Notes
 
    **Approach**: {key architecture decisions}
@@ -215,10 +233,11 @@ If issues are found, fix them inline. Report a brief validation summary (pass/fa
    {tasks checklist from above}
 
    ---
-   _Design notes added by speckit-plan._
+   _Plan appended by speckit-plan. Preserve the spec above._
+   <!-- speckit-plan:end -->
    ```
 
-3. Update the issue:
+3. Update the issue body by appending or replacing only the plan block:
    ```bash
    gh issue edit {ISSUE_NUMBER} --repo {owner}/{repo} --body "{updated body}"
    ```
@@ -277,6 +296,9 @@ After all steps complete, check if `.specify/extensions.yml` exists in the proje
 - Use absolute paths when reading/writing files
 - ERROR on gate failures or unresolved clarifications
 - Update living docs in `docs/` — do not create per-feature artifact folders
+- The spec stays in the GitHub Issue body — do not create `specs/` or local `spec.md`
+- Append the plan beneath the spec — never replace the original spec sections
+- Keep the canonical plan in the issue body, not only in issue comments
 - Generate plan artifacts only when needed (data-model.md for schema, contracts/ for APIs)
 - Skip research.md unless the domain is unfamiliar
 - ONE GitHub Issue per spec — no sub-issues
