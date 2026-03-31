@@ -177,7 +177,11 @@ Before publishing to the GitHub Issue, run these checks. If any fail, fix them b
 1. **Task coverage**: Every requirement / acceptance criterion in the spec must map to at least one task. List any uncovered requirements.
 2. **No orphan tasks**: Every task must trace back to a requirement, setup need, or polish item. Flag tasks with no clear origin.
 3. **Ambiguity check**: Scan the task descriptions for vague terms (`various`, `etc.`, `as needed`, `TBD`, `some`). Rewrite to be specific.
-4. **Constitution alignment** (if `docs/constitution.md` exists): Verify the design does not violate any MUST principles. Flag violations.
+4. **Constitution compliance check**: Extract constitution rules and verify the plan complies:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   ```
+   For each MUST and NON-NEGOTIABLE rule, check whether the design decisions and task list satisfy it. If any NON-NEGOTIABLE rule is violated, fix the plan before proceeding. Report SHOULD violations as warnings.
 5. **Dependency order**: Tasks within each phase should be sequenced so no task depends on a later task. Flag circular or misordered dependencies.
 
 If issues are found, fix them inline. Report a brief validation summary (pass/fail with counts) before asking the user to review.
