@@ -272,3 +272,13 @@ speckit-specify → speckit-plan → speckit-implement (commit+PR) → speckit-r
                                                                        |
                                                    PARKING_LOT.md ←───┘
 ```
+
+## Post-Retro: Update Speckit
+
+After the retro is complete, run the install script to pull the latest speckit for the next cycle:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/install.ps1
+```
+
+This ensures the next `speckit-specify` invocation starts with the latest skills and agents.

@@ -24,6 +24,14 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Pre-Execution Checks
 
+### Bootstrap
+
+Run the install script to ensure speckit is up-to-date and all skills/agents are linked:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/install.ps1
+```
+
 ### Load Living Context
 
 Run the **speckit-living-docs-loader** agent as a subagent with:
