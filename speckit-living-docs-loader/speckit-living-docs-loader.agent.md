@@ -1,9 +1,8 @@
 ---
 name: speckit-living-docs-loader
-description: >-
-  Read-only subagent that loads and summarizes living documents (retro.md, constitution.md,
-  data-model.md, contracts/*) into a compressed context block. Returns only actionable
-  insights. Invoked at the start of any skill that needs living context. Not user-invocable.
+description: Loads and compresses living documents into a focused context summary for speckit skills.
+user-invocable: false
+tools: ['read', 'search']
 ---
 
 ## Purpose
@@ -13,7 +12,7 @@ Saves context tokens by distilling multiple docs into a focused context block.
 
 ## Input
 
-The invoking skill provides:
+The invoking agent provides:
 1. **Doc paths** — list of files to load (typically `docs/retro.md`, `docs/constitution.md`, `docs/data-model.md`, `docs/contracts/*`)
 2. **Work context** — brief description of the current task (to prioritize which insights matter)
 
@@ -67,27 +66,22 @@ Return a single structured block:
 2. {principle}
 ...
 
-### Current Data Model
+### Data Model (current state)
 | Entity | Key Fields | Relationships |
 |--------|-----------|---------------|
-| {name} | {fields} | {relations} |
+| ...    | ...       | ...           |
 
-**Recent changes**: {last 3 changelog entries}
+Recent changes: {last 3 changelog entries}
 
-### Active Contracts
-| Contract | Status | Summary |
-|----------|--------|---------|
-| {name} | {status} | {brief description} |
-
-### Relevance Notes
-- {what from the living docs is most relevant to the current task}
-- {what to watch out for based on retro patterns}
+### Contracts
+| Contract | Status | Endpoints |
+|----------|--------|-----------|
+| ...      | ...    | ...       |
 ```
 
-## Rules
+## Constraints
 
-- **Read-only** — never modify living docs
-- **Compress aggressively** — the whole output should be <200 lines
-- **Skip empty sections** — if a doc doesn't exist or has no relevant content, omit its section
-- **Highlight conflicts** — if constitution principles conflict with retro patterns, flag it
-- **Cap retro entries** — never load more than the last 5 entries; summarize trends if >10 exist
+- **Read-only** — do not modify any files.
+- **Cap output** — total summary must be under 200 lines.
+- **Skip missing files** — do not report errors for missing docs, just omit the section.
+- **Summarize, don't copy** — never return raw file contents longer than 10 lines.

@@ -31,12 +31,14 @@ Simple & scoped?                       specify → implement → retro
 | **Retro** | `speckit-retro` | Implementation complete — update living docs, triage TODOs |
 | **Constitution** | `speckit-constitution` | Setting up or updating project governance principles |
 
-### Internal Subagents (invoked by skills, not directly by users)
+### Internal Subagents (`.agent.md` — invoked by skills via `runSubagent`, not directly by users)
 
 | Subagent | Used By | Purpose |
 |----------|---------|---------|
 | `speckit-codebase-scanner` | `speckit-plan` | Read-only codebase exploration — returns distilled findings for design research |
 | `speckit-living-docs-loader` | All pipeline skills | Loads and compresses living docs into a focused context summary |
+
+> **Setup**: Consuming projects must add the subagent directories to `chat.agentFilesLocations` in VS Code settings so the `.agent.md` files are discoverable. See the README for details.
 
 ## Routing Logic
 

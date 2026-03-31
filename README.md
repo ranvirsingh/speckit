@@ -35,12 +35,16 @@ cp -r speckit/ your-project/.github/skills/speckit/
 
 ## VS Code Configuration
 
-Add to `.vscode/settings.json` so VS Code discovers the nested sub-skills:
+Add to `.vscode/settings.json` so VS Code discovers the nested sub-skills and subagents:
 
 ```json
 {
   "chat.agentSkillsLocations": {
     ".github/skills/speckit": true
+  },
+  "chat.agentFilesLocations": {
+    ".github/skills/speckit/speckit-codebase-scanner": true,
+    ".github/skills/speckit/speckit-living-docs-loader": true
   }
 }
 ```
@@ -58,12 +62,14 @@ Add to `.vscode/settings.json` so VS Code discovers the nested sub-skills:
 
 ### Internal Subagents
 
-These skills are invoked automatically by the pipeline skills — not called directly by users:
+These are custom agents (`.agent.md` files) invoked automatically by the pipeline skills via `runSubagent` — not called directly by users:
 
 | Subagent | Used By | Purpose |
 |----------|---------|---------|
 | speckit-codebase-scanner | speckit-plan | Read-only codebase exploration for design research |
 | speckit-living-docs-loader | All pipeline skills | Compresses living docs into a focused context summary |
+
+> **Note**: For subagent discovery, consuming projects must register the subagent directories in `chat.agentFilesLocations`. See [VS Code Configuration](#vs-code-configuration).
 
 ## Pipeline Flow
 

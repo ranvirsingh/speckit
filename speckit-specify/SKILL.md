@@ -26,7 +26,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ### Load Living Context
 
-Delegate to **speckit-living-docs-loader** to load and summarize living documents:
+Run the **speckit-living-docs-loader** agent as a subagent with:
 - **Docs to load**: `docs/retro.md`, `docs/constitution.md`
 - **Work context**: The user's feature/bug/chore description from `$ARGUMENTS`
 

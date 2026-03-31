@@ -33,7 +33,7 @@ The input should include a GitHub Issue number (e.g. `#18`). If not provided, as
 
 ### Load Living Context
 
-Delegate to **speckit-living-docs-loader** to load and summarize living documents:
+Run the **speckit-living-docs-loader** agent as a subagent with:
 - **Docs to load**: `docs/retro.md`, `docs/constitution.md`, `docs/data-model.md`, `docs/contracts/*`
 - **Work context**: The spec title and summary from the GitHub Issue
 
@@ -77,7 +77,7 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
    - For each dependency → best practices question
    - For each integration → patterns question
 
-2. **Research**: Delegate to **speckit-codebase-scanner** with:
+2. **Research**: Run the **speckit-codebase-scanner** agent as a subagent with:
    - **Spec body**: The feature specification from the GitHub Issue
    - **Research questions**: The list of unknowns extracted above
    - **Codebase root**: Current working directory

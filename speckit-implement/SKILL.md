@@ -42,7 +42,7 @@ This skill **requires a GitHub issue number** as input. The issue number can be 
 
 ### Context Loading
 
-Delegate to **speckit-living-docs-loader** to load and summarize living documents:
+Run the **speckit-living-docs-loader** agent as a subagent with:
 - **Docs to load**: `docs/retro.md`, `docs/data-model.md`, `docs/contracts/*`
 - **Work context**: The issue title and work type
 
