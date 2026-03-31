@@ -34,7 +34,8 @@ powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/check-cons
 ```
 
 - If `exists` is `false`: **Route to `speckit-constitution` immediately** — the project needs governance principles before any pipeline work can begin. Tell the user: "No project constitution found. Let's establish one before proceeding."
-- If `exists` is `true`: Continue to routing logic below.
+- If `exists` is `true` but `valid` is `false`: **Route to `speckit-constitution` immediately** — the constitution still contains template placeholders. Tell the user: "Your constitution has unfilled placeholders. Let's complete it before proceeding."
+- If `exists` is `true` and `valid` is `true`: Continue to routing logic below.
 
 This applies to both greenfield and brownfield projects.
 

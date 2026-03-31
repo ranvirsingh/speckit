@@ -148,6 +148,13 @@ Given that feature description, do this:
      gh project item-add {project-number} --owner {owner} --url https://github.com/{owner}/{repo}/issues/{issue-number}
      ```
 
+   Then run a **constitution compliance check** on the lightweight spec:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   ```
+   For each MUST and NON-NEGOTIABLE rule, check whether the spec content satisfies it.
+   If any NON-NEGOTIABLE rule is violated, fix the issue body before proceeding.
+
    Then assess the **complexity signal** for the lightweight spec:
    - If the bug/chore involves schema changes, new/changed APIs, or an unfamiliar domain → suggest **speckit-plan** `#{issue-number}`
    - Otherwise → suggest **speckit-implement** `#{issue-number}`

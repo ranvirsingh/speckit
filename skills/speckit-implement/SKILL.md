@@ -43,7 +43,7 @@ This skill **requires a GitHub issue number** as input. The issue number can be 
 ### Context Loading
 
 Run the **speckit-living-docs-loader** agent as a subagent with:
-- **Docs to load**: `docs/retro.md`, `docs/data-model.md`, `docs/contracts/*`
+- **Docs to load**: `docs/retro.md`, `docs/data-model.md`, `docs/contracts/*`, `docs/constitution.md`
 - **Work context**: The issue title and work type
 
 Use the returned summary for retro insights and implementation context. Do not read these files directly.
@@ -75,7 +75,13 @@ For bugs and chores, the issue body contains the fix description, affected files
    - Implement the fix as described
    - Verify locally (run tests if applicable)
 3. Mark all verification items as complete
-4. Report completion and suggest **speckit-retro**
+4. **Constitution compliance check** before committing:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   ```
+   For each MUST and NON-NEGOTIABLE rule, verify the implementation complies.
+   If any NON-NEGOTIABLE rule is violated, fix the code before proceeding.
+5. Report completion and suggest **speckit-test #{issue-number}**
 
 Skip all steps below — they are for the Full Implementation Flow only.
 

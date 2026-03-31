@@ -51,13 +51,14 @@ foreach ($line in $lines) {
         continue
     }
 
-    # Extract MUST rules
+    # Extract MUST rules (stronger than SHOULD — takes precedence if both present)
     if ($line -match '\bMUST\b') {
         $rules += @{
             severity  = 'must'
             principle = $currentPrinciple
             text      = $line.Trim().TrimStart('-', ' ', '*')
         }
+        continue
     }
 
     # Extract SHOULD rules
