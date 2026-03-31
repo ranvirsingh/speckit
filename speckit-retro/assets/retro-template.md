@@ -65,7 +65,7 @@ description: >-
 - **Discovered TODOs**: {count} → {bugs} bugs, {chores} chores, {backlog} backlog items
 - **Doc Hygiene**: {N} issues found ({N} fixed, {N} flagged for removal, {N} kept)
 - **Docs Updated**: {list or "none"}
-- **ADRs Created**: {list or "none"}
+- **ADRs Updated / Flagged**: {list or "none"}
 
 ---
 

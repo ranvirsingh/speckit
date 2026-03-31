@@ -5,8 +5,8 @@ description: >-
   consistency, close the loop, and triage discovered TODOs to the parking lot. No user input 
   required — the AI agent observes the implementation session and writes the retrospective 
   autonomously. Use this skill after speckit-implement completes — for any work type 
-  (feature, bug, or chore). Updates data model docs, API contracts, ADRs, and triages 
-  TODO(speckit) markers into PARKING_LOT.md entries.
+   (feature, bug, or chore). Updates data model docs, API contracts, flags ADR follow-ups when
+   implementation diverges from plan, and triages TODO(speckit) markers into PARKING_LOT.md entries.
 ---
 
 ## User Input
@@ -51,8 +51,10 @@ After implementation is complete, ensure all living documents reflect the actual
    - If contracts are outdated or missing for new routes: flag for user attention (do not auto-generate)
 
    #### c. Architecture Decision Records (`docs/adr/`)
-   - If the implementation introduced a significant architectural choice (new dependency, pattern change, technology swap), ask the user if an ADR should be created
-   - If yes: create `docs/adr/adr-NNN-{topic}.md` using this skill's `assets/adr-template.md`
+   - Check whether an ADR created during planning is now outdated because implementation diverged
+   - If an ADR needs corrections, update the existing file directly
+   - If implementation introduced a new unplanned architectural choice, flag it as an ADR follow-up
+   - Do **not** create new ADRs from retro; ADR authoring belongs to `speckit-plan`
 
    #### d. Type Consistency
    - Cross-reference shared type definitions against migration SQL
@@ -207,7 +209,7 @@ Append a new section to the **bottom** of `docs/retro.md` (after the last entry 
 - **Discovered TODOs**: {count} → {count} parking lot entries
 - **Doc Hygiene**: {N} issues found ({N} fixed, {N} flagged for removal, {N} kept)
 - **Docs Updated**: {list or "none"}
-- **ADRs Created**: {list or "none"}
+- **ADRs Updated / Flagged**: {list or "none"}
 
 ---
 ```
@@ -237,7 +239,7 @@ Only update these sections when there are 2+ entries.
 ### Documents Updated
 - [ ] docs/data-model.md — {changes or "No changes needed"}
 - [ ] docs/retro.md — Entry appended
-- [ ] docs/adr/ — {new ADR or "No new ADRs"}
+- [ ] docs/adr/ — {updates, flagged follow-ups, or "No ADR changes needed"}
 - [ ] types.ts — {changes or "No changes needed"}
 
 ### Issues Closed

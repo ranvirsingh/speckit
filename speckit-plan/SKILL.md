@@ -6,7 +6,8 @@ description: >-
    or define API contracts. Requires a GitHub Issue (created by speckit-specify).
    Append design notes and tasks beneath the existing issue-backed spec; do not replace it.
   Generate plan artifacts only when needed — update docs/data-model.md for schema changes,
-  docs/contracts/*.md for new APIs. Skip docs/research.md unless the domain is unfamiliar.
+   docs/contracts/*.md for new APIs, and docs/adr/*.md for significant architecture decisions.
+   Skip docs/research.md unless the domain is unfamiliar.
 ---
 
 ## Next Steps
@@ -130,9 +131,15 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
    - Examples: public APIs for libraries, endpoints for web services, SDK interfaces
    - Skip if feature is purely internal
 
-3. Re-evaluate Constitution Check post-design (if constitution exists).
+3. **Architecture Decision Records** (if the design introduces a significant architectural choice) → create/update files in `docs/adr/`:
+   - Examples: new dependency, cross-cutting pattern, technology swap, major protocol choice
+   - If `docs/adr/` does not exist, create it
+   - Create `docs/adr/adr-NNN-{topic}.md` using this skill's `assets/adr-template.md`
+   - Capture context, decision, consequences, and alternatives during planning while the rationale is fresh
 
-**Output**: Updated living docs in `docs/` (data-model.md, contracts/, research.md — only those that apply)
+4. Re-evaluate Constitution Check post-design (if constitution exists).
+
+**Output**: Updated living docs in `docs/` (data-model.md, contracts/, adr/, research.md — only those that apply)
 
 ---
 
@@ -299,6 +306,7 @@ After all steps complete, check if `.specify/extensions.yml` exists in the proje
 - The spec stays in the GitHub Issue body — do not create `specs/` or local `spec.md`
 - Append the plan beneath the spec — never replace the original spec sections
 - Keep the canonical plan in the issue body, not only in issue comments
+- ADRs belong to the plan phase — create or update them here when architecture decisions are made
 - Generate plan artifacts only when needed (data-model.md for schema, contracts/ for APIs)
 - Skip research.md unless the domain is unfamiliar
 - ONE GitHub Issue per spec — no sub-issues
