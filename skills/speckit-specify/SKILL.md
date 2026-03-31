@@ -33,7 +33,7 @@ Run the **speckit-living-docs-loader** agent as a subagent with:
 Use the returned summary for retro insights and constitution principles. Do not read these files directly.
 
 **Check for extension hooks (before specification)**:
-Follow the [hook execution procedure](../references/HOOKS.md) with `hookKey = hooks.before_specify`.
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_specify`.
 
 ### Artifact Rules
 
@@ -116,13 +116,13 @@ Given that feature description, do this:
    - Get the Git remote: `git config --get remote.origin.url` → extract `owner/repo`
    - **Derive the next spec number (deterministic — use script)**:
      ```powershell
-     $specNumber = & "<speckit-skill-path>/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
+     $specNumber = & "<speckit-skill-path>/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
      ```
      Where `<speckit-skill-path>` is resolved from the skill's installed location.
      Use the output directly — do NOT manually scan branches or do arithmetic.
    - **Validate the branch name (deterministic — use script)**:
      ```powershell
-     & "<speckit-skill-path>/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
+     & "<speckit-skill-path>/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
      ```
      If output is not `VALID`, fix the name and re-validate before proceeding.
    - Create branch: `git checkout -b {specNumber}-{short-name}`
@@ -152,13 +152,13 @@ Given that feature description, do this:
    - Get the Git remote: `git config --get remote.origin.url` → extract `owner/repo`
    - **Derive the next spec number (deterministic — use script)**:
      ```powershell
-     $specNumber = & "<speckit-skill-path>/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
+     $specNumber = & "<speckit-skill-path>/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
      ```
      Where `<speckit-skill-path>` is resolved from the skill's installed location.
      Use the output directly — do NOT manually scan branches or do arithmetic.
    - **Validate the branch name (deterministic — use script)**:
      ```powershell
-     & "<speckit-skill-path>/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
+     & "<speckit-skill-path>/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
      ```
      If output is not `VALID`, fix the name and re-validate before proceeding.
    - Create branch: `git checkout -b {specNumber}-{short-name}`
@@ -200,7 +200,7 @@ Given that feature description, do this:
    - **Simple & scoped**: Suggest `/speckit-implement #{issue-number}`
 
 8. **Check for extension hooks (after specification)**:
-   Follow the [hook execution procedure](../references/HOOKS.md) with `hookKey = hooks.after_specify` (post-hook variant).
+   Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_specify` (post-hook variant).
 
 ## Key Rules
 

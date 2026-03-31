@@ -40,7 +40,7 @@ Run the **speckit-living-docs-loader** agent as a subagent with:
 Use the returned summary for retro insights, constitution principles, and current schema understanding. Do not read these files directly.
 
 **Check for extension hooks (before planning)**:
-Follow the [hook execution procedure](../references/HOOKS.md) with `hookKey = hooks.before_plan`.
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_plan`.
 
 ---
 

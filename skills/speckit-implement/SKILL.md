@@ -23,7 +23,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 ## Pre-Execution Checks
 
 **Check for extension hooks (before implementation)**:
-Follow the [hook execution procedure](../references/HOOKS.md) with `hookKey = hooks.before_implement`.
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_implement`.
 
 ## GitHub Issue Gate (MANDATORY)
 
@@ -162,7 +162,7 @@ Skip all steps below — they are for the Full Implementation Flow only.
       - **Footer**: `Closes #{issue_number}`
     - **Validate the commit message (deterministic — use script)** before committing:
       ```powershell
-      & "<speckit-skill-path>/speckit-implement/scripts/validate-commit-msg.ps1" -Message "{full commit message}"
+      & "<speckit-skill-path>/skills/speckit-implement/scripts/validate-commit-msg.ps1" -Message "{full commit message}"
       ```
       Where `<speckit-skill-path>` is resolved from the skill's installed location.
       If output is not `VALID`, fix the message and re-validate. Do NOT commit until validated.

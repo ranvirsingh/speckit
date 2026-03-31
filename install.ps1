@@ -166,7 +166,7 @@ if (-not (Test-Path $AgentsDir)) { New-Item -ItemType Directory -Path $AgentsDir
 
 Write-Host "Skills (.github/skills/):" -ForegroundColor Cyan
 foreach ($skill in $Skills) {
-    $target = Join-Path $SpeckitRoot $skill
+    $target = Join-Path (Join-Path $SpeckitRoot 'skills') $skill
     $link = Join-Path $SkillsDir $skill
     if (-not (Test-Path $target)) {
         Write-Warning "  [missing] Source not found: $target"
@@ -178,7 +178,7 @@ foreach ($skill in $Skills) {
 Write-Host ''
 Write-Host "Agents (.github/agents/):" -ForegroundColor Cyan
 foreach ($agent in $Agents) {
-    $target = Join-Path $SpeckitRoot $agent
+    $target = Join-Path (Join-Path $SpeckitRoot 'agents') $agent
     $link = Join-Path $AgentsDir $agent
     if (-not (Test-Path $target)) {
         Write-Warning "  [missing] Source not found: $target"
@@ -230,7 +230,7 @@ foreach ($skill in $Skills) {
         $linkedSkills += @{
             name   = $skill
             link   = ".github/skills/$skill"
-            target = ".github/skills/speckit/$skill"
+            target = ".github/skills/speckit/skills/$skill"
         }
     }
 }
@@ -242,7 +242,7 @@ foreach ($agent in $Agents) {
         $linkedAgents += @{
             name   = $agent
             link   = ".github/agents/$agent"
-            target = ".github/skills/speckit/$agent"
+            target = ".github/skills/speckit/agents/$agent"
         }
     }
 }
