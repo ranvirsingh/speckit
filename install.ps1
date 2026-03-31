@@ -34,6 +34,24 @@ $WorkspaceRoot = (Resolve-Path (Join-Path $SpeckitRoot '..\..\..'))
 $SkillsDir = Join-Path (Join-Path $WorkspaceRoot '.github') 'skills'
 $AgentsDir = Join-Path (Join-Path $WorkspaceRoot '.github') 'agents'
 
+# --- Pull latest submodule ----------------------------------------------------
+$gitModulesPath = Join-Path $WorkspaceRoot '.gitmodules'
+$submodulePath = Join-Path (Join-Path '.github' 'skills') 'speckit'
+if ((Test-Path $gitModulesPath) -and -not $Uninstall) {
+    $gitModulesContent = Get-Content $gitModulesPath -Raw -ErrorAction SilentlyContinue
+    if ($gitModulesContent -match [regex]::Escape($submodulePath)) {
+        Write-Host "Pulling latest speckit from remote..." -ForegroundColor Cyan
+        Push-Location $WorkspaceRoot
+        try {
+            git submodule update --remote --merge -- $submodulePath 2>&1 | ForEach-Object { Write-Host "  $_" -ForegroundColor DarkGray }
+        }
+        finally {
+            Pop-Location
+        }
+        Write-Host ''
+    }
+}
+
 # --- Definitions -------------------------------------------------------------
 # Sub-skills: link into .github/skills/
 $Skills = @(

@@ -14,6 +14,17 @@ argument-hint: Describe what you want to build, fix, or change
 Spec-driven development with a lightweight, right-sized process.
 One GitHub Issue per spec — no sub-issues, no intermediate task files.
 
+## Pre-Execution: Ensure Installation
+
+Before routing, run the install script to pull the latest speckit and ensure all skills and agents are linked:
+
+```bash
+powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/install.ps1
+```
+
+Replace `<speckit-skill-path>` with the resolved path to the speckit skill directory (where this SKILL.md lives).
+If the script reports all links as `[skip] Already linked`, proceed immediately. Do not wait for user confirmation.
+
 ## Pipeline Flow
 
 ```
