@@ -49,10 +49,23 @@ The plan phase is **complexity-gated, not type-gated**. Any work type (feature, 
 
 Otherwise, skip directly from specify to implement.
 
+## Artifact Boundaries
+
+Keep these artifacts separate:
+
+- **Specify** writes the spec into the **GitHub Issue body only**
+- **Plan** appends design notes and a task checklist beneath that spec in the **same issue body**
+- **Plan** and **Retro** update living docs in `docs/` only when needed
+- Issue comments are supplementary discussion, not the canonical plan source
+- Never create `specs/`, `spec.md`, or per-feature doc folders
+
 ## Key Principles
 
 - **One issue per spec** — checklist in the issue body, no sub-issues
 - **Issue IS the tracker** — no tasks.md file
+- **Issue-backed specs only** — the spec lives in the GitHub Issue body, never in `spec.md`
+- **Plan appends; it does not replace** — keep the original spec at the top of the issue body and append/update the plan beneath it
+- **Living docs live in `docs/`** — update `docs/` in plan/retro, never create `specs/`
 - **Right-sized artifacts** — only generate data-model, contracts, research when needed
 - **Human-in-the-loop** — ask the next question at every step
 - **Conventional commits** — every commit references the issue (`#N`)

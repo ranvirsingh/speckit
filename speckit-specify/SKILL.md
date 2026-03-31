@@ -1,11 +1,11 @@
 ---
 name: speckit-specify
 description: >-
-  Create or update a feature specification, bug report, or chore definition from a natural
-  language description. Use this skill when the user wants to define a new feature, report a
-  bug, write requirements, capture user stories, or create a spec. Triggers on requests like
-  "I want to build...", "specify a feature for...", "write a spec", "fix this bug", or any
-  feature ideation, bug reporting, and scoping task.
+  Create or update a feature specification, bug report, or chore definition as a GitHub
+  Issue-backed spec from a natural language description. Use this skill when the user wants to
+  define a new feature, report a bug, write requirements, capture user stories, or create a
+  spec. Triggers on requests like "I want to build...", "specify a feature for...", "write a
+  spec", "fix this bug", or any feature ideation, bug reporting, and scoping task.
 ---
 
 ## Next Steps
@@ -62,6 +62,15 @@ Before starting, load these living documents for context (if they exist):
     ```
 - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
 
+### Artifact Rules
+
+Before writing anything, keep these boundaries explicit:
+- The canonical spec created by this step lives in the **GitHub Issue body**.
+- **speckit-plan** appends its design notes and task checklist beneath this spec later; it must not replace the spec.
+- Never create `specs/`, `spec.md`, or any other local per-feature spec file.
+- Do not create or update living docs in `docs/` during **Specify**. Living docs belong to
+  **Plan** and **Retro**.
+
 ## Outline
 
 The text the user typed after `/speckit-specify` in the triggering message **is** the feature description. Assume you always have it available in this conversation even if `$ARGUMENTS` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
@@ -103,9 +112,9 @@ Given that feature description, do this:
    - Everything else → **Feature**
    - When ambiguous, ask the user using option tables (Feature / Bug / Chore)
 
-   **If Bug or Chore**: Use a **lightweight spec** and create a GitHub Issue directly.
+    **If Bug or Chore**: Use a **lightweight issue-backed spec** and create a GitHub Issue directly.
 
-   Compose the lightweight spec body:
+    Compose the lightweight issue body:
    ```markdown
    # {Title}
 
@@ -138,7 +147,7 @@ Given that feature description, do this:
    - Get the Git remote: `git config --get remote.origin.url`
    - **Only proceed if the remote is a GitHub URL**
    - Extract `owner` and `repo` from the remote URL
-   - Create issue with: `gh issue create --repo {owner}/{repo} --title "[{Type}] {spec-number} — {title}" --body "{lightweight spec content}" --label "spec:{spec-number},{type}"`
+   - Create issue with: `gh issue create --repo {owner}/{repo} --title "[{Type}] {spec-number} — {title}" --body "{lightweight issue body}" --label "spec:{spec-number},{type}"`
    - Capture the issue number and report it
    - **Add to Project Board**: After creating the issue, check for a matching project:
      ```bash
@@ -161,7 +170,7 @@ Given that feature description, do this:
    - Derive the next available spec number: check existing branches (`git branch -a`) and labels to find the highest `NNN`, then increment
    - Create branch: `git checkout -b {NNN}-{short-name}`
 
-3. Follow this execution flow for the **full feature spec**:
+3. Follow this execution flow for the **full feature spec in the GitHub Issue body**:
 
     1. Parse user description from Input
        If empty: ERROR "No feature description provided"
@@ -175,7 +184,7 @@ Given that feature description, do this:
     7. Identify Key Entities (if data involved)
     8. **Non-applicable sections**: Write `[NOT APPLICABLE]` with a brief reason. Never leave template placeholders.
 
-4. **Compose the full spec body** for the GitHub Issue. Use the spec template structure (from this skill's `assets/spec-template.md`) as a guide, but the output goes into the **issue body**, not a local file.
+4. **Compose the full spec body** for the GitHub Issue. Use the issue-body template structure (from this skill's `assets/issue-body-template.md`) as a guide, but the output goes into the **issue body only** — never a local file.
 
 5. **Create a GitHub Issue** with the spec content:
    - Get the Git remote: `git config --get remote.origin.url`
@@ -185,12 +194,13 @@ Given that feature description, do this:
    - **Add to Project Board** (same as bug/chore flow above)
 
 6. **Validation**: Review the spec content against quality criteria:
-   - No implementation details (languages, frameworks, APIs)
-   - All requirements are testable and unambiguous
-   - Success criteria are measurable and technology-agnostic
-   - Edge cases are identified
-   - No template placeholders or boilerplate remain
-   - If validation fails, fix the issue body: `gh issue edit {ISSUE_NUMBER} --body "{fixed content}"`
+  - No implementation details (languages, frameworks, APIs)
+  - All requirements are testable and unambiguous
+  - Success criteria are measurable and technology-agnostic
+  - Edge cases are identified
+  - No `specs/` directory or local `spec.md` file is created
+  - No template placeholders or boilerplate remain
+  - If validation fails, fix the issue body: `gh issue edit {ISSUE_NUMBER} --body "{fixed content}"`
 
 7. Report completion with branch name, issue number, and readiness:
    - **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Suggest `/speckit-plan #{issue-number}`
@@ -224,3 +234,10 @@ Given that feature description, do this:
        EXECUTE_COMMAND: {command}
        ```
    - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
+
+## Key Rules
+
+- The spec created by **Specify** lives in the GitHub Issue body.
+- Later phases append or update plan details beneath the spec; they do not replace it.
+- `docs/` is reserved for living documents updated later by **Plan** and **Retro**.
+- Never create `specs/`, `spec.md`, or per-feature document folders during **Specify**.

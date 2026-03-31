@@ -88,7 +88,7 @@ Determine the work type and whether a plan exists from the GitHub Issue:
 
 1. Read the issue body and labels: `gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body,labels`
 2. Check labels for `bug`, `chore`, `feature`, and `plan`.
-3. **If the issue has a `plan` label** (or the body contains a `## Design Notes` / `### Tasks` section) → follow the **Full Implementation Flow** below, regardless of work type.
+3. **If the issue has a `plan` label** (or the body contains a `<!-- speckit-plan:start -->` block, or a `## Design Notes` / `### Tasks` section) → follow the **Full Implementation Flow** below, regardless of work type.
 4. **If type is Bug or Chore with no plan** → follow the **Lightweight Implementation Flow** below.
 5. **If type is Feature (or no type label)** → follow the **Full Implementation Flow** below.
 
@@ -117,7 +117,14 @@ Skip all steps below — they are for the Full Implementation Flow only.
    ```bash
    gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body
    ```
-   Parse the issue body to extract the task checklist (lines matching `- [ ] T{NNN}` pattern).
+   Treat the issue body as two layers:
+   - the original spec from **speckit-specify** at the top
+   - the appended plan block from **speckit-plan** below it
+
+   Parse the task checklist from the appended plan block only.
+   Prefer content inside `<!-- speckit-plan:start --> ... <!-- speckit-plan:end -->`.
+   For backward compatibility, fall back to the appended `## Design Notes` / `### Tasks` section if
+   the markers are absent.
 
 2. **Load implementation context from living docs**:
    - **IF EXISTS**: Read `docs/data-model.md` for entities and relationships
@@ -164,7 +171,9 @@ Skip all steps below — they are for the Full Implementation Flow only.
    ```bash
    gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body
    ```
-   Update the body with `- [x]` for completed tasks:
+   Update only the appended plan block with `- [x]` for completed tasks. Preserve the original
+   spec above it unchanged. If speckit plan markers are present, modify only the content inside
+   `<!-- speckit-plan:start --> ... <!-- speckit-plan:end -->`:
    ```bash
    gh issue edit {ISSUE_NUMBER} --repo {owner}/{repo} --body "{updated body}"
    ```
