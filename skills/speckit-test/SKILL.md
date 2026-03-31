@@ -11,7 +11,7 @@ description: >-
 ## Next Steps
 
 After all acceptance scenarios pass, suggest:
-- **speckit-retro** — "Implementation verified. Run the retrospective to update living docs and triage TODOs."
+- **speckit-demo #{issue-number}** — "UAT passed. Generate a demo artifact to attach to the PR."
 
 If scenarios fail, suggest:
 - **speckit-implement #{issue-number}** — "Fix the failing scenarios, then re-run speckit-test."
