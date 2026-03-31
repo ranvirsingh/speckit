@@ -25,6 +25,19 @@ powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/install.ps1
 Replace `<speckit-skill-path>` with the resolved path to the speckit skill directory (where this SKILL.md lives).
 If the script reports all links as `[skip] Already linked`, proceed immediately. Do not wait for user confirmation.
 
+## Pre-Execution: Constitution Gate
+
+After installation, check whether a project constitution exists:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/check-constitution.ps1 -WorkspaceRoot "<workspace-root>"
+```
+
+- If `exists` is `false`: **Route to `speckit-constitution` immediately** — the project needs governance principles before any pipeline work can begin. Tell the user: "No project constitution found. Let's establish one before proceeding."
+- If `exists` is `true`: Continue to routing logic below.
+
+This applies to both greenfield and brownfield projects.
+
 ## Pipeline Flow
 
 ```
