@@ -72,12 +72,12 @@ flowchart LR
   I --> R([Retro])
   R --> S
 
-  S -. creates .-> S1[GitHub Issue body\nspec]
-  P -. appends .-> P1[GitHub Issue body\ndesign notes + tasks]
-  P -. updates .-> P2[docs/\ndata-model, contracts, research]
-  I -. delivers .-> I1[code, tests,\ncommit, PR]
-  R -. refreshes .-> R1[docs/retro.md\nliving docs]
-  R -. feeds back .-> R2[docs/PARKING_LOT.md\nnext work]
+  S -. creates .-> S1[GitHub Issue body<br/>spec]
+  P -. appends .-> P1[GitHub Issue body<br/>design notes<br/>tasks]
+  P -. updates .-> P2[DOCS/DATA_MODEL.MD<br/>DOCS/CONTRACTS/<br/>DOCS/RESEARCH.MD]
+  I -. delivers .-> I1[code<br/>tests<br/>commit<br/>PR]
+  R -. refreshes .-> R1[DOCS/RETRO.MD<br/>LIVING DOCS]
+  R -. feeds back .-> R2[DOCS/PARKING_LOT.MD<br/>NEXT WORK]
 
   classDef phase fill:#1f2937,color:#ffffff,stroke:#111827,stroke-width:2px;
   classDef artifact fill:#f8fafc,color:#0f172a,stroke:#94a3b8,stroke-width:1px,stroke-dasharray: 6 4;
@@ -91,7 +91,7 @@ flowchart LR
 Speckit keeps the **issue-backed spec** and **living documents** separate on purpose:
 
 - **GitHub Issue body** — the canonical spec/tracker created during **Specify**; **Plan** appends its design notes and task checklist beneath that spec in the same issue body
-- **`docs/`** — living documents updated during **Plan** and **Retro** only
+- **`DOCS/`** — living documents updated during **Plan** and **Retro** only
 
 Issue body layout:
 
@@ -107,7 +107,10 @@ Rules:
 - Do **not** create a `specs/` directory.
 - Do **not** create a local `spec.md` file.
 - Do **not** create per-feature doc folders.
-- Keep living documents in `docs/` (for example `docs/data-model.md`, `docs/contracts/`, `docs/retro.md`).
+- Keep living documents in `DOCS/`, for example:
+  - `DOCS/DATA_MODEL.MD`
+  - `DOCS/CONTRACTS/`
+  - `DOCS/RETRO.MD`
 
 ## Requirements
 
