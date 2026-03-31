@@ -192,6 +192,12 @@ Skip all steps below — they are for the Full Implementation Flow only.
       - **Subject**: Imperative mood, lowercase, max 72 chars, no period
       - **Body**: Bullet list of key changes (what was done, not why — the diff shows what)
       - **Footer**: `Closes #{issue_number}`
+    - **Validate the commit message (deterministic — use script)** before committing:
+      ```powershell
+      & "<speckit-skill-path>/speckit-implement/scripts/validate-commit-msg.ps1" -Message "{full commit message}"
+      ```
+      Where `<speckit-skill-path>` is resolved from the skill's installed location.
+      If output is not `VALID`, fix the message and re-validate. Do NOT commit until validated.
     - Commit: `git commit -m "{type}({scope}): {subject}" -m "{body}" -m "Closes #{issue_number}"`
     - Push: `git push origin {branch_name}`
     - Create PR via GitHub CLI:

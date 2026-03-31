@@ -139,14 +139,23 @@ Given that feature description, do this:
    ```
 
    **Create the feature branch**:
-   - Derive a short name (2-4 words, action-noun format)
-   - Derive the next available spec number: check existing branches (`git branch -a`) and labels to find the highest `NNN`, then increment
-   - Create branch: `git checkout -b {NNN}-{short-name}`
+   - Derive a short name (2-4 words, action-noun format, lowercase kebab-case)
+   - Get the Git remote: `git config --get remote.origin.url` → extract `owner/repo`
+   - **Derive the next spec number (deterministic — use script)**:
+     ```powershell
+     $specNumber = & "<speckit-skill-path>/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
+     ```
+     Where `<speckit-skill-path>` is resolved from the skill's installed location.
+     Use the output directly — do NOT manually scan branches or do arithmetic.
+   - **Validate the branch name (deterministic — use script)**:
+     ```powershell
+     & "<speckit-skill-path>/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
+     ```
+     If output is not `VALID`, fix the name and re-validate before proceeding.
+   - Create branch: `git checkout -b {specNumber}-{short-name}`
 
    **Create a GitHub Issue** for project board tracking:
-   - Get the Git remote: `git config --get remote.origin.url`
    - **Only proceed if the remote is a GitHub URL**
-   - Extract `owner` and `repo` from the remote URL
    - Create issue with: `gh issue create --repo {owner}/{repo} --title "[{Type}] {spec-number} — {title}" --body "{lightweight issue body}" --label "spec:{spec-number},{type}"`
    - Capture the issue number and report it
    - **Add to Project Board**: After creating the issue, check for a matching project:
@@ -164,11 +173,22 @@ Given that feature description, do this:
 
    Skip steps 1-6 below.
 
-1. **Generate a concise short name** (2-4 words) for the branch.
+1. **Generate a concise short name** (2-4 words, lowercase kebab-case) for the branch.
 
 2. **Create the feature branch**:
-   - Derive the next available spec number: check existing branches (`git branch -a`) and labels to find the highest `NNN`, then increment
-   - Create branch: `git checkout -b {NNN}-{short-name}`
+   - Get the Git remote: `git config --get remote.origin.url` → extract `owner/repo`
+   - **Derive the next spec number (deterministic — use script)**:
+     ```powershell
+     $specNumber = & "<speckit-skill-path>/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
+     ```
+     Where `<speckit-skill-path>` is resolved from the skill's installed location.
+     Use the output directly — do NOT manually scan branches or do arithmetic.
+   - **Validate the branch name (deterministic — use script)**:
+     ```powershell
+     & "<speckit-skill-path>/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
+     ```
+     If output is not `VALID`, fix the name and re-validate before proceeding.
+   - Create branch: `git checkout -b {specNumber}-{short-name}`
 
 3. Follow this execution flow for the **full feature spec in the GitHub Issue body**:
 
