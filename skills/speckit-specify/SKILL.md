@@ -1,5 +1,6 @@
 ---
 name: speckit-specify
+user-invocable: true
 description: >-
   Create or update a feature specification, bug report, or chore definition as a GitHub
   Issue-backed spec from a natural language description. Use this skill when the user wants to
@@ -34,7 +35,7 @@ powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/install.ps1
 
 ### Load Living Context
 
-Run the **speckit-living-docs-loader** agent as a subagent with:
+Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
 - **Docs to load**: `docs/retro.md`, `docs/constitution.md`
 - **Work context**: The user's feature/bug/chore description from `$ARGUMENTS`
 

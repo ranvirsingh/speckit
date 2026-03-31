@@ -1,5 +1,6 @@
 ---
 name: speckit-retro
+user-invocable: true
 description: >-
   Run a fully automated post-implementation retrospective to update living documents, verify 
   consistency, close the loop, and triage discovered TODOs to the parking lot. No user input 
@@ -17,6 +18,19 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 The input should include a GitHub Issue number (e.g. `#18`). If not provided, ask the user for it.
+
+## Pre-Execution Checks
+
+### Load Living Context
+
+Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
+- **Docs to load**: `docs/retro.md`, `docs/constitution.md`, `docs/data-model.md`, `docs/contracts/*`
+- **Work context**: The issue title and retrospective intent
+
+Use the returned summary for retro insights, constitution principles, and current doc understanding. Do not read these files directly.
+
+**Check for extension hooks (before retro)**:
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_retro`.
 
 ## Goal
 
@@ -95,8 +109,9 @@ Collect each marker with its file path, line number, and content.
 
 For each discovered item:
 1. Classify as Bug, Chore, or Feature idea
-2. Append to `docs/PARKING_LOT.md` with source reference and classification
-3. Replace the `TODO(speckit):` marker in the code with a reference to the parking lot entry:
+2. If `docs/PARKING_LOT.md` does not exist, initialize it from this skill's `assets/parking-lot-template.md`
+3. Append to `docs/PARKING_LOT.md` with source reference and classification
+4. Replace the `TODO(speckit):` marker in the code with a reference to the parking lot entry:
    ```typescript
    // See PARKING_LOT.md — {brief description}
    ```
@@ -272,6 +287,10 @@ speckit-specify → speckit-plan → speckit-implement (commit+PR) → speckit-r
                                                                        |
                                                    PARKING_LOT.md ←───┘
 ```
+
+## Post-Execution Hooks
+
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_retro`.
 
 ## Post-Retro: Update Speckit
 

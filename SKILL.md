@@ -42,8 +42,8 @@ This applies to both greenfield and brownfield projects.
 ## Pipeline Flow
 
 ```
-Complex work (schema/API/unfamiliar)?  specify → plan → implement → test → demo → retro
-Simple & scoped?                       specify → implement → test → demo → retro
+Complex work (schema/API/unfamiliar)?  specify → plan → implement → test → e2e → retro
+Simple & scoped?                       specify → implement → test → e2e → retro
 ```
 
 ## When to Use Each Sub-Skill
@@ -54,18 +54,18 @@ Simple & scoped?                       specify → implement → test → demo �
 | **Plan** | `speckit-plan` | Work involves schema changes, new/changed APIs, or unfamiliar domain |
 | **Implement** | `speckit-implement` | Ready to code — has a GitHub Issue number |
 | **Test** | `speckit-test` | Implementation done — verify it satisfies the spec (UAT) |
-| **Demo** | `speckit-demo` | UAT passed — generate demo artifact and attach to PR |
-| **Retro** | `speckit-retro` | Demo captured — update living docs, triage TODOs |
+| **E2E** | `speckit-e2e` | UAT passed — generate e2e test artifacts and attach to PR |
+| **Retro** | `speckit-retro` | E2E captured — update living docs, triage TODOs |
 | **Constitution** | `speckit-constitution` | Setting up or updating project governance principles |
 | **Verify** | `speckit-verify` | Check compliance of specs, plans, or code against the constitution |
 
-### Internal Subagents (`.agent.md` — invoked by skills via `runSubagent`, not directly by users)
+### Internal Subagents (`.agent.md` — invoked by skills via the `runSubagent` tool, not directly by users)
 
 | Subagent | Used By | Purpose |
 |----------|---------|---------|
 | `speckit-codebase-scanner` | `speckit-plan` | Read-only codebase exploration — returns distilled findings for design research |
 | `speckit-living-docs-loader` | All pipeline skills | Loads and compresses living docs into a focused context summary |
-| `speckit-demo-recorder` | `speckit-demo` | Browser automation for UI project demo recording via Playwright |
+| `speckit-e2e-recorder` | `speckit-e2e` | Browser automation for UI project e2e testing via Playwright |
 
 ## Routing Logic
 
@@ -73,8 +73,8 @@ Simple & scoped?                       specify → implement → test → demo �
 2. **Issue exists, needs design?** → Route to `speckit-plan`
 3. **Issue exists, ready to code?** → Route to `speckit-implement`
 4. **Code done, needs UAT?** → Route to `speckit-test`
-5. **UAT passed, need demo?** → Route to `speckit-demo`
-6. **Demo done, PR created?** → Route to `speckit-retro`
+5. **UAT passed, need e2e?** → Route to `speckit-e2e`
+6. **E2E done, PR created?** → Route to `speckit-retro`
 7. **Setting up project governance?** → Route to `speckit-constitution`
 8. **Checking compliance?** → Route to `speckit-verify`
 

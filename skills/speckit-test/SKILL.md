@@ -1,5 +1,6 @@
 ---
 name: speckit-test
+user-invocable: true
 description: >-
   User acceptance testing against the spec. Verifies that the implementation satisfies every
   acceptance scenario, functional requirement, and success criterion defined in the GitHub Issue.
@@ -11,7 +12,8 @@ description: >-
 ## Next Steps
 
 After all acceptance scenarios pass, suggest:
-- **speckit-demo #{issue-number}** — "UAT passed. Generate a demo artifact to attach to the PR."
+- **speckit-e2e #{issue-number}** — "UAT passed. Generate e2e test artifacts to attach to the PR."
+- If e2e is not applicable (no UI, user declines): suggest **speckit-retro #{issue-number}** — "Skip e2e and run the retrospective."
 
 If scenarios fail, suggest:
 - **speckit-implement #{issue-number}** — "Fix the failing scenarios, then re-run speckit-test."
@@ -28,7 +30,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ### Load Living Context
 
-Run the **speckit-living-docs-loader** agent as a subagent with:
+Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
 - **Docs to load**: `docs/constitution.md`
 - **Work context**: The issue title and UAT verification intent
 

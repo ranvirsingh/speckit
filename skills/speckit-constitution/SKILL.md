@@ -1,5 +1,6 @@
 ---
 name: speckit-constitution
+user-invocable: true
 description: >-
   Create or update the project constitution from interactive or provided principle inputs,
   ensuring all dependent templates stay in sync. Use this skill when setting up a new project,

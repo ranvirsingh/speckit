@@ -22,8 +22,21 @@ $valid = $false
 
 if ($exists) {
     $content = Get-Content $constitutionPath -Raw
-    # A constitution with placeholder tokens still present is not valid
-    $placeholderCount = ([regex]::Matches($content, '\[([A-Z][A-Z0-9_]+)\]')).Count
+    # Check for known template placeholders from constitution-template.md
+    $templatePlaceholders = @(
+        '\[PROJECT_NAME\]'
+        '\[PRINCIPLE_\d+_NAME\]'
+        '\[PRINCIPLE_\d+_DESCRIPTION\]'
+        '\[SECTION_\d+_NAME\]'
+        '\[SECTION_\d+_CONTENT\]'
+        '\[GOVERNANCE_RULES\]'
+        '\[CONSTITUTION_VERSION\]'
+        '\[RATIFICATION_DATE\]'
+        '\[LAST_AMENDED_DATE\]'
+        '\[GUIDANCE_FILE\]'
+    )
+    $pattern = ($templatePlaceholders -join '|')
+    $placeholderCount = ([regex]::Matches($content, $pattern)).Count
     $valid = $placeholderCount -eq 0
 }
 

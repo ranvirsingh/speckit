@@ -1,5 +1,6 @@
 ---
 name: speckit-plan
+user-invocable: true
 description: >-
   Design the architecture and update the GitHub Issue with a task checklist — all in one flow.
   Use this skill when the user wants to plan a feature, design the architecture, create a data model,
@@ -33,7 +34,7 @@ The input should include a GitHub Issue number (e.g. `#18`). If not provided, as
 
 ### Load Living Context
 
-Run the **speckit-living-docs-loader** agent as a subagent with:
+Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
 - **Docs to load**: `docs/retro.md`, `docs/constitution.md`, `docs/data-model.md`, `docs/contracts/*`
 - **Work context**: The spec title and summary from the GitHub Issue
 
@@ -77,7 +78,7 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
    - For each dependency → best practices question
    - For each integration → patterns question
 
-2. **Research**: Run the **speckit-codebase-scanner** agent as a subagent with:
+2. **Research**: Use the `runSubagent` tool with `agentName: "speckit-codebase-scanner"` and provide:
    - **Spec body**: The feature specification from the GitHub Issue
    - **Research questions**: The list of unknowns extracted above
    - **Codebase root**: Current working directory
@@ -248,34 +249,7 @@ Output a summary:
 
 ## Post-Execution Hooks
 
-After all steps complete, check if `.specify/extensions.yml` exists in the project root.
-- If it exists, read it and look for entries under the `hooks.after_plan` key
-- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
-- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
-- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
-  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
-  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
-- For each executable hook, output the following based on its `optional` flag:
-  - **Optional hook** (`optional: true`):
-    ```
-    ## Extension Hooks
-
-    **Optional Hook**: {extension}
-    Command: `/{command}`
-    Description: {description}
-
-    Prompt: {prompt}
-    To execute: `/{command}`
-    ```
-  - **Mandatory hook** (`optional: false`):
-    ```
-    ## Extension Hooks
-
-    **Automatic Hook**: {extension}
-    Executing: `/{command}`
-    EXECUTE_COMMAND: {command}
-    ```
-- If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_plan`.
 
 ---
 

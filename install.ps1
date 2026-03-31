@@ -18,7 +18,10 @@
 #>
 [CmdletBinding()]
 param(
-    [switch]$Uninstall
+    [switch]$Uninstall,
+
+    [Parameter(HelpMessage = 'Override the workspace root directory. Defaults to 3 levels above the script location.')]
+    [string]$WorkspaceRoot
 )
 
 Set-StrictMode -Version Latest
@@ -28,11 +31,25 @@ $ErrorActionPreference = 'Stop'
 $SpeckitRoot = $PSScriptRoot
 if (-not $SpeckitRoot) { $SpeckitRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
 
-# Walk up to workspace root: install.ps1 sits at .github/skills/speckit/
-$WorkspaceRoot = (Resolve-Path (Join-Path $SpeckitRoot '..\..\..'))
+# Resolve workspace root: use parameter if provided, otherwise walk up 3 levels
+if (-not $WorkspaceRoot) {
+    $WorkspaceRoot = (Resolve-Path (Join-Path $SpeckitRoot '..\..\..'))
+}
+else {
+    $WorkspaceRoot = (Resolve-Path $WorkspaceRoot)
+}
 
-$SkillsDir = Join-Path (Join-Path $WorkspaceRoot '.github') 'skills'
-$AgentsDir = Join-Path (Join-Path $WorkspaceRoot '.github') 'agents'
+# Validate workspace root looks like a git repository
+if (-not (Test-Path (Join-Path $WorkspaceRoot '.git'))) {
+    Write-Warning "Workspace root '$WorkspaceRoot' does not contain a .git directory. Verify the path is correct."
+}
+$GithubDir  = Join-Path $WorkspaceRoot '.github'
+$SkillsDir  = Join-Path $GithubDir 'skills'
+$AgentsDir  = Join-Path $GithubDir 'agents'
+
+# Determine whether speckit root is already inside .github/skills/speckit/
+$ExpectedSpeckitDir = Join-Path $SkillsDir 'speckit'
+$SpeckitIsExternal  = ($SpeckitRoot -ne (Resolve-Path $ExpectedSpeckitDir -ErrorAction SilentlyContinue))
 
 # --- Pull latest submodule ----------------------------------------------------
 $gitModulesPath = Join-Path $WorkspaceRoot '.gitmodules'
@@ -59,7 +76,7 @@ $Skills = @(
     'speckit-plan'
     'speckit-implement'
     'speckit-test'
-    'speckit-demo'
+    'speckit-e2e'
     'speckit-retro'
     'speckit-constitution'
     'speckit-verify'
@@ -69,7 +86,7 @@ $Skills = @(
 $Agents = @(
     'speckit-codebase-scanner'
     'speckit-living-docs-loader'
-    'speckit-demo-recorder'
+    'speckit-e2e-recorder'
 )
 
 # --- Helpers ------------------------------------------------------------------
@@ -136,6 +153,14 @@ if ($Uninstall) {
     Write-Host "Removing speckit links..." -ForegroundColor Yellow
     Write-Host ''
 
+    # Remove speckit root link (if it was created by installer)
+    if (Test-Path $ExpectedSpeckitDir) {
+        $rootItem = Get-Item $ExpectedSpeckitDir -Force
+        if ($rootItem.LinkType -eq 'Junction' -or $rootItem.LinkType -eq 'SymbolicLink') {
+            Remove-Link $ExpectedSpeckitDir
+        }
+    }
+
     Write-Host "Skills:" -ForegroundColor Cyan
     foreach ($skill in $Skills) {
         Remove-Link (Join-Path $SkillsDir $skill)
@@ -148,7 +173,7 @@ if ($Uninstall) {
     }
 
     # Remove manifest
-    $manifestPath = Join-Path (Join-Path $WorkspaceRoot '.github') 'speckit-manifest.json'
+    $manifestPath = Join-Path $GithubDir 'speckit-manifest.json'
     if (Test-Path $manifestPath) {
         Remove-Item $manifestPath -Force
         Write-Host ''
@@ -167,6 +192,13 @@ Write-Host ''
 # Ensure target directories exist
 if (-not (Test-Path $SkillsDir)) { New-Item -ItemType Directory -Path $SkillsDir -Force | Out-Null }
 if (-not (Test-Path $AgentsDir)) { New-Item -ItemType Directory -Path $AgentsDir -Force | Out-Null }
+
+# --- Link speckit root into .github/skills/speckit/ (if external) -------------
+if ($SpeckitIsExternal) {
+    Write-Host "Speckit root (.github/skills/speckit/):" -ForegroundColor Cyan
+    New-Link -LinkPath $ExpectedSpeckitDir -TargetPath $SpeckitRoot
+    Write-Host ''
+}
 
 Write-Host "Skills (.github/skills/):" -ForegroundColor Cyan
 foreach ($skill in $Skills) {
@@ -194,6 +226,7 @@ foreach ($agent in $Agents) {
 # --- Git ignore the links ----------------------------------------------------
 $gitignorePath = Join-Path $WorkspaceRoot '.gitignore'
 $linksToIgnore = @()
+if ($SpeckitIsExternal) { $linksToIgnore += ".github/skills/speckit" }
 foreach ($skill in $Skills) { $linksToIgnore += ".github/skills/$skill" }
 foreach ($agent in $Agents) { $linksToIgnore += ".github/agents/$agent" }
 
@@ -215,7 +248,7 @@ if ($newEntries.Count -gt 0) {
 }
 
 # --- Write manifest -----------------------------------------------------------
-$manifestPath = Join-Path (Join-Path $WorkspaceRoot '.github') 'speckit-manifest.json'
+$manifestPath = Join-Path $GithubDir 'speckit-manifest.json'
 
 # Resolve submodule commit hash
 $submoduleHash = $null
@@ -252,12 +285,13 @@ foreach ($agent in $Agents) {
 }
 
 $manifest = @{
-    version        = 1
-    installedAt    = (Get-Date -Format 'o')
-    submoduleHash  = $submoduleHash
-    submodulePath  = $submodulePath
-    skills         = $linkedSkills
-    agents         = $linkedAgents
+    version            = 1
+    installedAt        = (Get-Date -Format 'o')
+    submoduleHash      = $submoduleHash
+    submodulePath      = $submodulePath
+    speckitRootLinked  = $SpeckitIsExternal
+    skills             = $linkedSkills
+    agents             = $linkedAgents
 }
 
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8

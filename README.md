@@ -49,25 +49,29 @@ powershell -ExecutionPolicy Bypass -File your-project/.github/skills/speckit/ins
 | speckit-specify | `/speckit-specify` | Write an issue-backed spec and create a GitHub Issue |
 | speckit-plan | `/speckit-plan` | Append design notes and tasks beneath the spec, plus update living docs when needed |
 | speckit-implement | `/speckit-implement` | Execute tasks, commit, push, create PR |
+| speckit-test | `/speckit-test` | User acceptance testing — verify implementation against the spec |
+| speckit-e2e | `/speckit-e2e` | Generate e2e test artifacts proving the implementation works |
 | speckit-retro | `/speckit-retro` | Post-implementation retrospective |
 | speckit-constitution | `/speckit-constitution` | Project governance setup |
+| speckit-verify | `/speckit-verify` | Check compliance against the constitution |
 
 ### Internal Subagents
 
-These are custom agents (`.agent.md` files) invoked automatically by the pipeline skills via `runSubagent` — not called directly by users:
+These are custom agents (`.agent.md` files) invoked automatically by the pipeline skills via the `runSubagent` tool — not called directly by users:
 
 | Subagent | Used By | Purpose |
 |----------|---------|---------|
 | speckit-codebase-scanner | speckit-plan | Read-only codebase exploration for design research |
 | speckit-living-docs-loader | All pipeline skills | Compresses living docs into a focused context summary |
+| speckit-e2e-recorder | speckit-e2e | Browser automation for UI project e2e testing via Playwright |
 
-> **Note**: For subagent discovery, consuming projects must register the subagent directories in `chat.agentFilesLocations`. See [VS Code Configuration](#vs-code-configuration).
+> **Note**: The installer links subagents into `.github/agents/` for automatic discovery. No `settings.json` changes are needed.
 
 ## Pipeline Flow
 
 ```
-Complex work (schema/API/unfamiliar)?  specify → plan → implement → retro
-Simple & scoped?                       specify → implement → retro
+Complex work (schema/API/unfamiliar)?  specify → plan → implement → test → e2e → retro
+Simple & scoped?                       specify → implement → test → e2e → retro
 ```
 
 ## Process Diagram
@@ -76,21 +80,25 @@ Simple & scoped?                       specify → implement → retro
 flowchart LR
   S([Specify]) --> P([Plan])
   P --> I([Implement])
-  I --> R([Retro])
+  I --> T([Test])
+  T --> D([E2E])
+  D --> R([Retro])
   R --> S
 
   S -. creates .-> S1[GitHub Issue body<br/>spec]
   P -. appends .-> P1[GitHub Issue body<br/>design notes<br/>tasks]
   P -. updates .-> P2[docs/DATA_MODEL.md<br/>docs/contracts/<br/>docs/RESEARCH.md]
   I -. delivers .-> I1[code<br/>tests<br/>commit<br/>PR]
+  T -. verifies .-> T1[UAT report<br/>pass/fail per scenario]
+  D -. captures .-> D1[e2e tests<br/>video/screenshots/logs]
   R -. refreshes .-> R1[docs/RETRO.md<br/>LIVING DOCS]
   R -. feeds back .-> R2[docs/PARKING_LOT.md<br/>NEXT WORK]
 
   classDef phase fill:#1f2937,color:#ffffff,stroke:#111827,stroke-width:2px;
   classDef artifact fill:#f8fafc,color:#0f172a,stroke:#94a3b8,stroke-width:1px,stroke-dasharray: 6 4;
 
-  class S,P,I,R phase;
-  class S1,P1,P2,I1,R1,R2 artifact;
+  class S,P,I,T,D,R phase;
+  class S1,P1,P2,I1,T1,D1,R1,R2 artifact;
 ```
 
 ## Artifact Model
