@@ -10,6 +10,12 @@ description: >-
    implementation diverges from plan, and triages TODO(speckit) markers into PARKING_LOT.md entries.
 ---
 
+## Next Steps
+
+After the retrospective is complete, suggest:
+- **speckit-specify** — "Pipeline complete. Start a new cycle with the next piece of work."
+- If parking lot items were triaged: "Check `docs/PARKING_LOT.md` for prioritisation — any item can be picked up with `speckit-specify`."
+
 ## User Input
 
 ```text
@@ -99,8 +105,8 @@ This step picks up items discovered during implementation and feeds them back in
 
 Search the codebase for `TODO(speckit):` comments:
 
-```bash
-grep -rn "TODO(speckit):" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.py" --include="*.rs" --include="*.go" .
+```powershell
+Select-String -Path "*.ts","*.tsx","*.js","*.jsx","*.py","*.rs","*.go" -Pattern "TODO\(speckit\):" -Recurse
 ```
 
 Collect each marker with its file path, line number, and content.
@@ -273,8 +279,8 @@ Only update these sections when there are 2+ entries.
 ## Workflow Position
 
 ```
-With plan:    speckit-specify → speckit-plan → speckit-implement (includes commit+PR) → speckit-retro (automated)
-Without plan: speckit-specify → speckit-implement (includes commit+PR) → speckit-retro (automated)
+With plan:    speckit-specify → speckit-plan → speckit-implement → speckit-test → speckit-e2e → speckit-retro (automated)
+Without plan: speckit-specify → speckit-implement → speckit-test → speckit-e2e → speckit-retro (automated)
 ```
 
 The plan phase is complexity-gated, not type-gated. Any work type (feature, bug, or chore) goes
@@ -297,7 +303,7 @@ Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey =
 After the retro is complete, run the install script to pull the latest speckit for the next cycle:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/install.ps1
+powershell -ExecutionPolicy Bypass -File <speckit-root>/install.ps1
 ```
 
 This ensures the next `speckit-specify` invocation starts with the latest skills and agents.

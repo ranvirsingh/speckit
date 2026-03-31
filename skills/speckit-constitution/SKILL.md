@@ -21,6 +21,11 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Pre-Execution Checks
+
+**Check for extension hooks (before constitution)**:
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_constitution`.
+
 ## Outline
 
 You are updating the project constitution at `docs/constitution.md`. This file is a TEMPLATE containing placeholder tokens in square brackets (e.g. `[PROJECT_NAME]`, `[PRINCIPLE_1_NAME]`). Your job is to (a) collect/derive concrete values, (b) fill the template precisely, and (c) propagate any amendments across dependent artifacts.
@@ -87,3 +92,6 @@ If the user supplies partial updates (e.g., only one principle revision), still 
 If critical info missing (e.g., ratification date truly unknown), insert `TODO(<FIELD_NAME>): explanation` and include in the Sync Impact Report under deferred items.
 
 Do not create a new template; always operate on the existing `docs/constitution.md` file.
+
+**Check for extension hooks (after constitution)**:
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_constitution`.

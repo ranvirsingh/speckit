@@ -2,7 +2,7 @@
 name: speckit
 description: >-
   Spec-driven development pipeline. Routes to the appropriate sub-skill based
-  on the current phase: specify → plan (if complex) → implement → retro.
+  on the current phase: specify → plan (if complex) → implement → test → e2e → verify → retro.
   Use this when starting any new feature, bug, or chore — or when unsure which
   pipeline step to enter.
 user-invocable: true
@@ -14,23 +14,30 @@ argument-hint: Describe what you want to build, fix, or change
 Spec-driven development with a lightweight, right-sized process.
 One GitHub Issue per spec — no sub-issues, no intermediate task files.
 
+## Pre-Execution: Path Resolution
+
+`<speckit-root>` is the directory where **this SKILL.md** lives (the speckit pipeline root).
+When speckit is installed as a submodule, this is typically `.github/skills/speckit`.
+All script paths below are relative to `<speckit-root>`.
+
 ## Pre-Execution: Ensure Installation
 
 Before routing, run the install script to pull the latest speckit and ensure all skills and agents are linked:
 
 ```bash
-powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/install.ps1
+powershell -ExecutionPolicy Bypass -File <speckit-root>/install.ps1
 ```
 
-Replace `<speckit-skill-path>` with the resolved path to the speckit skill directory (where this SKILL.md lives).
 If the script reports all links as `[skip] Already linked`, proceed immediately. Do not wait for user confirmation.
+
+> **Note**: Only the router (this skill) and `speckit-specify` run the installer. Other sub-skills skip bootstrap — they are always invoked via the router or after specify has already bootstrapped.
 
 ## Pre-Execution: Constitution Gate
 
 After installation, check whether a project constitution exists:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/check-constitution.ps1 -WorkspaceRoot "<workspace-root>"
+powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/check-constitution.ps1 -WorkspaceRoot "<workspace-root>"
 ```
 
 - If `exists` is `false`: **Route to `speckit-constitution` immediately** — the project needs governance principles before any pipeline work can begin. Tell the user: "No project constitution found. Let's establish one before proceeding."
@@ -64,7 +71,7 @@ Simple & scoped?                       specify → implement → test → e2e �
 | Subagent | Used By | Purpose |
 |----------|---------|---------|
 | `speckit-codebase-scanner` | `speckit-plan` | Read-only codebase exploration — returns distilled findings for design research |
-| `speckit-living-docs-loader` | All pipeline skills | Loads and compresses living docs into a focused context summary |
+| `speckit-living-docs-loader` | Most pipeline skills | Loads and compresses living docs into a focused context summary |
 | `speckit-e2e-recorder` | `speckit-e2e` | Browser automation for UI project e2e testing via Playwright |
 | `speckit-pipeline-checker` | `speckit-verify` | Checks PR status checks (CI green/red/pending) |
 

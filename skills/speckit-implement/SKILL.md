@@ -78,7 +78,7 @@ For bugs and chores, the issue body contains the fix description, affected files
 3. Mark all verification items as complete
 4. **Constitution compliance check** before committing:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
    ```
    For each MUST and NON-NEGOTIABLE rule, verify the implementation complies.
    If any NON-NEGOTIABLE rule is violated, fix the code before proceeding.
@@ -161,7 +161,7 @@ Skip all steps below — they are for the Full Implementation Flow only.
 
 10. **Constitution compliance check** before committing:
     ```powershell
-    powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+    powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
     ```
     For each MUST and NON-NEGOTIABLE rule, verify the implementation complies (e.g., tests exist if required, naming conventions followed, documentation updated).
     If any NON-NEGOTIABLE rule is violated, fix the code before proceeding to commit.
@@ -176,12 +176,17 @@ Skip all steps below — they are for the Full Implementation Flow only.
       - **Footer**: `Closes #{issue_number}`
     - **Validate the commit message (deterministic — use script)** before committing:
       ```powershell
-      & "<speckit-skill-path>/skills/speckit-implement/scripts/validate-commit-msg.ps1" -Message "{full commit message}"
+      & "<speckit-root>/skills/speckit-implement/scripts/validate-commit-msg.ps1" -Message "{full commit message}"
       ```
-      Where `<speckit-skill-path>` is resolved from the skill's installed location.
+      Where `<speckit-root>` is the speckit pipeline root directory (where the main SKILL.md lives).
       If output is not `VALID`, fix the message and re-validate. Do NOT commit until validated.
     - Commit: `git commit -m "{type}({scope}): {subject}" -m "{body}" -m "Closes #{issue_number}"`
     - Push: `git push origin {branch_name}`
+      If the push fails due to merge conflicts:
+      1. Pull latest: `git pull origin main --rebase`
+      2. Resolve conflicts (prefer the implementation changes for files in scope; keep upstream changes for unrelated files)
+      3. Continue rebase: `git rebase --continue`
+      4. Push again: `git push origin {branch_name} --force-with-lease`
     - Create PR via GitHub CLI:
       ```bash
       gh pr create --repo {owner}/{repo} --title "{type}: {title}" --body "{PR description}" --base main --head {branch_name}

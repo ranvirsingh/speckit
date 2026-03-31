@@ -37,7 +37,9 @@ if ($exists) {
     )
     $pattern = ($templatePlaceholders -join '|')
     $placeholderCount = ([regex]::Matches($content, $pattern)).Count
-    $valid = $placeholderCount -eq 0
+    # Check for at least one principle section (heading like "## Principle" or "### Principle")
+    $principleCount = ([regex]::Matches($content, '(?mi)^#{2,3}\s+Principle')).Count
+    $valid = $placeholderCount -eq 0 -and $principleCount -gt 0
 }
 
 $result = @{

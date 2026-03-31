@@ -2,7 +2,6 @@
 name: speckit-living-docs-loader
 description: Loads and compresses living documents into a focused context summary for speckit skills.
 user-invocable: false
-tools: ['read', 'search']
 ---
 
 ## Purpose

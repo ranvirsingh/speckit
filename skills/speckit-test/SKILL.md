@@ -103,7 +103,7 @@ For each testable item:
 Extract constitution rules and verify the implementation as a whole:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
 ```
 
 Check each NON-NEGOTIABLE and MUST rule against the implementation. Record any violations alongside the UAT results.
@@ -161,7 +161,7 @@ Produce a structured report in this format:
 
 ### Step 6 — Verdict and Next Steps
 
-- **All PASS**: Report success and suggest `speckit-retro`
+- **All PASS**: Report success and suggest `speckit-e2e #{issue-number}` to generate e2e test artifacts. If e2e is not applicable, suggest `speckit-retro #{issue-number}` instead.
 - **Any FAIL on NON-NEGOTIABLE or acceptance scenarios**: Block — suggest `speckit-implement #{issue-number}` to fix, then re-test
 - **Only SHOULD warnings or partial edge cases**: Warn but allow proceeding to retro — note as TODOs for triage
 

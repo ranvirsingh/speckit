@@ -15,6 +15,9 @@ description: >-
 After e2e test artifacts are generated and attached to the PR, suggest:
 - **speckit-retro** — "E2E tests captured. Run the retrospective to update living docs and triage TODOs."
 
+If e2e tests fail, suggest:
+- **speckit-implement #{issue-number}** — "Fix the failing e2e tests, then re-run `speckit-e2e #{issue-number}`."
+
 ## User Input
 
 ```text

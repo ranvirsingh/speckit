@@ -2,7 +2,6 @@
 name: speckit-codebase-scanner
 description: Read-only codebase exploration subagent for speckit plan phase research.
 user-invocable: false
-tools: ['read', 'search']
 ---
 
 ## Purpose

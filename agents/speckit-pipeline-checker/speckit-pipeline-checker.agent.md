@@ -5,7 +5,6 @@ description: >-
   Reports whether the pipeline is green, red, or pending. Called by speckit-verify
   to confirm CI passes before the PR is ready to merge.
 user-invocable: false
-tools: ['read', 'runCommands']
 ---
 
 # Speckit Pipeline Checker

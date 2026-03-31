@@ -9,9 +9,11 @@ A set of [Agent Skills](https://agentskills.io/) that implement a lightweight, r
 1. **Specify** — Write an issue-backed spec, create a GitHub Issue
 2. **Plan** — Design architecture, append the plan beneath the issue-backed spec, and update `docs/` living docs when complex
 3. **Implement** — Code, test, commit, push, create PR
-4. **Retro** — Update `docs/` living docs, triage TODOs
+4. **Test** — User acceptance testing against the spec
+5. **E2E** — Generate end-to-end test artifacts proving the implementation works
+6. **Retro** — Update `docs/` living docs, triage TODOs
 
-Plus a **Constitution** skill for setting up project governance.
+Plus **Constitution** for project governance and **Verify** for compliance checks.
 
 ## Installation
 
@@ -62,7 +64,7 @@ These are custom agents (`.agent.md` files) invoked automatically by the pipelin
 | Subagent | Used By | Purpose |
 |----------|---------|---------|
 | speckit-codebase-scanner | speckit-plan | Read-only codebase exploration for design research |
-| speckit-living-docs-loader | All pipeline skills | Compresses living docs into a focused context summary |
+| speckit-living-docs-loader | Most pipeline skills | Compresses living docs into a focused context summary |
 | speckit-e2e-recorder | speckit-e2e | Browser automation for UI project e2e testing via Playwright |
 | speckit-pipeline-checker | speckit-verify | Checks PR status checks (CI green/red/pending) |
 
@@ -127,6 +129,10 @@ Rules:
   - `docs/DATA_MODEL.md`
   - `docs/contracts/`
   - `docs/RETRO.md`
+
+## Extension Hooks
+
+Speckit supports lifecycle hooks via `.specify/extensions.yml` in the project root. Each skill checks for hooks at `before_` and `after_` lifecycle points (e.g., `hooks.before_specify`, `hooks.after_implement`). See [references/HOOKS.md](references/HOOKS.md) for the hook execution procedure.
 
 ## Requirements
 

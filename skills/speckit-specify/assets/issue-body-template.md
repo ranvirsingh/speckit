@@ -122,4 +122,4 @@ Living documents belong in `docs/` and are updated later by speckit-plan / speck
 
 - **SC-001**: [Concrete measurable metric for this specific feature]
 - **SC-002**: [Concrete measurable metric for this specific feature]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+- **SC-003**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]

@@ -30,7 +30,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 Run the install script to ensure speckit is up-to-date and all skills/agents are linked:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/install.ps1
+powershell -ExecutionPolicy Bypass -File <speckit-root>/install.ps1
 ```
 
 ### Load Living Context
@@ -125,13 +125,13 @@ Given that feature description, do this:
    - Get the Git remote: `git config --get remote.origin.url` → extract `owner/repo`
    - **Derive the next spec number (deterministic — use script)**:
      ```powershell
-     $specNumber = & "<speckit-skill-path>/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
+     $specNumber = & "<speckit-root>/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
      ```
-     Where `<speckit-skill-path>` is resolved from the skill's installed location.
+     Where `<speckit-root>` is the speckit pipeline root directory (where the main SKILL.md lives).
      Use the output directly — do NOT manually scan branches or do arithmetic.
    - **Validate the branch name (deterministic — use script)**:
      ```powershell
-     & "<speckit-skill-path>/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
+     & "<speckit-root>/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
      ```
      If output is not `VALID`, fix the name and re-validate before proceeding.
    - Create branch: `git checkout -b {specNumber}-{short-name}`
@@ -151,7 +151,7 @@ Given that feature description, do this:
 
    Then run a **constitution compliance check** on the lightweight spec:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
    ```
    For each MUST and NON-NEGOTIABLE rule, check whether the spec content satisfies it.
    If any NON-NEGOTIABLE rule is violated, fix the issue body before proceeding.
@@ -160,7 +160,7 @@ Given that feature description, do this:
    - If the bug/chore involves schema changes, new/changed APIs, or an unfamiliar domain → suggest **speckit-plan** `#{issue-number}`
    - Otherwise → suggest **speckit-implement** `#{issue-number}`
 
-   Skip steps 1-6 below.
+   Skip all remaining steps (1-9) below.
 
 1. **Generate a concise short name** (2-4 words, lowercase kebab-case) for the branch.
 
@@ -168,13 +168,13 @@ Given that feature description, do this:
    - Get the Git remote: `git config --get remote.origin.url` → extract `owner/repo`
    - **Derive the next spec number (deterministic — use script)**:
      ```powershell
-     $specNumber = & "<speckit-skill-path>/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
+     $specNumber = & "<speckit-root>/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
      ```
-     Where `<speckit-skill-path>` is resolved from the skill's installed location.
+     Where `<speckit-root>` is the speckit pipeline root directory (where the main SKILL.md lives).
      Use the output directly — do NOT manually scan branches or do arithmetic.
    - **Validate the branch name (deterministic — use script)**:
      ```powershell
-     & "<speckit-skill-path>/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
+     & "<speckit-root>/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
      ```
      If output is not `VALID`, fix the name and re-validate before proceeding.
    - Create branch: `git checkout -b {specNumber}-{short-name}`
@@ -213,7 +213,7 @@ Given that feature description, do this:
 
 7. **Constitution compliance check**: Extract constitution rules and verify the spec complies:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
    ```
    For each MUST and NON-NEGOTIABLE rule, check whether the spec content satisfies it.
    If any NON-NEGOTIABLE rule is violated, fix the spec before proceeding.

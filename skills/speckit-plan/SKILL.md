@@ -180,7 +180,7 @@ Before publishing to the GitHub Issue, run these checks. If any fail, fix them b
 3. **Ambiguity check**: Scan the task descriptions for vague terms (`various`, `etc.`, `as needed`, `TBD`, `some`). Rewrite to be specific.
 4. **Constitution compliance check**: Extract constitution rules and verify the plan complies:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
    ```
    For each MUST and NON-NEGOTIABLE rule, check whether the design decisions and task list satisfy it. If any NON-NEGOTIABLE rule is violated, fix the plan before proceeding. Report SHOULD violations as warnings.
 5. **Dependency order**: Tasks within each phase should be sequenced so no task depends on a later task. Flag circular or misordered dependencies.

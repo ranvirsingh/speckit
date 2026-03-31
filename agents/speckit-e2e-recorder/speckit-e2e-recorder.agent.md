@@ -5,7 +5,6 @@ description: >-
   scenarios. Invoked by the speckit-e2e skill for UI projects. Navigates through acceptance
   scenarios, captures screenshots, and records video. Returns file paths of captured assets.
 user-invocable: false
-tools: ['read', 'search', 'editFiles', 'runCommands', 'browser']
 ---
 
 > **Note**: The `browser` tool requires a Playwright MCP server or equivalent browser automation extension. If unavailable, fall back to `runCommands` for Playwright CLI execution only.

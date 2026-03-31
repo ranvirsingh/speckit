@@ -8,6 +8,13 @@ description: >-
   when invoked automatically by other speckit pipeline skills as a quality gate.
 ---
 
+## Next Steps
+
+After verification completes:
+- **PASS (constitution + pipeline green)**: "Verification passed. The PR is ready for merge."
+- **Constitution PASS, pipeline issues**: "Constitution compliant, but CI has issues. Check the failing checks."
+- **FAIL**: "Fix the violations listed above, then re-run `speckit-verify`."
+
 ## User Input
 
 ```text
@@ -16,6 +23,11 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 The input should indicate what to verify: a spec (GitHub Issue), plan, or implementation.
+
+## Pre-Execution Checks
+
+**Check for extension hooks (before verify)**:
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_verify`.
 
 ## Goal
 
@@ -30,7 +42,7 @@ pass/fail result.
 Run the extraction script to get structured rules:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File <speckit-skill-path>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
 ```
 
 Parse the JSON output. If `exists` is `false`, report: "No constitution found. Run speckit-constitution first." and stop.
@@ -121,6 +133,9 @@ Include the pipeline status in the final report.
 - If **PASS** (constitution + pipeline green): Report the compliance summary. Suggest the PR is ready for merge.
 - If **constitution PASS but pipeline FAIL/PENDING**: Report constitution compliance passes but pipeline has issues. List failing/pending checks.
 - If **constitution FAIL**: List all violations with suggested fixes. Do not allow proceeding until violations are resolved. Ask the user to fix the violations and re-run verification.
+
+**Check for extension hooks (after verify)**:
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_verify`.
 
 ## Gotchas
 
