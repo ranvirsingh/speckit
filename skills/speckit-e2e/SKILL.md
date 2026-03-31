@@ -223,7 +223,23 @@ Extract the resource changes, additions, and deletions into a readable summary.
    gh pr view --json number,url --jq '.number'
    ```
 
-2. Format the e2e section for the PR body:
+2. **Upload screenshot images to GitHub** so they render in the PR description.
+   For each screenshot file, upload it as a GitHub issue/PR image asset:
+   ```bash
+   # Upload each screenshot and capture the returned URL
+   # GitHub does not have a dedicated image upload API via gh CLI,
+   # so use the raw GitHub user-content trick:
+   # Commit screenshots to the branch first, then reference them via raw URL.
+   git add e2e/screenshots/
+   git commit -m "test(e2e): add screenshots for #{issue-number}"
+   git push
+   ```
+   Then build image URLs using the raw content path:
+   ```
+   https://raw.githubusercontent.com/{owner}/{repo}/{branch}/e2e/screenshots/e2e-{issue-number}/sc1.png
+   ```
+
+3. Format the e2e section for the PR body:
 
    **For UI projects** (with video):
    ```markdown
@@ -235,7 +251,7 @@ Extract the resource changes, additions, and deletions into a readable summary.
 
    | Scenario | Screenshot |
    |----------|----------|
-   | US1-SC1: {description} | ![screenshot](e2e/screenshots/e2e-{issue-number}/sc1.png) |
+   | US1-SC1: {description} | ![screenshot](https://raw.githubusercontent.com/{owner}/{repo}/{branch}/e2e/screenshots/e2e-{issue-number}/sc1.png) |
 
    Video recording available in `test-results/` after running:
    ```
@@ -261,7 +277,7 @@ Extract the resource changes, additions, and deletions into a readable summary.
    </details>
    ```
 
-3. Append to the PR body:
+4. Append to the PR body:
    ```bash
    # Read current PR body
    gh pr view {pr-number} --json body --jq '.body' > /tmp/pr-body.md
