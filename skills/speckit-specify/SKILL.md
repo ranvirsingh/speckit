@@ -12,6 +12,7 @@ description: >-
 ## Next Steps
 
 After the spec is written, the next step depends on the **complexity signal**:
+- **Needs research** (technology unknowns, library selection, unfamiliar APIs): Suggest **speckit-research** — "Research options before planning or implementing."
 - **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Suggest **speckit-plan** — "Create a technical plan with tasks for this spec."
 - **Simple & scoped** (no schema, API, or domain unknowns): Suggest **speckit-implement** — "Implement this directly." (Skips plan.)
 

@@ -1,0 +1,160 @@
+---
+name: speckit-research
+user-invocable: true
+description: >-
+  Research assistant that investigates both the internal codebase and external resources
+  (libraries, APIs, design patterns, best practices) to inform architectural decisions.
+  Use between specify and plan, or standalone when you need technology research.
+  Writes findings to docs/research.md. Triggers on requests like "research options for",
+  "investigate approaches", "compare libraries", "what's the best way to", or "explore before planning".
+---
+
+## Next Steps
+
+After research is complete, suggest:
+- **speckit-plan #{issue-number}** — "Research complete. Plan the implementation using these findings."
+
+## User Input
+
+```text
+$ARGUMENTS
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+The input should include a GitHub Issue number and/or a description of what to research.
+
+## Pre-Execution Checks
+
+### Load Living Context
+
+Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
+- **Docs to load**: `docs/constitution.md`, `docs/research.md`, `docs/data-model.md`
+- **Work context**: The issue title and research intent
+
+Use the returned summary for constitution constraints and prior research. Do not read these files directly.
+
+**Check for extension hooks (before research)**:
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_research`.
+
+## GitHub Issue Gate (RECOMMENDED)
+
+A GitHub issue is recommended but not mandatory. Research can be performed standalone.
+
+1. Parse `$ARGUMENTS` for a GitHub issue reference (number or `#number`).
+2. If an issue number is found, read the issue to extract the spec and acceptance criteria.
+3. If no issue number is found, use the user's free-text description as the research scope.
+
+## Outline
+
+### Step 1 — Define Research Questions
+
+Based on the spec (or user description), identify the concrete unknowns:
+
+1. **Technology choices** — Which libraries/frameworks to use?
+2. **Architecture patterns** — What design pattern fits this problem?
+3. **Integration points** — How to connect with existing systems/APIs?
+4. **Data model impact** — What schema changes are needed?
+5. **Performance considerations** — Will this approach scale?
+6. **Security implications** — Any auth/authz/data-handling concerns?
+
+Present the research questions to the user for confirmation before proceeding. Add or remove questions based on their feedback.
+
+### Step 2 — Internal Codebase Research
+
+Use the `runSubagent` tool with `agentName: "speckit-codebase-scanner"` and provide:
+- **Spec body**: The feature spec or research description
+- **Research questions**: The internal-focused subset of questions (existing patterns, current architecture, tech debt in the affected area)
+- **Codebase root**: The workspace root path
+
+The codebase scanner will return:
+- Existing patterns and conventions
+- Relevant file locations
+- Gaps that need to be filled
+- Cross-cutting concerns
+
+### Step 3 — External Web Research
+
+Use the `runSubagent` tool with `agentName: "speckit-web-researcher"` and provide:
+- **spec**: The feature spec
+- **questions**: The external-focused subset of questions (library selection, best practices, API documentation)
+- **techStack**: The project's detected tech stack (from Step 2 findings)
+- **constraints**: Any constitution constraints on technology choices
+
+The web researcher will return:
+- Library/package comparisons with evidence
+- Design pattern recommendations
+- API integration guidance
+- Risk assessments
+
+### Step 4 — Synthesise Findings
+
+Combine internal and external research into a cohesive analysis:
+
+1. **Cross-reference** internal patterns with external recommendations
+2. **Identify conflicts** between existing codebase conventions and recommended approaches
+3. **Flag trade-offs** that require human decision-making
+4. **Prioritise options** based on fit with existing architecture and constitution
+
+### Step 5 — Write Research Document
+
+If `docs/research.md` does not exist, initialise it from this skill's `assets/research-template.md`.
+
+Append a new research entry to `docs/research.md`:
+
+```markdown
+### Research: #{issue-number} — {title}
+
+**Date**: {today}
+**Scope**: {brief description of what was researched}
+**Status**: Complete
+
+#### Research Questions
+
+1. {question 1}
+2. {question 2}
+
+#### Internal Findings
+
+{Summary of codebase scanner results — existing patterns, conventions, gaps}
+
+#### External Findings
+
+{Summary of web researcher results — library comparisons, best practices, recommendations}
+
+#### Synthesis
+
+| Decision Area | Options | Recommendation | Confidence |
+|--------------|---------|---------------|-----------|
+| {area} | {A, B, C} | {recommended} | High/Medium/Low |
+
+#### Open Questions
+
+- {Questions that couldn't be answered by research alone — need human input or prototyping}
+
+#### Risk Register
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|-----------|
+| {risk} | Low/Med/High | Low/Med/High | {strategy} |
+
+---
+```
+
+### Step 6 — Present Summary
+
+Present the key findings and recommendations to the user. Highlight:
+- The top 1-3 decisions that need to be made
+- Any high-confidence recommendations that can proceed immediately
+- Open questions that need human input
+- Risks that should be accepted or mitigated during planning
+
+**Check for extension hooks (after research)**:
+Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_research`.
+
+## Gotchas
+
+- **Research is not planning** — don't create task lists, ADRs, or implementation plans. That's speckit-plan's job.
+- **Present options, don't decide** — for technology choices with trade-offs, present the evidence and let the user/team decide.
+- **Existing patterns matter** — if the codebase already uses a specific library/pattern, prefer extending that over introducing something new (unless there's a compelling reason).
+- **Constitution constraints are non-negotiable** — if the constitution mandates specific technology choices, those override research recommendations.
+- **Mark confidence levels** — distinguish between well-evidenced recommendations (High) and educated guesses (Low).

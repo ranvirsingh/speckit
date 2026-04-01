@@ -73,6 +73,7 @@ if ((Test-Path $gitModulesPath) -and -not $Uninstall) {
 # Sub-skills: link into .github/skills/
 $Skills = @(
     'speckit-specify'
+    'speckit-research'
     'speckit-plan'
     'speckit-implement'
     'speckit-test'
@@ -88,6 +89,7 @@ $Agents = @(
     'speckit-living-docs-loader'
     'speckit-e2e-recorder'
     'speckit-pipeline-checker'
+    'speckit-web-researcher'
 )
 
 # --- Helpers ------------------------------------------------------------------
