@@ -89,13 +89,15 @@ For UI projects, use the `runSubagent` tool with `agentName: "speckit-e2e-record
 - **scenarios**: The extracted acceptance scenarios (Given/When/Then)
 - **baseUrl**: The application URL (detect from dev server config or ask the user)
 - **screenshotDir**: `e2e/screenshots/e2e-{issue-number}/`
+- **gifDir**: `e2e/gifs/e2e-{issue-number}/`
 
 The subagent will:
 1. Ensure Playwright is installed (install if missing)
 2. Create `e2e/e2e-{issue-number}.spec.ts` with one test per scenario
 3. Configure video recording
 4. Run the tests and capture screenshots
-5. Return test results, screenshot paths, and video location
+5. Convert recorded videos to low-size GIFs (using ffmpeg)
+6. Return test results, screenshot paths, GIF paths, and video location
 
 If the subagent reports the application server is not running, start it first using the detected dev command from `package.json`.
 
@@ -235,21 +237,21 @@ Before attaching results to the PR, check the outcome of Step 3:
    gh pr view --json number,url --jq '.number'
    ```
 
-2. **Upload screenshot images to GitHub** so they render in the PR description.
-   Commit and push screenshots to the branch first so they exist on GitHub:
+2. **Upload GIFs and screenshots to GitHub** so they render in the PR description.
+   Commit and push the assets to the branch first so they exist on GitHub:
    ```bash
-   git add e2e/screenshots/
-   git commit -m "test(e2e): add screenshots for #{issue-number}"
+   git add e2e/screenshots/ e2e/gifs/
+   git commit -m "test(e2e): add e2e assets for #{issue-number}"
    git push
    ```
    Then build image URLs using the blob path with `?raw=true` (works for authenticated viewers on both public and private repos):
    ```
-   https://github.com/{owner}/{repo}/blob/{branch}/e2e/screenshots/e2e-{issue-number}/sc1.png?raw=true
+   https://github.com/{owner}/{repo}/blob/{branch}/e2e/gifs/e2e-{issue-number}/sc1.gif?raw=true
    ```
 
 3. Format the e2e section for the PR body:
 
-   **For UI projects** (with video):
+   **For UI projects** (with GIF recordings):
    ```markdown
    ## E2E Tests
 
@@ -257,11 +259,11 @@ Before attaching results to the PR, check the outcome of Step 3:
 
    Playwright test: `e2e/e2e-{issue-number}.spec.ts`
 
-   | Scenario | Screenshot |
-   |----------|----------|
-   | US1-SC1: {description} | ![screenshot](https://github.com/{owner}/{repo}/blob/{branch}/e2e/screenshots/e2e-{issue-number}/sc1.png?raw=true) |
+   | Scenario | Recording |
+   |----------|-----------|
+   | US1-SC1: {description} | ![recording](https://github.com/{owner}/{repo}/blob/{branch}/e2e/gifs/e2e-{issue-number}/sc1.gif?raw=true) |
 
-   Video recording available in `test-results/` after running:
+   Full video recordings available in `test-results/` after running:
    ```
    npx playwright test e2e/e2e-{issue-number}.spec.ts
    ```
@@ -299,12 +301,12 @@ Before attaching results to the PR, check the outcome of Step 3:
 Stage and commit only the e2e files:
 
 ```bash
-git add e2e/e2e-{issue-number}*
+git add e2e/e2e-{issue-number}* e2e/gifs/
 git commit -m "test(e2e): add e2e test artifacts for #{issue-number}"
 git push
 ```
 
-Do not commit video files (`.webm`, `.mp4`) — they belong in test-results and are regenerated on demand. Commit the test files, scripts, HTTP files, and text outputs.
+Do not commit raw video files (`.webm`, `.mp4`) — they belong in test-results and are regenerated on demand. GIF files are small enough to commit and render inline on the PR. Commit the test files, GIFs, scripts, HTTP files, and text outputs.
 
 **Check for extension hooks (after e2e)**:
 Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_e2e`.
@@ -312,7 +314,7 @@ Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey =
 ## Gotchas
 
 - **Do not overwrite existing Playwright config** — only add video/trace settings if missing.
-- **Do not commit large binary files** — videos stay in `test-results/`, only test scripts and text outputs get committed.
+- **Do not commit large binary files** — raw videos stay in `test-results/`, only GIFs, test scripts, and text outputs get committed. GIFs are capped at ~5 MB via ffmpeg settings.
 - **Server startup for API demos** — always wait for the server to be ready before sending requests. Check for a health endpoint or port availability.
 - **E2E tests are NOT unit tests** — they verify the feature working end-to-end from the user's perspective. Keep them high-level and scenario-driven.
-- **Screenshots over videos for PR** — GitHub PR descriptions can render images inline but not videos. Prefer screenshots for the PR body; mention how to run the video locally.
+- **GIFs over screenshots for PR** — GitHub PR descriptions render GIFs inline, providing animated proof-of-work that is more compelling than static screenshots. Use the ffmpeg two-pass palette approach for small file sizes.

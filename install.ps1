@@ -112,13 +112,14 @@ function New-Link {
         }
     }
 
+    $isDir = (Test-Path $TargetPath -PathType Container)
     $isWin = ($env:OS -eq 'Windows_NT')
-    if ($isWin) {
+    if ($isWin -and $isDir) {
         # Directory junction -- no admin rights needed on Windows
         New-Item -ItemType Junction -Path $LinkPath -Target $TargetPath | Out-Null
     }
     else {
-        # Symlink on macOS/Linux
+        # Symlink for files (all OS) and directories (macOS/Linux)
         New-Item -ItemType SymbolicLink -Path $LinkPath -Target $TargetPath | Out-Null
     }
 
@@ -172,7 +173,7 @@ if ($Uninstall) {
     Write-Host ''
     Write-Host "Agents:" -ForegroundColor Cyan
     foreach ($agent in $Agents) {
-        Remove-Link (Join-Path $AgentsDir $agent)
+        Remove-Link (Join-Path $AgentsDir "$agent.agent.md")
     }
 
     # Remove manifest
@@ -217,8 +218,9 @@ foreach ($skill in $Skills) {
 Write-Host ''
 Write-Host "Agents (.github/agents/):" -ForegroundColor Cyan
 foreach ($agent in $Agents) {
-    $target = Join-Path (Join-Path $SpeckitRoot 'agents') $agent
-    $link = Join-Path $AgentsDir $agent
+    $agentFile = "$agent.agent.md"
+    $target = Join-Path (Join-Path $SpeckitRoot 'agents') $agentFile
+    $link = Join-Path $AgentsDir $agentFile
     if (-not (Test-Path $target)) {
         Write-Warning "  [missing] Source not found: $target"
         continue
@@ -231,7 +233,7 @@ $gitignorePath = Join-Path $WorkspaceRoot '.gitignore'
 $linksToIgnore = @()
 if ($SpeckitIsExternal) { $linksToIgnore += ".github/skills/speckit" }
 foreach ($skill in $Skills) { $linksToIgnore += ".github/skills/$skill" }
-foreach ($agent in $Agents) { $linksToIgnore += ".github/agents/$agent" }
+foreach ($agent in $Agents) { $linksToIgnore += ".github/agents/$agent.agent.md" }
 
 $existingIgnore = if (Test-Path $gitignorePath) { Get-Content $gitignorePath -Raw } else { '' }
 $newEntries = @()
@@ -277,12 +279,13 @@ foreach ($skill in $Skills) {
 
 $linkedAgents = @()
 foreach ($agent in $Agents) {
-    $linkPath = Join-Path $AgentsDir $agent
+    $agentFile = "$agent.agent.md"
+    $linkPath = Join-Path $AgentsDir $agentFile
     if (Test-Path $linkPath) {
         $linkedAgents += @{
             name   = $agent
-            link   = ".github/agents/$agent"
-            target = ".github/skills/speckit/agents/$agent"
+            link   = ".github/agents/$agentFile"
+            target = ".github/skills/speckit/agents/$agentFile"
         }
     }
 }

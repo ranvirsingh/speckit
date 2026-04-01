@@ -3,7 +3,8 @@ name: speckit-e2e-recorder
 description: >-
   Non-user-invocable subagent that creates and runs end-to-end Playwright tests for acceptance
   scenarios. Invoked by the speckit-e2e skill for UI projects. Navigates through acceptance
-  scenarios, captures screenshots, and records video. Returns file paths of captured assets.
+  scenarios, records video, converts recordings to low-size GIFs, and captures screenshots.
+  Returns file paths of captured assets including GIFs for PR embedding.
 user-invocable: false
 ---
 
@@ -11,7 +12,7 @@ user-invocable: false
 
 # Speckit E2E Recorder
 
-You are a browser automation subagent. Your job is to create and run Playwright end-to-end tests that verify acceptance scenarios and capture evidence (screenshots/video).
+You are a browser automation subagent. Your job is to create and run Playwright end-to-end tests that verify acceptance scenarios and capture evidence (video recordings converted to GIFs, plus screenshots).
 
 ## Input
 
@@ -21,6 +22,7 @@ You will receive:
 - **scenarios**: An array of acceptance scenarios with Given/When/Then structure
 - **baseUrl**: The application URL to test against
 - **screenshotDir**: Where to save screenshots
+- **gifDir**: Where to save converted GIFs (e.g., `e2e/gifs/e2e-{issueNumber}/`)
 
 ## Execution
 
@@ -66,12 +68,39 @@ use: {
 npx playwright test e2e/e2e-{issueNumber}.spec.ts --project=chromium
 ```
 
-### 5. Return Results
+### 5. Convert Videos to GIFs
+
+After tests complete, convert each `.webm` video in `test-results/` to an optimised low-size GIF.
+
+1. **Check ffmpeg is available**:
+   ```bash
+   ffmpeg -version 2>&1
+   ```
+   If not available, attempt install via the OS package manager or report it and skip GIF conversion (fall back to screenshots only).
+
+2. **Two-pass palette approach** (produces small, high-quality GIFs):
+   ```bash
+   # For each scenario video:
+   ffmpeg -i test-results/{test-folder}/video.webm -vf "fps=8,scale=640:-1:flags=lanczos,palettegen=stats_mode=diff" -y /tmp/palette.png
+   ffmpeg -i test-results/{test-folder}/video.webm -i /tmp/palette.png -lavfi "fps=8,scale=640:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=bayer:bayer_scale=5" -y {gifDir}/sc{n}.gif
+   ```
+
+   Key settings for small file size:
+   - **fps=8**: 8 frames per second (enough for UI demos, keeps size down)
+   - **scale=640:-1**: Scale width to 640px, maintain aspect ratio
+   - **paletteuse with dither**: Optimised colour palette per video
+
+3. **Size check**: If any GIF exceeds 5 MB, re-encode with `fps=5` and `scale=480:-1`.
+
+4. Place output GIFs in the `gifDir` path, named `sc1.gif`, `sc2.gif`, etc. matching the scenario order.
+
+### 6. Return Results
 
 Return a structured summary:
 - **testFile**: Path to the created test file
 - **screenshots**: Array of screenshot file paths
-- **videoDir**: Path to test-results directory containing video
+- **gifs**: Array of GIF file paths (one per scenario)
+- **videoDir**: Path to test-results directory containing raw video
 - **passed**: Boolean indicating if tests passed
 - **scenarioResults**: Per-scenario pass/fail status
 

@@ -107,3 +107,93 @@ Describe 'validate-branch-name.ps1' {
         $result | Should Be 'VALID'
     }
 }
+
+Describe 'speckit-research skill' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+    }
+
+    It 'SKILL.md exists' {
+        $path = Join-Path $speckitRoot 'skills\speckit-research\SKILL.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'SKILL.md has user-invocable frontmatter' {
+        $path = Join-Path $speckitRoot 'skills\speckit-research\SKILL.md'
+        $content = Get-Content $path -Raw
+        $content | Should Match 'user-invocable:\s*true'
+    }
+
+    It 'SKILL.md references both subagents' {
+        $path = Join-Path $speckitRoot 'skills\speckit-research\SKILL.md'
+        $content = Get-Content $path -Raw
+        $content | Should Match 'speckit-codebase-scanner'
+        $content | Should Match 'speckit-web-researcher'
+    }
+
+    It 'research-template.md exists' {
+        $path = Join-Path $speckitRoot 'skills\speckit-research\assets\research-template.md'
+        Test-Path $path | Should Be $true
+    }
+}
+
+Describe 'speckit-web-researcher agent' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+    }
+
+    It 'agent.md exists' {
+        $path = Join-Path $speckitRoot 'agents\speckit-web-researcher.agent.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'agent.md has user-invocable false in frontmatter' {
+        $path = Join-Path $speckitRoot 'agents\speckit-web-researcher.agent.md'
+        $content = Get-Content $path -Raw
+        $content | Should Match 'user-invocable:\s*false'
+    }
+
+    It 'agent.md has structured evaluation criteria' {
+        $path = Join-Path $speckitRoot 'agents\speckit-web-researcher.agent.md'
+        $content = Get-Content $path -Raw
+        $content | Should Match 'Maintenance'
+        $content | Should Match 'Popularity'
+        $content | Should Match 'License'
+    }
+}
+
+Describe 'install.ps1 registration' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+        $installContent = Get-Content (Join-Path $speckitRoot 'install.ps1') -Raw
+    }
+
+    It 'registers speckit-research in Skills array' {
+        $installContent | Should Match "'speckit-research'"
+    }
+
+    It 'registers speckit-web-researcher in Agents array' {
+        $installContent | Should Match "'speckit-web-researcher'"
+    }
+}
+
+Describe 'pipeline wiring for research' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+    }
+
+    It 'root SKILL.md includes research in routing logic' {
+        $content = Get-Content (Join-Path $speckitRoot 'SKILL.md') -Raw
+        $content | Should Match 'speckit-research'
+    }
+
+    It 'specify Next Steps includes research option' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-specify\SKILL.md') -Raw
+        $content | Should Match 'speckit-research'
+    }
+
+    It 'plan loads research.md via living-docs-loader' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-plan\SKILL.md') -Raw
+        $content | Should Match 'docs/research\.md'
+    }
+}
