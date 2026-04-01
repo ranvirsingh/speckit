@@ -6,7 +6,7 @@ description: >-
   scenarios, records video, converts recordings to low-size GIFs, and captures screenshots.
   Returns file paths of captured assets including GIFs for PR embedding.
 user-invocable: false
-model: ['Claude Sonnet 4.6 (copilot)', 'GPT-5.4 (copilot)', 'Gemini 3 Flash (Preview) (copilot)']
+model: ['GPT-5.4 (copilot)', 'Gemini 3 Flash (Preview) (copilot)', 'Claude Sonnet 4.6 (copilot)']
 ---
 
 > **Note**: The `browser` tool requires a Playwright MCP server or equivalent browser automation extension. If unavailable, fall back to `runCommands` for Playwright CLI execution only.
