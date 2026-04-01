@@ -2,6 +2,7 @@
 name: speckit-codebase-scanner
 description: Read-only codebase exploration subagent for speckit plan phase research.
 user-invocable: false
+model: ['Gemini 3 Flash (Preview) (copilot)', 'GPT-5.4 (copilot)', 'Claude Sonnet 4.6 (copilot)']
 ---
 
 ## Purpose

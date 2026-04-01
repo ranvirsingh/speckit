@@ -5,6 +5,7 @@ description: >-
   and best practices from the web. Returns structured findings for technology
   decisions and implementation guidance.
 user-invocable: false
+model: ['GPT-5.4 (copilot)', 'Gemini 3 Flash (Preview) (copilot)', 'Claude Sonnet 4.6 (copilot)']
 ---
 
 # Speckit Web Researcher

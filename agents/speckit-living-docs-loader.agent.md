@@ -2,6 +2,7 @@
 name: speckit-living-docs-loader
 description: Loads and compresses living documents into a focused context summary for speckit skills.
 user-invocable: false
+model: ['Claude Haiku 4.5 (copilot)', 'Gemini 3 Flash (Preview) (copilot)', 'GPT-5.4 (copilot)']
 ---
 
 ## Purpose
