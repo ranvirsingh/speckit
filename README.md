@@ -18,31 +18,39 @@ Plus **Constitution** for project governance and **Verify** for compliance check
 
 ## Installation
 
-### As a Git submodule (recommended)
+### Quick install (recommended)
+
+```powershell
+# From the root of your project:
+irm https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | iex
+```
+
+This downloads the latest release zip, extracts it to `.github/skills/speckit/`, and links everything for VS Code discovery.
+
+### Manual install
 
 ```bash
-# Add as submodule at the standard skills location
-git submodule add https://github.com/ranvirsingh/speckit.git .github/skills/speckit
-
-# Run the installer to link sub-skills and subagents into VS Code default paths
+# 1. Download the latest release zip from GitHub
+# 2. Extract to .github/skills/speckit/
+# 3. Run the installer
 powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+```
+
+### Updating
+
+```powershell
+# Re-run the installer with -Update to pull the latest release
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1 -Update
 ```
 
 The installer creates directory junctions (Windows) or symlinks (macOS/Linux) so VS Code discovers everything automatically:
 - Sub-skills → `.github/skills/speckit-specify`, `speckit-plan`, etc.
 - Subagents → `.github/agents/speckit-codebase-scanner`, `speckit-living-docs-loader`
-- Updates `.gitignore` to exclude the generated links
+- Updates `.gitignore` to exclude the generated links **and** `.github/skills/speckit/` itself
+
+> **After cloning**: Since speckit is gitignored, each developer runs the quick install one-liner (or `install.ps1 -Update`) once after cloning the repo.
 
 To uninstall: `powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1 -Uninstall`
-
-### Manual copy
-
-```bash
-# Copy the entire folder into your project
-cp -r speckit/ your-project/.github/skills/speckit/
-# Then run the installer
-powershell -ExecutionPolicy Bypass -File your-project/.github/skills/speckit/install.ps1
-```
 
 ## Skills
 

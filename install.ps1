@@ -7,8 +7,10 @@
     sub-skill and subagent directories into .github/skills/ and .github/agents/
     so VS Code discovers them without manual settings.json configuration.
 
-    Run this after adding speckit as a git submodule:
-      git submodule add <url> .github/skills/speckit
+    Usage from any project root:
+      irm https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | iex
+
+    Or if already installed:
       pwsh .github/skills/speckit/install.ps1
 
     The script is idempotent -- safe to run multiple times.
@@ -19,13 +21,18 @@
 .PARAMETER Force
     Replace existing real directories with junctions. Without this flag,
     the script skips directories that exist but are not links.
+
+.PARAMETER Update
+    Download the latest speckit release from GitHub and replace the local copy
+    before linking. Requires internet access.
 #>
 [CmdletBinding()]
 param(
     [switch]$Uninstall,
     [switch]$Force,
+    [switch]$Update,
 
-    [Parameter(HelpMessage = 'Override the workspace root directory. Defaults to 3 levels above the script location.')]
+    [Parameter(HelpMessage = 'Override the workspace root directory.')]
     [string]$WorkspaceRoot
 )
 
@@ -33,16 +40,86 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $script:ForceMode = $Force.IsPresent
 
+# --- Download helper ----------------------------------------------------------
+function Get-SpeckitFromGitHub {
+    param([string]$DestDir)
+
+    $repoApi = 'https://api.github.com/repos/ranvirsingh/speckit/releases/latest'
+    $zipUrl  = $null
+    $tag     = $null
+
+    try {
+        $release = Invoke-RestMethod -Uri $repoApi -Headers @{ Accept = 'application/vnd.github+json' } -ErrorAction Stop
+        $zipUrl  = $release.zipball_url
+        $tag     = $release.tag_name
+    }
+    catch {
+        # No releases yet — fall back to main branch zip
+        Write-Host '  No releases found, downloading main branch...' -ForegroundColor Yellow
+        $zipUrl = 'https://github.com/ranvirsingh/speckit/archive/refs/heads/main.zip'
+        $tag    = 'main'
+    }
+
+    Write-Host "  Version: $tag" -ForegroundColor DarkGray
+
+    $tempZip = Join-Path ([System.IO.Path]::GetTempPath()) "speckit-$tag.zip"
+    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "speckit-extract-$([guid]::NewGuid().ToString('N').Substring(0,8))"
+
+    try {
+        Invoke-WebRequest -Uri $zipUrl -OutFile $tempZip -ErrorAction Stop
+        Expand-Archive -Path $tempZip -DestinationPath $tempDir -Force
+
+        # GitHub zip contains a single root folder like ranvirsingh-speckit-<hash>/
+        $innerDir = Get-ChildItem -Path $tempDir -Directory | Select-Object -First 1
+
+        if (Test-Path $DestDir) {
+            Remove-Item $DestDir -Recurse -Force
+        }
+        New-Item -ItemType Directory -Path $DestDir -Force | Out-Null
+
+        Get-ChildItem -Path $innerDir.FullName | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination (Join-Path $DestDir $_.Name) -Recurse -Force
+        }
+
+        Write-Host "  Extracted to $DestDir" -ForegroundColor Green
+        return $tag
+    }
+    finally {
+        if (Test-Path $tempZip -ErrorAction SilentlyContinue) { Remove-Item $tempZip -Force -ErrorAction SilentlyContinue }
+        if (Test-Path $tempDir -ErrorAction SilentlyContinue) { Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+}
+
 # --- Resolve paths -----------------------------------------------------------
 $SpeckitRoot = $PSScriptRoot
 if (-not $SpeckitRoot) { $SpeckitRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
 
-# Resolve workspace root: use parameter if provided, otherwise walk up 3 levels
-if (-not $WorkspaceRoot) {
-    $WorkspaceRoot = (Resolve-Path (Join-Path $SpeckitRoot '..\..\..'))
+# Detect bootstrap mode: running from piped input (irm | iex) or no valid speckit root
+$IsBootstrap = (-not $SpeckitRoot) -or (-not (Test-Path (Join-Path $SpeckitRoot 'SKILL.md')))
+
+if ($IsBootstrap) {
+    # Running from web or from a directory that isn't speckit — bootstrap into cwd
+    if (-not $WorkspaceRoot) { $WorkspaceRoot = Get-Location }
+    $GithubDir  = Join-Path $WorkspaceRoot '.github'
+    $SkillsDir  = Join-Path $GithubDir 'skills'
+    $SpeckitRoot = Join-Path $SkillsDir 'speckit'
+
+    Write-Host ''
+    Write-Host 'Speckit Bootstrap' -ForegroundColor Cyan
+    Write-Host "  Workspace root : $WorkspaceRoot"
+    Write-Host ''
+    Write-Host 'Downloading speckit...' -ForegroundColor Cyan
+    $downloadedTag = Get-SpeckitFromGitHub -DestDir $SpeckitRoot
+    Write-Host ''
 }
 else {
-    $WorkspaceRoot = (Resolve-Path $WorkspaceRoot)
+    # Running from an existing speckit directory — resolve workspace root
+    if (-not $WorkspaceRoot) {
+        $WorkspaceRoot = (Resolve-Path (Join-Path $SpeckitRoot '..\..\..'))
+    }
+    else {
+        $WorkspaceRoot = (Resolve-Path $WorkspaceRoot)
+    }
 }
 
 # Validate workspace root looks like a git repository
@@ -57,22 +134,11 @@ $AgentsDir  = Join-Path $GithubDir 'agents'
 $ExpectedSpeckitDir = Join-Path $SkillsDir 'speckit'
 $SpeckitIsExternal  = ($SpeckitRoot -ne (Resolve-Path $ExpectedSpeckitDir -ErrorAction SilentlyContinue))
 
-# --- Pull latest submodule ----------------------------------------------------
-$gitModulesPath = Join-Path $WorkspaceRoot '.gitmodules'
-$submodulePath = '.github/skills/speckit'
-if ((Test-Path $gitModulesPath) -and -not $Uninstall) {
-    $gitModulesContent = Get-Content $gitModulesPath -Raw -ErrorAction SilentlyContinue
-    if ($gitModulesContent -match [regex]::Escape($submodulePath)) {
-        Write-Host "Pulling latest speckit from remote..." -ForegroundColor Cyan
-        Push-Location $WorkspaceRoot
-        try {
-            git submodule update --remote --merge -- $submodulePath 2>&1 | ForEach-Object { Write-Host "  $_" -ForegroundColor DarkGray }
-        }
-        finally {
-            Pop-Location
-        }
-        Write-Host ''
-    }
+# --- Self-update from GitHub release ------------------------------------------
+if ($Update -and -not $Uninstall -and -not $IsBootstrap) {
+    Write-Host "Downloading latest speckit release from GitHub..." -ForegroundColor Cyan
+    $downloadedTag = Get-SpeckitFromGitHub -DestDir $SpeckitRoot
+    Write-Host ''
 }
 
 # --- Definitions -------------------------------------------------------------
@@ -179,11 +245,13 @@ function Remove-Link {
 }
 
 # --- Main ---------------------------------------------------------------------
-Write-Host ''
-Write-Host "Speckit Installer" -ForegroundColor Cyan
-Write-Host "  Workspace root : $WorkspaceRoot"
-Write-Host "  Speckit root   : $SpeckitRoot"
-Write-Host ''
+if (-not $IsBootstrap) {
+    Write-Host ''
+    Write-Host "Speckit Installer" -ForegroundColor Cyan
+    Write-Host "  Workspace root : $WorkspaceRoot"
+    Write-Host "  Speckit root   : $SpeckitRoot"
+    Write-Host ''
+}
 
 if ($Uninstall) {
     Write-Host "Removing speckit links..." -ForegroundColor Yellow
@@ -260,10 +328,9 @@ foreach ($agent in $Agents) {
     New-Link -LinkPath $link -TargetPath $target
 }
 
-# --- Git ignore the links ----------------------------------------------------
+# --- Git ignore the links and speckit root ------------------------------------
 $gitignorePath = Join-Path $WorkspaceRoot '.gitignore'
-$linksToIgnore = @()
-if ($SpeckitIsExternal) { $linksToIgnore += ".github/skills/speckit" }
+$linksToIgnore = @('.github/skills/speckit')
 foreach ($skill in $Skills) { $linksToIgnore += ".github/skills/$skill" }
 foreach ($agent in $Agents) { $linksToIgnore += ".github/agents/$agent.agent.md" }
 
@@ -287,14 +354,14 @@ if ($newEntries.Count -gt 0) {
 # --- Write manifest -----------------------------------------------------------
 $manifestPath = Join-Path $GithubDir 'speckit-manifest.json'
 
-# Resolve submodule commit hash
-$submoduleHash = $null
+# Resolve commit hash at the speckit root (if it's a git repo or has .git info)
+$speckitHash = $null
 Push-Location $SpeckitRoot
 try {
-    $submoduleHash = (git rev-parse HEAD 2>$null)
-    if ($LASTEXITCODE -ne 0) { $submoduleHash = $null }
+    $speckitHash = (git rev-parse HEAD 2>$null)
+    if ($LASTEXITCODE -ne 0) { $speckitHash = $null }
 }
-catch { $submoduleHash = $null }
+catch { $speckitHash = $null }
 finally { Pop-Location }
 
 $linkedSkills = @()
@@ -325,8 +392,7 @@ foreach ($agent in $Agents) {
 $manifest = @{
     version            = 1
     installedAt        = (Get-Date -Format 'o')
-    submoduleHash      = $submoduleHash
-    submodulePath      = $submodulePath
+    speckitHash        = $speckitHash
     speckitRootLinked  = $SpeckitIsExternal
     skills             = $linkedSkills
     agents             = $linkedAgents
@@ -335,8 +401,8 @@ $manifest = @{
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
 Write-Host ''
 Write-Host "Manifest written to .github/speckit-manifest.json" -ForegroundColor Cyan
-if ($submoduleHash) {
-    Write-Host "  Submodule hash: $submoduleHash" -ForegroundColor DarkGray
+if ($speckitHash) {
+    Write-Host "  Speckit hash: $speckitHash" -ForegroundColor DarkGray
 }
 
 Write-Host ''

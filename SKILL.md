@@ -18,12 +18,12 @@ One GitHub Issue per spec — no sub-issues, no intermediate task files.
 ## Pre-Execution: Path Resolution
 
 `<speckit-root>` is the directory where **this SKILL.md** lives (the speckit pipeline root).
-When speckit is installed as a submodule, this is typically `.github/skills/speckit`.
+This is typically `.github/skills/speckit`.
 All script paths below are relative to `<speckit-root>`.
 
 ## Pre-Execution: Ensure Installation
 
-Before routing, run the install script to pull the latest speckit and ensure all skills and agents are linked:
+Before routing, run the install script to ensure all skills and agents are linked:
 
 ```bash
 powershell -ExecutionPolicy Bypass -File <speckit-root>/install.ps1
