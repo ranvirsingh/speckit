@@ -15,10 +15,15 @@
 
 .PARAMETER Uninstall
     Remove all speckit links from .github/skills/ and .github/agents/.
+
+.PARAMETER Force
+    Replace existing real directories with junctions. Without this flag,
+    the script skips directories that exist but are not links.
 #>
 [CmdletBinding()]
 param(
     [switch]$Uninstall,
+    [switch]$Force,
 
     [Parameter(HelpMessage = 'Override the workspace root directory. Defaults to 3 levels above the script location.')]
     [string]$WorkspaceRoot
@@ -26,6 +31,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$script:ForceMode = $Force.IsPresent
 
 # --- Resolve paths -----------------------------------------------------------
 $SpeckitRoot = $PSScriptRoot
@@ -106,8 +112,12 @@ function New-Link {
             Write-Host "  [skip] Already linked: $LinkPath" -ForegroundColor DarkGray
             return
         }
+        elseif ($script:ForceMode) {
+            Write-Host "  [replace] Removing real directory: $LinkPath" -ForegroundColor Yellow
+            Remove-Item $LinkPath -Recurse -Force
+        }
         else {
-            Write-Warning "  [conflict] $LinkPath exists but is not a link. Skipping."
+            Write-Warning "  [conflict] $LinkPath exists but is not a link. Use -Force to replace."
             return
         }
     }
