@@ -11,9 +11,9 @@ description: >-
    Skip docs/research.md unless the domain is unfamiliar.
 ---
 
-## Next Steps
+## Next Steps (AUTO-CONTINUE)
 
-After planning is complete, suggest: **speckit-implement** — "Start implementing the tasks."
+After planning is complete, **automatically proceed** to `speckit-implement #{issue-number}` — do NOT stop to ask or suggest. Start implementing the tasks immediately.
 
 ## Complexity Gate
 

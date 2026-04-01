@@ -82,3 +82,5 @@ Return a structured summary:
 - If the application server is not running, report it and stop
 - Always cap viewport at `1280x720` — screenshots larger than 8000px will fail when processed by the AI model
 - Keep tests scenario-focused — one test per acceptance scenario, reusable as part of the CI pipeline
+- **MUST clearly report failures**: If any test fails, return `passed: false` and include the exact failure messages and failing scenario IDs. The parent skill depends on this to decide whether to loop back to `speckit-implement` for fixes. Never silently swallow errors.
+- **MUST report partial results**: If some scenarios pass and others fail, still return all scenario results so the parent can identify exactly what needs fixing.

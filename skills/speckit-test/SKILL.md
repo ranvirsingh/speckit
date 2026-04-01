@@ -9,14 +9,14 @@ description: >-
   or "does the implementation match the spec?"
 ---
 
-## Next Steps
+## Next Steps (AUTO-CONTINUE)
 
-After all acceptance scenarios pass, suggest:
-- **speckit-e2e #{issue-number}** — "UAT passed. Generate e2e test artifacts to attach to the PR."
-- If e2e is not applicable (no UI, user declines): suggest **speckit-retro #{issue-number}** — "Skip e2e and run the retrospective."
+After all acceptance scenarios pass, **automatically proceed** — do NOT stop to ask or suggest:
+1. Determine if e2e is applicable (project has UI or testable endpoints).
+2. If e2e is applicable: invoke `speckit-e2e #{issue-number}` immediately.
+3. If e2e is NOT applicable: skip e2e and invoke `speckit-retro #{issue-number}` immediately.
 
-If scenarios fail, suggest:
-- **speckit-implement #{issue-number}** — "Fix the failing scenarios, then re-run speckit-test."
+If scenarios fail, **automatically proceed** back to `speckit-implement #{issue-number}` to fix the failing scenarios, then re-run `speckit-test`.
 
 ## User Input
 
@@ -161,9 +161,9 @@ Produce a structured report in this format:
 
 ### Step 6 — Verdict and Next Steps
 
-- **All PASS**: Report success and suggest `speckit-e2e #{issue-number}` to generate e2e test artifacts. If e2e is not applicable, suggest `speckit-retro #{issue-number}` instead.
-- **Any FAIL on NON-NEGOTIABLE or acceptance scenarios**: Block — suggest `speckit-implement #{issue-number}` to fix, then re-test
-- **Only SHOULD warnings or partial edge cases**: Warn but allow proceeding to retro — note as TODOs for triage
+- **All PASS**: Report success and **automatically proceed** to `speckit-e2e #{issue-number}` to generate e2e test artifacts. If e2e is not applicable, **automatically proceed** to `speckit-retro #{issue-number}` instead.
+- **Any FAIL on NON-NEGOTIABLE or acceptance scenarios**: Block — **automatically proceed** to `speckit-implement #{issue-number}` to fix, then re-test
+- **Only SHOULD warnings or partial edge cases**: Warn but allow proceeding — note as TODOs for triage and **automatically proceed** to the next step
 
 **Check for extension hooks (after test)**:
 Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_test`.

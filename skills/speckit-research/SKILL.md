@@ -9,10 +9,11 @@ description: >-
   "investigate approaches", "compare libraries", "what's the best way to", or "explore before planning".
 ---
 
-## Next Steps
+## Next Steps (AUTO-CONTINUE)
 
-After research is complete, suggest:
-- **speckit-plan #{issue-number}** — "Research complete. Plan the implementation using these findings."
+After research is complete, **automatically proceed** — do NOT stop to ask or suggest:
+- If the work needs planning (schema/API/unfamiliar domain): invoke `speckit-plan #{issue-number}` immediately.
+- If the work is simple & scoped: invoke `speckit-implement #{issue-number}` immediately.
 
 ## User Input
 

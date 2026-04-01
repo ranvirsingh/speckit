@@ -8,10 +8,9 @@ description: >-
   project. Requires a GitHub issue number.
 ---
 
-## Next Steps
+## Next Steps (AUTO-CONTINUE)
 
-After implementation is complete (including commit and push), run user acceptance testing to verify the implementation matches the spec.
-Suggest: **speckit-test #{issue-number}** — "Verify the implementation satisfies the spec's acceptance scenarios and requirements."
+After implementation is complete (including commit and push), **automatically proceed** to user acceptance testing — do NOT stop to ask or suggest. Invoke `speckit-test #{issue-number}` immediately to verify the implementation satisfies the spec's acceptance scenarios and requirements.
 
 ## User Input
 
@@ -82,7 +81,7 @@ For bugs and chores, the issue body contains the fix description, affected files
    ```
    For each MUST and NON-NEGOTIABLE rule, verify the implementation complies.
    If any NON-NEGOTIABLE rule is violated, fix the code before proceeding.
-5. Report completion and suggest **speckit-test #{issue-number}**
+5. Report completion and **automatically proceed** to `speckit-test #{issue-number}` — do NOT stop to ask.
 
 Skip all steps below — they are for the Full Implementation Flow only.
 

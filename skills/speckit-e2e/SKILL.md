@@ -10,13 +10,11 @@ description: >-
   "generate e2e for PR", or "show the feature working".
 ---
 
-## Next Steps
+## Next Steps (AUTO-CONTINUE)
 
-After e2e test artifacts are generated and attached to the PR, suggest:
-- **speckit-retro** — "E2E tests captured. Run the retrospective to update living docs and triage TODOs."
+After e2e test artifacts are generated and attached to the PR, **automatically proceed** — do NOT stop to ask or suggest. Invoke `speckit-retro #{issue-number}` immediately to update living docs and triage TODOs.
 
-If e2e tests fail, suggest:
-- **speckit-implement #{issue-number}** — "Fix the failing e2e tests, then re-run `speckit-e2e #{issue-number}`."
+If e2e tests fail, **automatically proceed** back to `speckit-implement #{issue-number}` to fix the failing e2e tests, then re-run `speckit-e2e #{issue-number}`.
 
 ## User Input
 
@@ -219,7 +217,18 @@ Extract the resource changes, additions, and deletions into a readable summary.
 
 ---
 
-### Step 4 — Attach E2E Results to PR
+### Step 4 — Handle Failures (MANDATORY)
+
+Before attaching results to the PR, check the outcome of Step 3:
+
+1. **If tests passed** (subagent returned `passed: true`, or CLI/API/library script exited 0): proceed to Step 5.
+2. **If any tests failed**: 
+   - Report the failing scenarios with their error messages.
+   - Do NOT proceed to Step 5 or attach partial results to the PR.
+   - **Automatically proceed** to `speckit-implement #{issue-number}` to fix the failing code, then re-run `speckit-e2e #{issue-number}`.
+   - Do NOT ask the user — the fix-and-retry loop is automatic.
+
+### Step 5 — Attach E2E Results to PR
 
 1. Find the PR for the current branch:
    ```bash
@@ -285,7 +294,7 @@ Extract the resource changes, additions, and deletions into a readable summary.
    gh pr edit {pr-number} --body "{updated body with e2e section}"
    ```
 
-### Step 5 — Commit E2E Artifacts
+### Step 6 — Commit E2E Artifacts
 
 Stage and commit only the e2e files:
 
