@@ -2,7 +2,8 @@
 name: speckit
 description: >-
   Spec-driven development pipeline. Routes to the appropriate sub-skill based
-  on the current phase: specify → research (optional) → plan (if complex) → implement → test → e2e → verify → retro.
+  on the current phase: specify → research (optional) → plan (if complex) → implement → test → e2e → retro.
+  Verify can be run at any point to check compliance.
   Use this when starting any new feature, bug, or chore — or when unsure which
   pipeline step to enter.
 user-invocable: true
@@ -74,7 +75,7 @@ Simple & scoped?                       specify → implement → test → e2e �
 
 | Subagent | Used By | Purpose |
 |----------|---------|---------|
-| `speckit-codebase-scanner` | `speckit-plan` | Read-only codebase exploration — returns distilled findings for design research |
+| `speckit-codebase-scanner` | `speckit-plan`, `speckit-research` | Read-only codebase exploration — returns distilled findings for design research |
 | `speckit-living-docs-loader` | Most pipeline skills | Loads and compresses living docs into a focused context summary |
 | `speckit-e2e-recorder` | `speckit-e2e` | Browser automation for UI project e2e testing via Playwright |
 | `speckit-pipeline-checker` | `speckit-verify` | Checks PR status checks (CI green/red/pending) |

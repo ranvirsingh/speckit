@@ -46,7 +46,7 @@ This skill **requires a GitHub issue number** as input.
 1. Parse `$ARGUMENTS` for a GitHub issue reference (number or `#number`).
 2. If no issue number is found:
    - **STOP**. Do not proceed.
-   - Display: `speckit-e2e requires a GitHub issue number. Use: /speckit-e2e #42`
+   - Display: `⛔ speckit-e2e requires a GitHub issue number. Use: /speckit-e2e #42`
    - Exit.
 3. Read the issue: `gh issue view {number} --repo {owner}/{repo} --json number,title,state,labels,body`
 4. If the issue does not exist: **STOP** and report.

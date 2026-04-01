@@ -243,7 +243,7 @@ Output a summary:
 - Issue URL and number
 - Task count and phase breakdown
 - List of updated living docs
-- Suggest next step: `/speckit-implement #{ISSUE_NUMBER}`
+- Note: auto-continuing to `speckit-implement #{ISSUE_NUMBER}`
 
 ---
 

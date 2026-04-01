@@ -279,8 +279,9 @@ Only update these sections when there are 2+ entries.
 ## Workflow Position
 
 ```
-With plan:    speckit-specify → speckit-plan → speckit-implement → speckit-test → speckit-e2e → speckit-retro (automated)
-Without plan: speckit-specify → speckit-implement → speckit-test → speckit-e2e → speckit-retro (automated)
+With research + plan: speckit-specify → speckit-research → speckit-plan → speckit-implement → speckit-test → speckit-e2e → speckit-retro (automated)
+With plan only:       speckit-specify → speckit-plan → speckit-implement → speckit-test → speckit-e2e → speckit-retro (automated)
+Simple & scoped:      speckit-specify → speckit-implement → speckit-test → speckit-e2e → speckit-retro (automated)
 ```
 
 The plan phase is complexity-gated, not type-gated. Any work type (feature, bug, or chore) goes
@@ -289,9 +290,9 @@ through speckit-plan when it involves schema changes, new/changed APIs, or an un
 The TODO triage step feeds discovered work **into the parking lot** for future prioritisation:
 
 ```
-speckit-specify → speckit-plan → speckit-implement (commit+PR) → speckit-retro
-                                                                       |
-                                                   PARKING_LOT.md ←───┘
+speckit-specify → speckit-research → speckit-plan → speckit-implement (commit+PR) → speckit-test → speckit-e2e → speckit-retro
+                                                                                                                      |
+                                                                                              PARKING_LOT.md ←────────┘
 ```
 
 ## Post-Execution Hooks
