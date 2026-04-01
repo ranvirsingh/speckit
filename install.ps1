@@ -108,12 +108,29 @@ function New-Link {
     if (Test-Path $LinkPath) {
         $item = Get-Item $LinkPath -Force
         $isLink = $item.LinkType -eq 'Junction' -or $item.LinkType -eq 'SymbolicLink'
+        $isTargetFile = (Test-Path $TargetPath -PathType Leaf)
+        $isWinFileCopy = ($env:OS -eq 'Windows_NT') -and $isTargetFile -and -not $item.PSIsContainer -and -not $isLink
         if ($isLink) {
             Write-Host "  [skip] Already linked: $LinkPath" -ForegroundColor DarkGray
             return
         }
+        elseif ($isWinFileCopy -and -not $script:ForceMode) {
+            # On Windows, files are copied not linked -- check content hash
+            $srcHash = (Get-FileHash $TargetPath -Algorithm SHA256).Hash
+            $dstHash = (Get-FileHash $LinkPath -Algorithm SHA256).Hash
+            if ($srcHash -eq $dstHash) {
+                Write-Host "  [skip] Already copied: $LinkPath" -ForegroundColor DarkGray
+                return
+            }
+            else {
+                # Content differs -- overwrite
+                Copy-Item -Path $TargetPath -Destination $LinkPath -Force
+                Write-Host "  [update] $LinkPath <- $TargetPath" -ForegroundColor Green
+                return
+            }
+        }
         elseif ($script:ForceMode) {
-            Write-Host "  [replace] Removing real directory: $LinkPath" -ForegroundColor Yellow
+            Write-Host "  [replace] Removing existing: $LinkPath" -ForegroundColor Yellow
             Remove-Item $LinkPath -Recurse -Force
         }
         else {
@@ -127,13 +144,18 @@ function New-Link {
     if ($isWin -and $isDir) {
         # Directory junction -- no admin rights needed on Windows
         New-Item -ItemType Junction -Path $LinkPath -Target $TargetPath | Out-Null
+        Write-Host "  [link] $LinkPath -> $TargetPath" -ForegroundColor Green
+    }
+    elseif ($isWin -and -not $isDir) {
+        # File symlinks need admin on Windows -- copy instead
+        Copy-Item -Path $TargetPath -Destination $LinkPath -Force
+        Write-Host "  [copy] $LinkPath <- $TargetPath" -ForegroundColor Green
     }
     else {
-        # Symlink for files (all OS) and directories (macOS/Linux)
+        # Symlink for files and directories on macOS/Linux
         New-Item -ItemType SymbolicLink -Path $LinkPath -Target $TargetPath | Out-Null
+        Write-Host "  [link] $LinkPath -> $TargetPath" -ForegroundColor Green
     }
-
-    Write-Host "  [link] $LinkPath -> $TargetPath" -ForegroundColor Green
 }
 
 function Remove-Link {
