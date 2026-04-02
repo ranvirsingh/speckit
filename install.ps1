@@ -115,16 +115,36 @@ if ($IsBootstrap) {
 else {
     # Running from an existing speckit directory — resolve workspace root
     if (-not $WorkspaceRoot) {
-        $WorkspaceRoot = (Resolve-Path (Join-Path $SpeckitRoot '..\..\..'))
+        # Walk up from the speckit source directory to find a .git or *.code-workspace
+        $candidate = Split-Path -Parent $SpeckitRoot
+        $found = $false
+        while ($candidate) {
+            $hasGitDir      = Test-Path (Join-Path $candidate '.git')
+            $hasWorkspace   = [bool](Get-ChildItem $candidate -Filter '*.code-workspace' -ErrorAction SilentlyContinue | Select-Object -First 1)
+            if ($hasGitDir -or $hasWorkspace) {
+                $WorkspaceRoot = $candidate
+                $found = $true
+                break
+            }
+            $parent = Split-Path -Parent $candidate
+            if ($parent -eq $candidate) { break }   # reached filesystem root
+            $candidate = $parent
+        }
+        if (-not $found) {
+            # Fallback: three levels up from speckit source (legacy behaviour)
+            $WorkspaceRoot = (Resolve-Path (Join-Path $SpeckitRoot '..\..\..'))
+        }
     }
     else {
         $WorkspaceRoot = (Resolve-Path $WorkspaceRoot)
     }
 }
 
-# Validate workspace root looks like a git repository
-if (-not (Test-Path (Join-Path $WorkspaceRoot '.git'))) {
-    Write-Warning "Workspace root '$WorkspaceRoot' does not contain a .git directory. Verify the path is correct."
+# Validate workspace root looks like a project root (.git) or a VS Code multi-root workspace (*.code-workspace)
+$wsHasGit       = Test-Path (Join-Path $WorkspaceRoot '.git')
+$wsHasWorkspace = [bool](Get-ChildItem $WorkspaceRoot -Filter '*.code-workspace' -ErrorAction SilentlyContinue | Select-Object -First 1)
+if (-not $wsHasGit -and -not $wsHasWorkspace) {
+    Write-Warning "Workspace root '$WorkspaceRoot' does not contain a .git directory or *.code-workspace file. Verify the path is correct."
 }
 $GithubDir  = Join-Path $WorkspaceRoot '.github'
 $SkillsDir  = Join-Path $GithubDir 'skills'
