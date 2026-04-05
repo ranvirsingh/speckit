@@ -367,8 +367,8 @@ foreach ($entry in $linksToIgnore) {
 
 if ($newEntries.Count -gt 0) {
     Write-Host ''
-    Write-Host "Updating .gitignore with speckit links..." -ForegroundColor Cyan
-    $block = "`n# speckit links (created by install.ps1)`n"
+    Write-Host 'Updating .gitignore with speckit entries...' -ForegroundColor Cyan
+    $block = "`n# speckit copies (created by install.ps1)`n"
     $block += ($newEntries -join "`n") + "`n"
     Add-Content -Path $gitignorePath -Value $block -NoNewline
     Write-Host "  [updated] .gitignore - added $($newEntries.Count) entries" -ForegroundColor Green
@@ -423,9 +423,28 @@ $manifest = @{
 
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
 Write-Host ''
-Write-Host "Manifest written to .github/speckit-manifest.json" -ForegroundColor Cyan
+Write-Host 'Manifest written to .github/speckit-manifest.json' -ForegroundColor Cyan
 if ($speckitHash) {
     Write-Host "  Speckit hash: $speckitHash" -ForegroundColor DarkGray
+}
+
+# --- Remove bundle source sub-directories ------------------------------------
+# The skills/ and agents/ sub-directories inside the bundle are now fully
+# copied to their target locations. Remove them to avoid duplication.
+# The bundle root (SKILL.md, install.ps1, references/, scripts/) is kept so
+# the router skill is discoverable by VS Code and -Update can re-run.
+# Guard: only clean up when SpeckitRoot is the downloaded bundle inside the
+# workspace (not when running from an external developer checkout).
+if (-not $SpeckitIsExternal) {
+    Write-Host ''
+    Write-Host 'Cleaning up bundle sources...' -ForegroundColor Cyan
+    foreach ($subDir in @('skills', 'agents')) {
+        $bundleSub = Join-Path $SpeckitRoot $subDir
+        if (Test-Path $bundleSub) {
+            Remove-Item $bundleSub -Recurse -Force
+            Write-Host "  [cleaned] $bundleSub" -ForegroundColor DarkGray
+        }
+    }
 }
 
 Write-Host ''
