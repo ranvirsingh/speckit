@@ -3,9 +3,10 @@
     Installs speckit skills and subagents into the standard VS Code discovery paths.
 
 .DESCRIPTION
-    Creates directory junctions (Windows) or symlinks (macOS/Linux) from speckit
-    sub-skill and subagent directories into .github/skills/ and .github/agents/
-    so VS Code discovers them without manual settings.json configuration.
+    Copies speckit sub-skill and subagent directories into .github/skills/ and
+    .github/agents/ so VS Code discovers them without manual settings.json
+    configuration. A manifest is written to .github/speckit-manifest.json so
+    -Update and -Uninstall know exactly which paths to clean up.
 
     Usage from any project root:
       irm https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | iex
@@ -19,8 +20,8 @@
     Remove all speckit links from .github/skills/ and .github/agents/.
 
 .PARAMETER Force
-    Replace existing real directories with junctions. Without this flag,
-    the script skips directories that exist but are not links.
+    Overwrite existing copied directories. Without this flag, the script
+    skips directories that already exist at the destination.
 
 .PARAMETER Update
     Download the latest speckit release from GitHub and replace the local copy
@@ -156,7 +157,29 @@ $SpeckitIsExternal  = ($SpeckitRoot -ne (Resolve-Path $ExpectedSpeckitDir -Error
 
 # --- Self-update from GitHub release ------------------------------------------
 if ($Update -and -not $Uninstall -and -not $IsBootstrap) {
-    Write-Host "Downloading latest speckit release from GitHub..." -ForegroundColor Cyan
+    # Remove previously copied skill/agent directories before re-downloading
+    $manifestPath = Join-Path $GithubDir 'speckit-manifest.json'
+    if (Test-Path $manifestPath) {
+        Write-Host 'Removing previous speckit copies...' -ForegroundColor Cyan
+        $oldManifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+        foreach ($s in $oldManifest.skills) {
+            $p = Join-Path $WorkspaceRoot $s.link
+            if (Test-Path $p) {
+                Remove-Item $p -Recurse -Force
+                Write-Host "  [removed] $($s.link)" -ForegroundColor Yellow
+            }
+        }
+        foreach ($a in $oldManifest.agents) {
+            $p = Join-Path $WorkspaceRoot $a.link
+            if (Test-Path $p) {
+                Remove-Item $p -Recurse -Force
+                Write-Host "  [removed] $($a.link)" -ForegroundColor Yellow
+            }
+        }
+        Write-Host ''
+    }
+
+    Write-Host 'Downloading latest speckit release from GitHub...' -ForegroundColor Cyan
     $downloadedTag = Get-SpeckitFromGitHub -DestDir $SpeckitRoot
     Write-Host ''
 }
@@ -192,75 +215,35 @@ function New-Link {
     )
 
     if (Test-Path $LinkPath) {
-        $item = Get-Item $LinkPath -Force
-        $isLink = $item.LinkType -eq 'Junction' -or $item.LinkType -eq 'SymbolicLink'
-        $isTargetFile = (Test-Path $TargetPath -PathType Leaf)
-        $isWinFileCopy = ($env:OS -eq 'Windows_NT') -and $isTargetFile -and -not $item.PSIsContainer -and -not $isLink
-        if ($isLink) {
-            Write-Host "  [skip] Already linked: $LinkPath" -ForegroundColor DarkGray
-            return
-        }
-        elseif ($isWinFileCopy -and -not $script:ForceMode) {
-            # On Windows, files are copied not linked -- check content hash
-            $srcHash = (Get-FileHash $TargetPath -Algorithm SHA256).Hash
-            $dstHash = (Get-FileHash $LinkPath -Algorithm SHA256).Hash
-            if ($srcHash -eq $dstHash) {
-                Write-Host "  [skip] Already copied: $LinkPath" -ForegroundColor DarkGray
-                return
-            }
-            else {
-                # Content differs -- overwrite
-                Copy-Item -Path $TargetPath -Destination $LinkPath -Force
-                Write-Host "  [update] $LinkPath <- $TargetPath" -ForegroundColor Green
-                return
-            }
-        }
-        elseif ($script:ForceMode) {
+        if ($script:ForceMode) {
             Write-Host "  [replace] Removing existing: $LinkPath" -ForegroundColor Yellow
             Remove-Item $LinkPath -Recurse -Force
         }
         else {
-            Write-Warning "  [conflict] $LinkPath exists but is not a link. Use -Force to replace."
+            Write-Host "  [skip] Already exists: $LinkPath" -ForegroundColor DarkGray
             return
         }
     }
 
     $isDir = (Test-Path $TargetPath -PathType Container)
-    $isWin = ($env:OS -eq 'Windows_NT')
-    if ($isWin -and $isDir) {
-        # Directory junction -- no admin rights needed on Windows
-        New-Item -ItemType Junction -Path $LinkPath -Target $TargetPath | Out-Null
-        Write-Host "  [link] $LinkPath -> $TargetPath" -ForegroundColor Green
-    }
-    elseif ($isWin -and -not $isDir) {
-        # File symlinks need admin on Windows -- copy instead
-        Copy-Item -Path $TargetPath -Destination $LinkPath -Force
-        Write-Host "  [copy] $LinkPath <- $TargetPath" -ForegroundColor Green
+    if ($isDir) {
+        Copy-Item -Path $TargetPath -Destination $LinkPath -Recurse -Force
     }
     else {
-        # Symlink for files and directories on macOS/Linux
-        New-Item -ItemType SymbolicLink -Path $LinkPath -Target $TargetPath | Out-Null
-        Write-Host "  [link] $LinkPath -> $TargetPath" -ForegroundColor Green
+        Copy-Item -Path $TargetPath -Destination $LinkPath -Force
     }
+    Write-Host "  [copy] $LinkPath <- $TargetPath" -ForegroundColor Green
 }
 
 function Remove-Link {
     param([string]$LinkPath)
 
-    if (-not (Test-Path $LinkPath)) {
+    if (-not (Test-Path $LinkPath -ErrorAction SilentlyContinue)) {
         Write-Host "  [skip] Not found: $LinkPath" -ForegroundColor DarkGray
         return
     }
 
-    $item = Get-Item $LinkPath -Force
-    $isLink = $item.LinkType -eq 'Junction' -or $item.LinkType -eq 'SymbolicLink'
-    if (-not $isLink) {
-        Write-Warning "  [skip] $LinkPath is not a link. Not removing."
-        return
-    }
-
-    # Remove the junction/symlink (not the target)
-    $item.Delete()
+    Remove-Item $LinkPath -Recurse -Force
     Write-Host "  [removed] $LinkPath" -ForegroundColor Yellow
 }
 
@@ -274,43 +257,63 @@ if (-not $IsBootstrap) {
 }
 
 if ($Uninstall) {
-    Write-Host "Removing speckit links..." -ForegroundColor Yellow
+    Write-Host 'Removing speckit copies...' -ForegroundColor Yellow
     Write-Host ''
 
-    # Remove speckit root link (if it was created by installer)
-    if (Test-Path $ExpectedSpeckitDir) {
-        $rootItem = Get-Item $ExpectedSpeckitDir -Force
-        if ($rootItem.LinkType -eq 'Junction' -or $rootItem.LinkType -eq 'SymbolicLink') {
-            Remove-Link $ExpectedSpeckitDir
+    $manifestPath = Join-Path $GithubDir 'speckit-manifest.json'
+    if (Test-Path $manifestPath) {
+        $oldManifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+
+        Write-Host 'Skills:' -ForegroundColor Cyan
+        foreach ($s in $oldManifest.skills) {
+            $p = Join-Path $WorkspaceRoot $s.link
+            if (Test-Path $p) {
+                Remove-Item $p -Recurse -Force
+                Write-Host "  [removed] $($s.link)" -ForegroundColor Yellow
+            }
+            else {
+                Write-Host "  [skip] Not found: $($s.link)" -ForegroundColor DarkGray
+            }
+        }
+
+        Write-Host ''
+        Write-Host 'Agents:' -ForegroundColor Cyan
+        foreach ($a in $oldManifest.agents) {
+            $p = Join-Path $WorkspaceRoot $a.link
+            if (Test-Path $p) {
+                Remove-Item $p -Recurse -Force
+                Write-Host "  [removed] $($a.link)" -ForegroundColor Yellow
+            }
+            else {
+                Write-Host "  [skip] Not found: $($a.link)" -ForegroundColor DarkGray
+            }
+        }
+
+        Remove-Item $manifestPath -Force
+        Write-Host ''
+        Write-Host '  [removed] .github/speckit-manifest.json' -ForegroundColor Yellow
+    }
+    else {
+        # No manifest -- fall back to hard-coded lists
+        Write-Host 'Skills:' -ForegroundColor Cyan
+        foreach ($skill in $Skills) {
+            Remove-Link (Join-Path $SkillsDir $skill)
+        }
+
+        Write-Host ''
+        Write-Host 'Agents:' -ForegroundColor Cyan
+        foreach ($agent in $Agents) {
+            Remove-Link (Join-Path $AgentsDir "$agent.agent.md")
         }
     }
 
-    Write-Host "Skills:" -ForegroundColor Cyan
-    foreach ($skill in $Skills) {
-        Remove-Link (Join-Path $SkillsDir $skill)
-    }
-
     Write-Host ''
-    Write-Host "Agents:" -ForegroundColor Cyan
-    foreach ($agent in $Agents) {
-        Remove-Link (Join-Path $AgentsDir "$agent.agent.md")
-    }
-
-    # Remove manifest
-    $manifestPath = Join-Path $GithubDir 'speckit-manifest.json'
-    if (Test-Path $manifestPath) {
-        Remove-Item $manifestPath -Force
-        Write-Host ''
-        Write-Host "  [removed] .github/speckit-manifest.json" -ForegroundColor Yellow
-    }
-
-    Write-Host ''
-    Write-Host "Done. Speckit links removed." -ForegroundColor Green
+    Write-Host 'Done. Speckit copies removed.' -ForegroundColor Green
     return
 }
 
 # Install
-Write-Host "Installing speckit links..." -ForegroundColor Cyan
+Write-Host 'Installing speckit copies...' -ForegroundColor Cyan
 Write-Host ''
 
 # Ensure target directories exist
@@ -426,8 +429,8 @@ if ($speckitHash) {
 }
 
 Write-Host ''
-Write-Host "Done. Speckit is installed." -ForegroundColor Green
+Write-Host 'Done. Speckit is installed.' -ForegroundColor Green
 Write-Host ''
-Write-Host "The router skill (speckit) is at .github/skills/speckit/SKILL.md" -ForegroundColor DarkGray
-Write-Host "Sub-skills and agents are linked for VS Code discovery." -ForegroundColor DarkGray
+Write-Host 'The router skill (speckit) is at .github/skills/speckit/SKILL.md' -ForegroundColor DarkGray
+Write-Host 'Sub-skills and agents are copied for VS Code discovery.' -ForegroundColor DarkGray
 Write-Host ''
