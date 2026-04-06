@@ -60,27 +60,33 @@ The text the user typed after `/speckit-specify` in the triggering message **is*
 
 ### Interactive Clarification (before writing)
 
-Before writing the spec, use `#askQuestions` to gather essential context in **focused batches of upto 5 questions at once but continue to ask as we must clarify all the necessary details**. This replaces the old approach of writing first and marking `[NEEDS CLARIFICATION]` afterwards.
+The AI should **reason autonomously first**, then confirm with the user in a single focused round. This replaces the old multi-round approach.
 
-**Round 1 — Scope & Type** (always ask):
-1. Present the auto-classified work type (Feature / Bug / Chore) with reasoning — ask the user to confirm or override
-2. What is the core value / problem being solved?
-3. Are there any constraints or non-negotiables?
+**Step A — AI Self-Reasoning** (no user interaction):
+The AI analyses the user's description + living context (retro insights, constitution) and drafts answers to:
+1. Work type classification (Feature / Bug / Chore) with one-line reasoning
+2. Core value / problem being solved — inferred from the description
+3. Constraints and non-negotiables — extracted from the constitution + description
+4. Primary users / actors — inferred from the description (Features only)
+5. Existing patterns to follow — from retro insights and constitution (Features only)
+6. Likely failure scenarios and edge cases — reasoned from the domain (Features only)
 
-**Round 2 — Boundaries** (ask for Features only):
-1. Who are the primary users / actors?
-2. What is explicitly out of scope?
-3. Any existing patterns in the codebase to follow? (Check retro insights)
+**Step B — Single Confirmation Round** (use `#askQuestions`):
+Present the AI's self-reasoned answers as a structured summary and ask the user to confirm, correct, or add to each point. Include these questions:
+1. "I classified this as **{type}** because {reason}. Correct?" — with Feature/Bug/Chore options
+2. "I identified the core problem as: {summary}. Anything to add or correct?"
+3. "What is explicitly **out of scope**?" — this is the one question the AI genuinely cannot infer
+4. (Features only) "I identified these actors: {actors}, constraints: {constraints}, edge cases: {edge cases}. Anything missing?"
 
-**Round 3 — Edge Cases** (ask if answers from Round 2 reveal complexity):
-1. What happens in failure scenarios?
-2. Any known edge cases from similar past work? (Reference retro.md findings)
+**Step C — Follow-Up Round** (only if Step B reveals significant gaps):
+If the user's corrections in Step B reveal complexity the AI missed, ask up to 3 targeted follow-up questions. Otherwise, proceed directly to writing the spec.
 
 **Rules**:
-- Each round uses `#askQuestions` with suggested options + a freetext field
+- The AI MUST attempt to answer every question itself before asking the user
+- Use `#askQuestions` with suggested options + a freetext field
 - Incorporate answers into the spec — do NOT add `[NEEDS CLARIFICATION]` markers unless the user explicitly defers an answer
-- For bugs/chores, only Round 1 is needed (keep it lightweight)
-- Maximum 3 rounds total — then write the spec with best available info
+- For bugs/chores, only the classification confirmation and out-of-scope question are needed (keep it lightweight)
+- Maximum 2 rounds of user interaction total — then write the spec with best available info
 
 Given that feature description, do this:
 
