@@ -116,6 +116,24 @@ Keep these artifacts separate:
 - Issue comments are supplementary discussion, not the canonical plan source
 - Never create `specs/`, `spec.md`, or per-feature doc folders
 
+## Skill Resolution Protocol
+
+When a sub-skill says "invoke `speckit-X`", resolve the skill using this ordered fallback:
+
+1. **VS Code skill discovery** — if `speckit-X` appears in the available skills list, use it directly.
+2. **Direct file read** — if the skill is NOT in the available skills list, read the SKILL.md file at the path relative to `<speckit-root>`:
+   ```
+   <speckit-root>/skills/speckit-X/SKILL.md
+   ```
+   Then follow the instructions in the loaded file as if it were the active skill.
+3. **Workspace fallback** — if the above path does not exist, try:
+   ```
+   .github/skills/speckit-X/SKILL.md
+   ```
+   (relative to the workspace root).
+
+**CRITICAL**: Never skip a pipeline step because "the skill doesn't exist". The SKILL.md files are always present in the speckit installation directory — use `read_file` to load them directly if VS Code discovery fails.
+
 ## Key Principles
 
 - **One issue per spec** — checklist in the issue body, no sub-issues

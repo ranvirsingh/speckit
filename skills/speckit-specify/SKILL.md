@@ -16,6 +16,8 @@ After the spec is written, **auto-continue** to the next step based on the **com
 - **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Auto-invoke **speckit-plan** `#{issue-number}`
 - **Simple & scoped** (no schema, API, or domain unknowns): Auto-invoke **speckit-implement** `#{issue-number}`
 
+> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
+
 ## User Input
 
 ```text

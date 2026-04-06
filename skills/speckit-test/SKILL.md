@@ -18,6 +18,8 @@ After all acceptance scenarios pass, **automatically proceed** — do NOT stop t
 
 If scenarios fail, **automatically proceed** back to `speckit-implement #{issue-number}` to fix the failing scenarios, then re-run `speckit-test`.
 
+> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
+
 ## User Input
 
 ```text

@@ -15,6 +15,8 @@ After research is complete, **automatically proceed** — do NOT stop to ask or 
 - If the work needs planning (schema/API/unfamiliar domain): invoke `speckit-plan #{issue-number}` immediately.
 - If the work is simple & scoped: invoke `speckit-implement #{issue-number}` immediately.
 
+> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
+
 ## User Input
 
 ```text

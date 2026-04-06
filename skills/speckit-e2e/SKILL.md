@@ -16,6 +16,8 @@ After e2e test artifacts are generated and attached to the PR, **automatically p
 
 If e2e tests fail, **automatically proceed** back to `speckit-implement #{issue-number}` to fix the failing e2e tests, then re-run `speckit-e2e #{issue-number}`.
 
+> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
+
 ## User Input
 
 ```text

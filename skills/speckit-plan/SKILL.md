@@ -15,6 +15,8 @@ description: >-
 
 After planning is complete, **automatically proceed** to `speckit-implement #{issue-number}` — do NOT stop to ask or suggest. Start implementing the tasks immediately.
 
+> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
+
 ## Complexity Gate
 
 This skill applies to **any work type** (feature, bug, or chore) when the spec involves schema changes, new/changed APIs, or an unfamiliar domain. If none of these signals are present, the user should skip directly to **speckit-implement**.

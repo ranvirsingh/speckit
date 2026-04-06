@@ -12,6 +12,8 @@ description: >-
 
 After implementation is complete (including commit and push), **automatically proceed** to user acceptance testing — do NOT stop to ask or suggest. Invoke `speckit-test #{issue-number}` immediately to verify the implementation satisfies the spec's acceptance scenarios and requirements.
 
+> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
+
 ## User Input
 
 ```text

@@ -452,24 +452,16 @@ if ($speckitHash) {
     Write-Host "  Speckit hash: $speckitHash" -ForegroundColor DarkGray
 }
 
-# --- Remove bundle source sub-directories ------------------------------------
-# The skills/ and agents/ sub-directories inside the bundle are now fully
-# copied to their target locations. Remove them to avoid duplication.
-# The bundle root (SKILL.md, install.ps1, references/, scripts/) is kept so
-# the router skill is discoverable by VS Code and -Update can re-run.
-# Guard: only clean up when SpeckitRoot is the downloaded bundle inside the
-# workspace (not when running from an external developer checkout).
-if (-not $SpeckitIsExternal) {
-    Write-Host ''
-    Write-Host 'Cleaning up bundle sources...' -ForegroundColor Cyan
-    foreach ($subDir in @('skills', 'agents')) {
-        $bundleSub = Join-Path $SpeckitRoot $subDir
-        if (Test-Path $bundleSub) {
-            Remove-Item $bundleSub -Recurse -Force
-            Write-Host "  [cleaned] $bundleSub" -ForegroundColor DarkGray
-        }
-    }
-}
+# --- Keep bundle source sub-directories ----------------------------------------
+# The skills/ and agents/ sub-directories inside the bundle are intentionally
+# preserved so that:
+#   1. Re-running install.ps1 is truly idempotent (sources are always available)
+#   2. The Skill Resolution Protocol fallback paths work — sub-skills can
+#      read_file from <speckit-root>/skills/{name}/SKILL.md when VS Code
+#      discovery fails
+#   3. -Update can re-copy cleanly without needing a GitHub download
+# Both the bundle sources and the top-level copies are gitignored, so there
+# is no repository bloat.
 
 Write-Host ''
 Write-Host 'Done. Speckit is installed.' -ForegroundColor Green
