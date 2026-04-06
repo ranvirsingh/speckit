@@ -314,6 +314,29 @@ if ($Uninstall) {
 }
 
 # Install
+
+# --- Stale detection: auto-update if expected files are missing ---------------
+if (-not $Update -and -not $IsBootstrap) {
+    $missingSources = @()
+    foreach ($skill in $Skills) {
+        $src = Join-Path (Join-Path $SpeckitRoot 'skills') $skill
+        if (-not (Test-Path $src)) { $missingSources += "skill:$skill" }
+    }
+    foreach ($agent in $Agents) {
+        $src = Join-Path (Join-Path $SpeckitRoot 'agents') "$agent.agent.md"
+        if (-not (Test-Path $src)) { $missingSources += "agent:$agent" }
+    }
+    if ($missingSources.Count -gt 0) {
+        Write-Host 'Stale speckit bundle detected — missing sources:' -ForegroundColor Yellow
+        foreach ($m in $missingSources) { Write-Host "  $m" -ForegroundColor Yellow }
+        Write-Host 'Auto-downloading latest release from GitHub...' -ForegroundColor Cyan
+        $downloadedTag = Get-SpeckitFromGitHub -DestDir $SpeckitRoot
+        # Force re-copy so stale destinations are replaced with fresh sources
+        $script:ForceMode = $true
+        Write-Host ''
+    }
+}
+
 Write-Host 'Installing speckit copies...' -ForegroundColor Cyan
 Write-Host ''
 
