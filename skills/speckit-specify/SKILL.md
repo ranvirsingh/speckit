@@ -63,7 +63,7 @@ The text the user typed after `/speckit-specify` in the triggering message **is*
 Before writing the spec, use `#askQuestions` to gather essential context in **focused batches of upto 5 questions at once but continue to ask as we must clarify all the necessary details**. This replaces the old approach of writing first and marking `[NEEDS CLARIFICATION]` afterwards.
 
 **Round 1 — Scope & Type** (always ask):
-1. Confirm or refine the work type classification (Feature / Bug / Chore)
+1. Present the auto-classified work type (Feature / Bug / Chore) with reasoning — ask the user to confirm or override
 2. What is the core value / problem being solved?
 3. Are there any constraints or non-negotiables?
 
@@ -84,16 +84,17 @@ Before writing the spec, use `#askQuestions` to gather essential context in **fo
 
 Given that feature description, do this:
 
-0. **Classify Work Type**: Analyze the description and classify as one of:
+0. **Classify Work Type**: Analyze the description and **auto-classify** as one of:
    - **Feature**: New capability, enhancement, or user-facing change requiring design (multi-step, needs planning)
    - **Bug**: Defect fix, type error, missing field, broken behavior (root cause known or discoverable, fix is scoped)
    - **Chore**: Refactor, dependency update, documentation, CI/CD, tooling (no user-facing change, no design needed)
 
-   **Classification heuristic**:
-   - Contains "fix", "broken", "missing", "wrong", "error", "bug", "incorrect" → likely **Bug**
-   - Contains "update", "refactor", "rename", "move", "clean up", "upgrade" → likely **Chore**
-   - Everything else → **Feature**
-   - When ambiguous, ask the user using option tables (Feature / Bug / Chore)
+   **Classification heuristic** — apply these rules in order:
+   1. Contains words like "fix", "broken", "missing", "wrong", "error", "bug", "incorrect", "crash", "regression" → classify as **Bug**
+   2. Contains words like "update", "refactor", "rename", "move", "clean up", "upgrade", "migrate", "deprecate" → classify as **Chore**
+   3. Everything else → classify as **Feature**
+
+   **Self-classification is the default.** The AI MUST classify the work type itself based on the description and present its classification with a one-line reasoning in Round 1 of the Interactive Clarification. The user can override, but the AI does not wait for confirmation before reasoning — it proceeds with its classification unless the user objects.
 
     **If Bug or Chore**: Use a **lightweight issue-backed spec** and create a GitHub Issue directly.
 
