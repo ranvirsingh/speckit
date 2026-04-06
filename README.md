@@ -22,7 +22,7 @@ Plus **Constitution** for project governance and **Verify** for compliance check
 
 ```powershell
 # From the root of your project:
-irm https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | iex
+Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | Invoke-Expression
 ```
 
 This downloads the latest release zip, extracts it to `.github/skills/speckit/`, and links everything for VS Code discovery.
@@ -69,15 +69,15 @@ To uninstall: `powershell -ExecutionPolicy Bypass -File .github/skills/speckit/i
 
 ### Internal Subagents
 
-These are custom agents (`.agent.md` files) invoked automatically by the pipeline skills via the `runSubagent` tool — not called directly by users:
+These are custom agents (`.agent.md` files) invoked automatically by the pipeline skills via the `runSubagent` tool — not called directly by users. They operate **autonomously** under the [Subagent Autonomy Protocol](references/AGENT-PROTOCOL.md) with per-agent token buckets to prevent deadlocks.
 
-| Subagent | Used By | Purpose |
-|----------|---------|---------|
-| speckit-codebase-scanner | speckit-plan | Read-only codebase exploration for design research |
-| speckit-living-docs-loader | Most pipeline skills | Compresses living docs into a focused context summary |
-| speckit-e2e-recorder | speckit-e2e | Browser automation for UI project e2e testing via Playwright |
-| speckit-pipeline-checker | speckit-verify | Checks PR status checks (CI green/red/pending) |
-| speckit-web-researcher | speckit-research | External web research for libraries, APIs, and best practices |
+| Subagent | Codename | Bucket | Used By | Purpose |
+|----------|----------|--------|---------|---------|
+| speckit-codebase-scanner | **Ada** | 2 | speckit-plan, speckit-research | Read-only codebase exploration for design research |
+| speckit-living-docs-loader | **Hypatia** | 1 | Most pipeline skills | Compresses living docs into a focused context summary |
+| speckit-e2e-recorder | **Turing** | 3 | speckit-e2e | Browser automation for UI project e2e testing via Playwright |
+| speckit-pipeline-checker | **Hopper** | 2 | speckit-verify | Checks PR status checks (CI green/red/pending) |
+| speckit-web-researcher | **Curie** | 3 | speckit-research | External web research for libraries, APIs, and best practices |
 
 > **Note**: The installer links subagents into `.github/agents/` for automatic discovery. No `settings.json` changes are needed.
 

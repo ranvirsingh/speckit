@@ -9,10 +9,10 @@
     -Update and -Uninstall know exactly which paths to clean up.
 
     Usage from any project root:
-      irm https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | iex
+      Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | Invoke-Expression
 
     Or if already installed:
-      pwsh .github/skills/speckit/install.ps1
+      powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 
     The script is idempotent -- safe to run multiple times.
 
@@ -95,7 +95,7 @@ function Get-SpeckitFromGitHub {
 $SpeckitRoot = $PSScriptRoot
 if (-not $SpeckitRoot) { $SpeckitRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
 
-# Detect bootstrap mode: running from piped input (irm | iex) or no valid speckit root
+# Detect bootstrap mode: running from piped input (Invoke-RestMethod | Invoke-Expression) or no valid speckit root
 $IsBootstrap = (-not $SpeckitRoot) -or (-not (Test-Path (Join-Path $SpeckitRoot 'SKILL.md')))
 
 if ($IsBootstrap) {
