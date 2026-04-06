@@ -83,6 +83,20 @@ Use the `runSubagent` tool with `agentName: "speckit-web-researcher"` and provid
 - **techStack**: The project's detected tech stack (from Step 2 findings)
 - **constraints**: Any constitution constraints on technology choices
 
+The web researcher uses the **Gemini CLI** for all web-grounded research.
+
+**If the web-researcher subagent is unavailable**, run Gemini CLI queries directly via `run_in_terminal`:
+
+```
+gemini -p "Search for: <query>. Provide a concise summary with source URLs." --model flash --output-format text --approval-mode yolo
+```
+
+- Use `--model flash` for straightforward lookups (~90% of queries); use `--model pro` for complex multi-source synthesis.
+- Craft specific, context-rich queries that include the tech stack.
+- One focused question per invocation — chain multiple calls for multi-part questions.
+- For deep research, chain a search query followed by targeted URL fetch queries.
+- Always preserve source URLs in the output.
+
 The web researcher will return:
 - Library/package comparisons with evidence
 - Design pattern recommendations

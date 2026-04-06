@@ -38,17 +38,81 @@ Extract the concrete unknowns that need investigation. Typical categories:
 
 ### 2. Research Each Question
 
-For each question, use web search to find:
+For each question, use the **Gemini CLI** to perform web-grounded research via `run_in_terminal`.
 
-1. **Official documentation** — primary source for APIs and libraries
-2. **GitHub repositories** — popular implementations, star counts, recent activity
-3. **Community consensus** — Stack Overflow answers, blog posts, conference talks
-4. **Comparison articles** — library comparison posts, benchmark results
+#### Command Reference
 
-Evaluate each source for:
+| Flag | Purpose | Recommended Value |
+|------|---------|-------------------|
+| `-p` | Non-interactive prompt (required) | Always use |
+| `--model` / `-m` | Model selection | `flash` for speed, `pro` for complex queries |
+| `--output-format` / `-o` | Output format | `text` (default) or `json` for structured data |
+| `--approval-mode` | Tool approval | `yolo` for unattended execution |
+
+**Model selection**:
+- **flash** (default) — fast, low-cost. Use for straightforward searches, simple lookups, and single-topic questions. Suitable for ~90% of research tasks.
+- **pro** — use for complex multi-step research, nuanced multi-library comparisons, or when results need sophisticated synthesis from many sources.
+
+#### Query Patterns
+
+Build focused, context-rich queries. One question per invocation — chain multiple calls for multi-part questions.
+
+**Library comparison**:
+```
+gemini -p "Compare <lib-A> vs <lib-B> for <use-case> in <tech-stack>. Include maintenance activity, bundle size, TypeScript support, and weekly downloads. Provide a concise summary with source URLs." --model flash --output-format text --approval-mode yolo
+```
+
+**Best practice / documentation lookup**:
+```
+gemini -p "What is the recommended pattern for <problem> in <framework>? Summarise key concepts with pros/cons and link to official docs. Provide a concise summary with source URLs." --model flash --output-format text --approval-mode yolo
+```
+
+**API integration**:
+```
+gemini -p "How to integrate <API/service> with <framework>? Summarise auth flow, rate limits, and key endpoints. Provide a concise summary with source URLs." --model flash --output-format text --approval-mode yolo
+```
+
+**Security advisory check**:
+```
+gemini -p "Search for: latest security vulnerabilities in <package-name> npm package. Include CVE numbers and severity. Provide a concise summary with source URLs." --model flash --output-format text --approval-mode yolo
+```
+
+**Error troubleshooting**:
+```
+gemini -p "Search for recent solutions to this error: <error message>. Check GitHub issues, Stack Overflow, and forums. Provide a concise summary with source URLs." --model flash --output-format text --approval-mode yolo
+```
+
+**Read specific documentation** (deep-dive on a known URL):
+```
+gemini -p "Read and extract the key API details from: <url>. Provide a concise summary with source URLs." --model flash --output-format text --approval-mode yolo
+```
+
+#### Deep Research (Search + Fetch)
+
+For thorough research, chain a search followed by targeted fetches:
+1. Run a general search query to identify relevant URLs.
+2. Follow up with a focused fetch query for each promising URL to extract deeper content.
+
+#### Query Rules
+
+- Always end prompts with `"Provide a concise summary with source URLs."` so findings include citations.
+- Include the project's tech stack in every query for relevance.
+- Ask one focused question per invocation — avoid mega-prompts.
+- Craft specific queries — e.g. `"React useOptimistic hook API reference and examples"` not `"React hooks"`.
+- Preserve all source URLs in your output so the invoking agent can verify findings.
+
+#### Evaluating Results
+
 - **Recency** — prefer sources from the last 2 years
 - **Authority** — official docs > popular blogs > random posts
 - **Relevance** — matches the project's tech stack and constraints
+- **Citation quality** — discard findings that lack source URLs
+
+#### Limitations
+
+- Gemini CLI must be installed and authenticated on the machine.
+- Very long web pages may be truncated or summarised by the model.
+- Rate limits may apply based on the user's Gemini API quota.
 
 ### 3. Assess Library Candidates
 
