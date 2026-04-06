@@ -79,6 +79,7 @@ All subagents operate under the [Subagent Autonomy Protocol](references/AGENT-PR
 |----------|----------|--------|---------|---------|
 | `speckit-codebase-scanner` | **Ada** | 2 | `speckit-plan`, `speckit-research` | Read-only codebase exploration — returns distilled findings for design research |
 | `speckit-living-docs-loader` | **Hypatia** | 1 | Most pipeline skills | Loads and compresses living docs into a focused context summary |
+| `speckit-nexus` | **Babbage** | 2 | `speckit-specify` | Pre-reasoning — classifies work type, extracts problem/actors/constraints/edge cases |
 | `speckit-e2e-recorder` | **Turing** | 3 | `speckit-e2e` | Browser automation for UI project e2e testing via Playwright |
 | `speckit-pipeline-checker` | **Hopper** | 2 | `speckit-verify` | Checks PR status checks (CI green/red/pending) |
 | `speckit-web-researcher` | **Curie** | 3 | `speckit-research` | External web research for libraries, APIs, and best practices |

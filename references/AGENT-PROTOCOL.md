@@ -53,6 +53,7 @@ Each subagent has a **token bucket** that limits how many times it can request r
 | `speckit-codebase-scanner` | **2** | Codebase is local — most answers are findable in one pass |
 | `speckit-e2e-recorder` | **3** | Browser tests may need retry after app-state or config fixes |
 | `speckit-living-docs-loader` | **1** | Pure file loading — if docs don't exist, they don't exist |
+| `speckit-nexus` | **2** | Reasoning from description + context; one retry if codebase scan needed |
 | `speckit-pipeline-checker` | **2** | CI may be pending; one retry after wait is reasonable |
 | `speckit-web-researcher` | **3** | Web research may need follow-up queries for depth |
 

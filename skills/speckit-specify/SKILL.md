@@ -60,29 +60,38 @@ The text the user typed after `/speckit-specify` in the triggering message **is*
 
 ### Interactive Clarification (before writing)
 
-The AI should **reason autonomously first**, then confirm with the user in a single focused round. This replaces the old multi-round approach.
+The AI delegates reasoning to the **Nexus subagent** (Babbage), then confirms with the user in a single focused round. This replaces manual multi-round clarification.
 
-**Step A — AI Self-Reasoning** (no user interaction):
-The AI analyses the user's description + living context (retro insights, constitution) and drafts answers to:
-1. Work type classification (Feature / Bug / Chore) with one-line reasoning
-2. Core value / problem being solved — inferred from the description
-3. Constraints and non-negotiables — extracted from the constitution + description
-4. Primary users / actors — inferred from the description (Features only)
-5. Existing patterns to follow — from retro insights and constitution (Features only)
-6. Likely failure scenarios and edge cases — reasoned from the domain (Features only)
+**Step A — Invoke Nexus** (no user interaction):
+Use the `runSubagent` tool with `agentName: "speckit-nexus"` and provide:
+- **description**: The user's feature/bug/chore description from `$ARGUMENTS`
+- **livingContext**: The summary returned by `speckit-living-docs-loader` (from the Pre-Execution step)
+- **codebaseRoot**: The workspace root path
+
+Nexus returns a structured pre-reasoning report containing:
+- Work type classification with confidence level
+- Core problem and value proposition
+- Primary actors and affected areas
+- Applicable constitution rules and retro patterns
+- Anticipated edge cases
+- Complexity signal (research/plan/implement recommendation)
+
+If Nexus returns `reinvoke: true` with unresolved questions, answer them using available context and re-invoke (respecting the token bucket of **2**). Use partial results if the bucket is exhausted.
 
 **Step B — Single Confirmation Round** (use `#askQuestions`):
-Present the AI's self-reasoned answers as a structured summary and ask the user to confirm, correct, or add to each point. Include these questions:
-1. "I classified this as **{type}** because {reason}. Correct?" — with Feature/Bug/Chore options
-2. "I identified the core problem as: {summary}. Anything to add or correct?"
-3. "What is explicitly **out of scope**?" — this is the one question the AI genuinely cannot infer
-4. (Features only) "I identified these actors: {actors}, constraints: {constraints}, edge cases: {edge cases}. Anything missing?"
+Present the Nexus pre-reasoning as a structured summary and ask the user to confirm, correct, or add to each point. Include these questions:
+1. "Nexus classified this as **{type}** ({confidence}) because {reason}. Correct?" — with Feature/Bug/Chore options
+2. "Core problem identified: {summary}. Anything to add or correct?"
+3. "What is explicitly **out of scope**?" — this is the one question neither AI nor Nexus can infer
+4. (Features only) "Nexus identified these actors: {actors}, constraints: {constraints}, edge cases: {edge cases}. Anything missing?"
+
+If Nexus flagged `classification_confidence: low`, elevate question 1 to a required selection (not just a confirmation).
 
 **Step C — Follow-Up Round** (only if Step B reveals significant gaps):
-If the user's corrections in Step B reveal complexity the AI missed, ask up to 3 targeted follow-up questions. Otherwise, proceed directly to writing the spec.
+If the user's corrections in Step B reveal complexity that Nexus missed, ask up to 3 targeted follow-up questions. Otherwise, proceed directly to writing the spec.
 
 **Rules**:
-- The AI MUST attempt to answer every question itself before asking the user
+- Nexus does the heavy lifting — the skill focuses on user confirmation only
 - Use `#askQuestions` with suggested options + a freetext field
 - Incorporate answers into the spec — do NOT add `[NEEDS CLARIFICATION]` markers unless the user explicitly defers an answer
 - For bugs/chores, only the classification confirmation and out-of-scope question are needed (keep it lightweight)
@@ -90,17 +99,11 @@ If the user's corrections in Step B reveal complexity the AI missed, ask up to 3
 
 Given that feature description, do this:
 
-0. **Classify Work Type**: Analyze the description and **auto-classify** as one of:
-   - **Feature**: New capability, enhancement, or user-facing change requiring design (multi-step, needs planning)
-   - **Bug**: Defect fix, type error, missing field, broken behavior (root cause known or discoverable, fix is scoped)
-   - **Chore**: Refactor, dependency update, documentation, CI/CD, tooling (no user-facing change, no design needed)
-
-   **Classification heuristic** — apply these rules in order:
-   1. Contains words like "fix", "broken", "missing", "wrong", "error", "bug", "incorrect", "crash", "regression" → classify as **Bug**
-   2. Contains words like "update", "refactor", "rename", "move", "clean up", "upgrade", "migrate", "deprecate" → classify as **Chore**
-   3. Everything else → classify as **Feature**
-
-   **Self-classification is the default.** The AI MUST classify the work type itself based on the description and present its classification with a one-line reasoning in Round 1 of the Interactive Clarification. The user can override, but the AI does not wait for confirmation before reasoning — it proceeds with its classification unless the user objects.
+0. **Classify Work Type**: The Nexus subagent (Step A above) handles classification. Use its result directly.
+   If Nexus was not invoked (e.g., empty description), fall back to the heuristic:
+   1. Contains words like "fix", "broken", "missing", "wrong", "error", "bug", "incorrect", "crash", "regression" → **Bug**
+   2. Contains words like "update", "refactor", "rename", "move", "clean up", "upgrade", "migrate", "deprecate" → **Chore**
+   3. Everything else → **Feature**
 
     **If Bug or Chore**: Use a **lightweight issue-backed spec** and create a GitHub Issue directly.
 

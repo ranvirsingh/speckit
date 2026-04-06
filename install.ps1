@@ -203,6 +203,7 @@ $Agents = @(
     'speckit-codebase-scanner'
     'speckit-living-docs-loader'
     'speckit-e2e-recorder'
+    'speckit-nexus'
     'speckit-pipeline-checker'
     'speckit-web-researcher'
 )
