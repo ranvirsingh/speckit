@@ -55,7 +55,7 @@ Needs research only?                   specify → research → implement → te
 Simple & scoped?                       specify → implement → test → e2e → retro
 ```
 
-> **Auto-continuation**: Once `speckit-implement` completes, the pipeline **automatically proceeds** through `test → e2e → retro` without stopping to ask. Each skill invokes the next on success. Do NOT pause for user confirmation between these steps.
+> **Auto-continuation**: The entire pipeline runs without stopping to ask the user which step to take. `speckit-specify` auto-routes to the appropriate next phase based on complexity signal. From there, `research → plan → implement → test → e2e → retro` each invoke the next skill on success. Do NOT pause for user confirmation between steps. User interaction occurs only during **specify** (confirmation round) and when a step encounters a failure requiring user action.
 
 ## When to Use Each Sub-Skill
 

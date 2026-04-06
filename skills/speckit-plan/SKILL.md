@@ -19,7 +19,7 @@ After planning is complete, **automatically proceed** to `speckit-implement #{is
 
 This skill applies to **any work type** (feature, bug, or chore) when the spec involves schema changes, new/changed APIs, or an unfamiliar domain. If none of these signals are present, the user should skip directly to **speckit-implement**.
 
-Before proceeding, check the GitHub Issue for labels and body to confirm the complexity signal warrants planning. If the work is simple and scoped (e.g., a typo fix, a one-file bug), suggest skipping to **speckit-implement** instead.
+Before proceeding, check the GitHub Issue for labels and body to confirm the complexity signal warrants planning. If the work is simple and scoped (e.g., a typo fix, a one-file bug), **auto-route to speckit-implement** instead — do not ask the user.
 
 ## User Input
 

@@ -11,10 +11,10 @@ description: >-
 
 ## Next Steps
 
-After the spec is written, the next step depends on the **complexity signal**:
-- **Needs research** (technology unknowns, library selection, unfamiliar APIs): Suggest **speckit-research** — "Research options before planning or implementing."
-- **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Suggest **speckit-plan** — "Create a technical plan with tasks for this spec."
-- **Simple & scoped** (no schema, API, or domain unknowns): Suggest **speckit-implement** — "Implement this directly." (Skips plan.)
+After the spec is written, **auto-continue** to the next step based on the **complexity signal** (from Nexus pre-reasoning or inline assessment). Do NOT stop to suggest or ask the user which step to take — invoke the next skill directly:
+- **Needs research** (technology unknowns, library selection, unfamiliar APIs): Auto-invoke **speckit-research** `#{issue-number}`
+- **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Auto-invoke **speckit-plan** `#{issue-number}`
+- **Simple & scoped** (no schema, API, or domain unknowns): Auto-invoke **speckit-implement** `#{issue-number}`
 
 ## User Input
 
@@ -167,9 +167,9 @@ Given that feature description, do this:
    For each MUST and NON-NEGOTIABLE rule, check whether the spec content satisfies it.
    If any NON-NEGOTIABLE rule is violated, fix the issue body before proceeding.
 
-   Then assess the **complexity signal** for the lightweight spec:
-   - If the bug/chore involves schema changes, new/changed APIs, or an unfamiliar domain → suggest **speckit-plan** `#{issue-number}`
-   - Otherwise → suggest **speckit-implement** `#{issue-number}`
+   Then assess the **complexity signal** for the lightweight spec and **auto-continue**:
+   - If the bug/chore involves schema changes, new/changed APIs, or an unfamiliar domain → auto-invoke **speckit-plan** `#{issue-number}`
+   - Otherwise → auto-invoke **speckit-implement** `#{issue-number}`
 
    Skip all remaining steps (1-9) below.
 
@@ -230,9 +230,10 @@ Given that feature description, do this:
    If any NON-NEGOTIABLE rule is violated, fix the spec before proceeding.
    Report any SHOULD violations as warnings.
 
-8. Report completion with branch name, issue number, and readiness:
-   - **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Suggest `/speckit-plan #{issue-number}`
-   - **Simple & scoped**: Suggest `/speckit-implement #{issue-number}`
+8. **Auto-continue** to the next phase based on complexity signal — do NOT stop to ask or suggest:
+   - **Needs research** (technology unknowns): Auto-invoke `speckit-research #{issue-number}`
+   - **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Auto-invoke `speckit-plan #{issue-number}`
+   - **Simple & scoped**: Auto-invoke `speckit-implement #{issue-number}`
 
 9. **Check for extension hooks (after specification)**:
    Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_specify` (post-hook variant).
