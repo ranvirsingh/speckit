@@ -12,7 +12,7 @@
     overwrites any existing links (Force + Update are ON by default).
 
     Usage from any project root:
-      Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | Invoke-Expression
+      & ([scriptblock]::Create((Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1)))
 
     Or if already installed:
       powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
@@ -106,7 +106,7 @@ function Get-SpeckitFromGitHub {
 $SpeckitRoot = $PSScriptRoot
 if (-not $SpeckitRoot) { $SpeckitRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
 
-# Detect bootstrap mode: running from piped input (Invoke-RestMethod | Invoke-Expression) or no valid speckit root
+# Detect bootstrap mode: running from web (scriptblock::Create) or no valid speckit root
 $IsBootstrap = (-not $SpeckitRoot) -or (-not (Test-Path (Join-Path $SpeckitRoot 'SKILL.md')))
 
 if ($IsBootstrap) {

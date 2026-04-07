@@ -22,7 +22,7 @@ Plus **Constitution** for project governance and **Verify** for compliance check
 
 ```powershell
 # From the root of your project:
-Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | Invoke-Expression
+& ([scriptblock]::Create((Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1)))
 ```
 
 This downloads the latest release zip, extracts it to `.github/skills/speckit/`, and links everything for VS Code discovery.
