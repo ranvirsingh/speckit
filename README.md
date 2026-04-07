@@ -80,7 +80,7 @@ These are custom agents (`.agent.md` files) invoked automatically by the pipelin
 
 | Subagent | Codename | Bucket | Used By | Purpose |
 |----------|----------|--------|---------|---------|
-| speckit-codebase-scanner | **Ada** | 2 | speckit-plan, speckit-research | Read-only codebase exploration for design research |
+| speckit-codebase-scanner | **Dijkstra** | 2 | speckit-plan, speckit-research | Read-only codebase exploration for design research |
 | speckit-living-docs-loader | **Hypatia** | 1 | speckit-specify | Compresses living docs into a focused context summary |
 | speckit-nexus | **Babbage** | 2 | speckit-specify | Pre-reasoning — classifies work type, extracts problem/actors/constraints/edge cases |
 | speckit-e2e-browser | **Turing** | 3 | speckit-e2e | Browser automation for UI project e2e testing via Playwright |

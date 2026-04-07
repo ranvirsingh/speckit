@@ -84,7 +84,7 @@ All subagents operate under the [Subagent Autonomy Protocol](references/AGENT-PR
 
 | Subagent | Codename | Bucket | Used By | Purpose |
 |----------|----------|--------|---------|---------|
-| `speckit-codebase-scanner` | **Ada** | 2 | `speckit-plan`, `speckit-research` | Read-only codebase exploration — returns distilled findings for design research |
+| `speckit-codebase-scanner` | **Dijkstra** | 2 | `speckit-plan`, `speckit-research` | Read-only codebase exploration — returns distilled findings for design research |
 | `speckit-living-docs-loader` | **Hypatia** | 1 | `speckit-specify` (one-time load) | Loads and compresses living docs into a focused context summary |
 | `speckit-nexus` | **Babbage** | 2 | `speckit-specify` | Pre-reasoning — classifies work type, extracts problem/actors/constraints/edge cases |
 | `speckit-e2e-browser` | **Turing** | 3 | `speckit-e2e` | Browser automation for UI project e2e testing via Playwright |
