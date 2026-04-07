@@ -76,7 +76,7 @@ Simple & scoped?                       specify → implement → test → e2e �
 |-------|-------|----------|----------|
 | **Test** | `speckit-test` | **Nightingale** | Implementation done — verify it satisfies the spec (UAT) |
 | **E2E** | `speckit-e2e` | **Lovelace** | UAT passed — generate e2e test artifacts and attach to PR |
-| **Retro** | `speckit-retro` | **Curie-M** | E2E captured — update living docs, triage TODOs |
+| **Retro** | `speckit-retro` | **Deming** | E2E captured — update living docs, triage TODOs |
 
 ### Internal Subagents (`.agent.md` — invoked by agents/skills via `runSubagent`, not directly by users)
 

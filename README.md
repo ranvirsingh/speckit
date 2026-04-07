@@ -72,7 +72,7 @@ These phases are invoked via `runSubagent` with a `PipelineContext` handoff (see
 |-------|----------|--------|---------|
 | speckit-test | **Nightingale** | 2 | User acceptance testing — verify implementation against the spec |
 | speckit-e2e | **Lovelace** | 2 | Orchestrate e2e testing — delegates to e2e-browser or e2e-api |
-| speckit-retro | **Curie-M** | 1 | Post-implementation retrospective |
+| speckit-retro | **Deming** | 1 | Post-implementation retrospective |
 
 ### Internal Subagents
 
