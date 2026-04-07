@@ -123,13 +123,59 @@ Run `terraform plan` / `cdk diff` and capture the output to `e2e/e2e-{issueNumbe
    git push
    ```
 
-3. Format the e2e section and append to PR body:
-   - **UI projects**: Include GIF recordings with inline images
-   - **Non-UI projects**: Include execution output in a `<details>` block
+3. Format the e2e evidence section for the PR body using this template:
 
-4. Update PR body:
+   **For UI projects** (GIF recordings):
+   ````markdown
+   ## E2E Evidence
+
+   | Scenario | Result | Recording |
+   |----------|--------|-----------|
+   | US1-SC1: {scenario title} | :white_check_mark: Pass | ![US1-SC1](e2e/gifs/e2e-{issueNumber}/sc1.gif) |
+   | US1-SC2: {scenario title} | :white_check_mark: Pass | ![US1-SC2](e2e/gifs/e2e-{issueNumber}/sc2.gif) |
+
+   <details><summary>Playwright trace</summary>
+
+   ```
+   {paste npx playwright show-trace output or summary here}
+   ```
+
+   </details>
+   ````
+
+   **For non-UI projects** (API / CLI / library):
+   ````markdown
+   ## E2E Evidence
+
+   | Scenario | Result |
+   |----------|--------|
+   | US1-SC1: {scenario title} | :white_check_mark: Pass |
+
+   <details><summary>Execution output</summary>
+
+   ```
+   {paste test runner output here}
+   ```
+
+   </details>
+   ````
+
+   **Rules for GIF embedding:**
+   - Use relative paths from the repo root (e.g., `e2e/gifs/e2e-42/sc1.gif`)
+   - One GIF per scenario — name them `sc1.gif`, `sc2.gif`, etc. matching scenario order
+   - For failing scenarios, use `:x: Fail` and still include the GIF (it shows where it broke)
+   - If a GIF exceeds 5 MB after ffmpeg conversion, use a screenshot instead: `e2e/screenshots/e2e-{issueNumber}/sc{n}.png`
+
+4. Update PR body — read the existing body, append the evidence section, then write back:
    ```bash
-   gh pr edit {pr-number} --body "{updated body with e2e section}"
+   existing_body=$(gh pr view {pr-number} --json body --jq '.body')
+   updated_body="${existing_body}
+
+   $(cat <<'EVIDENCE'
+   {formatted e2e evidence section from step 3}
+   EVIDENCE
+   )"
+   gh pr edit {pr-number} --body "$updated_body"
    ```
 
 ## Return Value
