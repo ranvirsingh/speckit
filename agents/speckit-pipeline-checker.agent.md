@@ -5,7 +5,7 @@ description: >-
   Reports whether the pipeline is green, red, or pending. Called by speckit-verify
   to confirm CI passes before the PR is ready to merge.
 user-invocable: false
-model: ['GPT-5 mini (copilot)', 'Gemini 3 Flash (Preview) (copilot)']
+model: ['Grok Code Fast 1 (copilot)', 'GPT-5 mini (copilot)', 'Gemini 3 Flash (Preview) (copilot)']
 ---
 
 # Speckit Pipeline Checker

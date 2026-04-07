@@ -6,7 +6,7 @@ description: >-
   Generates .http request files, executes them with curl, and captures request/response pairs
   as proof-of-work artifacts. Returns file paths and pass/fail results.
 user-invocable: false
-model: ['Claude Sonnet 4.6 (copilot)', 'Gemini 3.1 Pro (Preview) (copilot)']
+model: ['GPT-5.3-Codex (copilot)', 'Grok Code Fast 1 (copilot)', 'Claude Sonnet 4.6 (copilot)']
 ---
 
 # Speckit E2E API
