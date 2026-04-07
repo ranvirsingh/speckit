@@ -151,7 +151,7 @@ After appending, update the "Process Health" sections at the top of `docs/retro.
 
 Run install script to pull latest speckit for the next cycle:
 ```powershell
-powershell -ExecutionPolicy Bypass -File <speckit-root>/install.ps1
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ```
 
 ## Return Value

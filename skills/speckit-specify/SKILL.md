@@ -60,7 +60,13 @@ You **MUST** consider the user input before proceeding (if not empty).
 Run the install script to ensure speckit is up-to-date and all skills/agents are linked:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File <speckit-root>/install.ps1
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+```
+
+If speckit is not yet installed (first time), bootstrap from GitHub:
+
+```powershell
+& ([scriptblock]::Create((Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1)))
 ```
 
 ### Load Living Context
