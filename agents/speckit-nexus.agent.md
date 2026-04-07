@@ -6,7 +6,7 @@ description: >-
   (work type, core problem, actors, constraints, edge cases) so parent skills can skip manual
   clarification rounds.
 user-invocable: false
-model: ['GPT-5.4 (copilot)', 'Gemini 3 Flash (Preview) (copilot)', 'Claude Sonnet 4.6 (copilot)']
+model: ['Claude Sonnet 4.6 (copilot)', 'Gemini 3.1 Pro (Preview) (copilot)']
 ---
 
 # Speckit Nexus
