@@ -61,22 +61,30 @@ To uninstall: `powershell -ExecutionPolicy Bypass -File .github/skills/speckit/i
 | speckit-research | `/speckit-research` | Investigate technologies, compare libraries, assess patterns — writes to `docs/research.md` |
 | speckit-plan | `/speckit-plan` | Append design notes and tasks beneath the spec, plus update living docs when needed |
 | speckit-implement | `/speckit-implement` | Execute tasks, commit, push, create PR |
-| speckit-test | `/speckit-test` | User acceptance testing — verify implementation against the spec |
-| speckit-e2e | `/speckit-e2e` | Generate e2e test artifacts proving the implementation works |
-| speckit-retro | `/speckit-retro` | Post-implementation retrospective |
 | speckit-constitution | `/speckit-constitution` | Project governance setup |
 | speckit-verify | `/speckit-verify` | Check compliance against the constitution |
 
+### Pipeline Agents
+
+These phases are invoked via `runSubagent` with a `PipelineContext` handoff (see [HANDOFF-SCHEMA.md](references/HANDOFF-SCHEMA.md)):
+
+| Agent | Codename | Bucket | Purpose |
+|-------|----------|--------|---------|
+| speckit-test | **Nightingale** | 2 | User acceptance testing — verify implementation against the spec |
+| speckit-e2e | **Lovelace** | 2 | Orchestrate e2e testing — delegates to e2e-browser or e2e-api |
+| speckit-retro | **Curie-M** | 1 | Post-implementation retrospective |
+
 ### Internal Subagents
 
-These are custom agents (`.agent.md` files) invoked automatically by the pipeline skills via the `runSubagent` tool — not called directly by users. They operate **autonomously** under the [Subagent Autonomy Protocol](references/AGENT-PROTOCOL.md) with per-agent token buckets to prevent deadlocks.
+These are custom agents (`.agent.md` files) invoked automatically by the pipeline skills/agents via the `runSubagent` tool — not called directly by users. They operate **autonomously** under the [Subagent Autonomy Protocol](references/AGENT-PROTOCOL.md) with per-agent token buckets to prevent deadlocks.
 
 | Subagent | Codename | Bucket | Used By | Purpose |
 |----------|----------|--------|---------|---------|
 | speckit-codebase-scanner | **Ada** | 2 | speckit-plan, speckit-research | Read-only codebase exploration for design research |
-| speckit-living-docs-loader | **Hypatia** | 1 | Most pipeline skills | Compresses living docs into a focused context summary |
+| speckit-living-docs-loader | **Hypatia** | 1 | speckit-specify | Compresses living docs into a focused context summary |
 | speckit-nexus | **Babbage** | 2 | speckit-specify | Pre-reasoning — classifies work type, extracts problem/actors/constraints/edge cases |
-| speckit-e2e-recorder | **Turing** | 3 | speckit-e2e | Browser automation for UI project e2e testing via Playwright |
+| speckit-e2e-browser | **Turing** | 3 | speckit-e2e | Browser automation for UI project e2e testing via Playwright |
+| speckit-e2e-api | **Berners-Lee** | 3 | speckit-e2e | API e2e testing via HTTP exchange recording |
 | speckit-pipeline-checker | **Hopper** | 2 | speckit-verify | Checks PR status checks (CI green/red/pending) |
 | speckit-web-researcher | **Curie** | 3 | speckit-research | External web research for libraries, APIs, and best practices |
 

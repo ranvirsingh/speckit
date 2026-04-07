@@ -51,11 +51,15 @@ Each subagent has a **token bucket** that limits how many times it can request r
 | Subagent | Bucket Size | Rationale |
 |----------|-------------|-----------|
 | `speckit-codebase-scanner` | **2** | Codebase is local — most answers are findable in one pass |
-| `speckit-e2e-recorder` | **3** | Browser tests may need retry after app-state or config fixes |
+| `speckit-e2e-browser` | **3** | Browser tests may need retry after app-state or config fixes |
+| `speckit-e2e-api` | **3** | API tests may need retry after server-state or auth fixes |
 | `speckit-living-docs-loader` | **1** | Pure file loading — if docs don't exist, they don't exist |
 | `speckit-nexus` | **2** | Reasoning from description + context; one retry if codebase scan needed |
 | `speckit-pipeline-checker` | **2** | CI may be pending; one retry after wait is reasonable |
 | `speckit-web-researcher` | **3** | Web research may need follow-up queries for depth |
+| `speckit-test` | **2** | UAT verification; one retry after implement fixes |
+| `speckit-e2e` | **2** | E2E orchestration; one retry after implement fixes |
+| `speckit-retro` | **1** | Retro is observational — either it works or it doesn't |
 
 ### How It Works
 
@@ -84,3 +88,47 @@ When invoking a subagent, the parent MUST:
 3. **Enforce the cap** — refuse re-invocation when bucket = 0.
 4. **Use partial results** — never discard work done by a subagent, even if incomplete.
 5. **Log gaps** — record any unresolved questions that hit the bucket limit for the retro/verify phases.
+
+## Circuit Breaker
+
+The circuit breaker prevents runaway retry loops at the **pipeline phase level** (not individual subagents — those are covered by the token bucket above). It governs the implement → test → implement and implement → e2e → implement feedback cycles.
+
+### How It Works
+
+1. The router maintains a `retryCount` object in the [PipelineContext](./HANDOFF-SCHEMA.md) with one counter per phase.
+2. All counters start at `0`.
+3. When a phase fails and the pipeline auto-continues back (e.g., test fails → implement), the router increments `retryCount.{phase}` for the phase being re-entered.
+4. **Before invoking any phase**, the router checks:
+   ```
+   if retryCount.{phase} >= 2 → STOP and escalate to user
+   ```
+5. On escalation, the router presents:
+   - Which phase tripped the breaker
+   - The failure reason from the last attempt
+   - The partial results accumulated so far
+   - A suggestion to the user (e.g., "The test phase has failed twice after implement fixes. Please review the failing scenarios manually.")
+
+### Retry Semantics
+
+| Loop | Trigger | Counter Incremented | Max Retries |
+|------|---------|-------------------|-------------|
+| implement → test → implement | UAT fails | `retryCount.implement` | 2 |
+| implement → e2e → implement | E2E tests fail | `retryCount.implement` | 2 |
+| test → implement → test | Fix didn't resolve UAT | `retryCount.test` | 2 |
+| e2e → implement → e2e | Fix didn't resolve E2E | `retryCount.e2e` | 2 |
+
+### Rules
+
+- Counters are **per pipeline run** — a new `speckit-specify` invocation resets all counters.
+- The circuit breaker is orthogonal to the token bucket — a subagent may exhaust its bucket without tripping the breaker, and vice versa.
+- The breaker applies to the **router's auto-continue logic only**. A user can always manually re-invoke a phase (the counter is not checked for direct invocations).
+
+## Handoff Protocol
+
+Pipeline phases communicate via the `PipelineContext` JSON schema. See [HANDOFF-SCHEMA.md](./HANDOFF-SCHEMA.md) for the full schema definition, field rules, staleness checks, and backward-compatibility behaviour.
+
+### Key Principles
+
+1. **Incremental enrichment**: Each phase adds its fields to the context and passes it downstream. No phase removes or overwrites fields set by an earlier phase.
+2. **Single load**: Living docs are loaded once at specify time and cached in `livingContext`. Downstream phases trust the cache unless the issue body was modified (staleness check).
+3. **Graceful degradation**: If an agent receives no `PipelineContext`, it falls back to CLI-based context derivation (see Backward Compatibility in HANDOFF-SCHEMA.md).

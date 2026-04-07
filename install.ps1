@@ -191,21 +191,22 @@ $Skills = @(
     'speckit-research'
     'speckit-plan'
     'speckit-implement'
-    'speckit-test'
-    'speckit-e2e'
-    'speckit-retro'
     'speckit-constitution'
     'speckit-verify'
 )
 
-# Subagents: link into .github/agents/
+# Agents: link into .github/agents/
 $Agents = @(
     'speckit-codebase-scanner'
     'speckit-living-docs-loader'
-    'speckit-e2e-recorder'
+    'speckit-e2e-browser'
+    'speckit-e2e-api'
     'speckit-nexus'
     'speckit-pipeline-checker'
     'speckit-web-researcher'
+    'speckit-test'
+    'speckit-e2e'
+    'speckit-retro'
 )
 
 # --- Helpers ------------------------------------------------------------------

@@ -10,9 +10,36 @@ description: >-
 
 ## Next Steps (AUTO-CONTINUE)
 
-After implementation is complete (including commit and push), **automatically proceed** to user acceptance testing — do NOT stop to ask or suggest. Invoke `speckit-test #{issue-number}` immediately to verify the implementation satisfies the spec's acceptance scenarios and requirements.
+After implementation is complete (including commit and push), **enrich the PipelineContext** with implementation details and **automatically proceed** to user acceptance testing via `runSubagent`.
 
-> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
+### Enrich PipelineContext
+
+After creating the PR, add the `implementation` block to the PipelineContext:
+
+```jsonc
+{
+  "implementation": {
+    "completedAt": "{ISO timestamp}",
+    "prNumber": {pr-number},
+    "prUrl": "{pr-url}",
+    "commitSha": "{commit-sha}",
+    "baseUrl": "{detected dev-server URL or null}",
+    "authToken": null
+  }
+}
+```
+
+Detect `baseUrl` from `package.json` scripts (the dev server port) or project configuration. If not detectable, leave as `null`.
+
+### Invoke Test Agent
+
+Use `runSubagent` with `agentName: "speckit-test"` and pass the enriched PipelineContext:
+
+```
+runSubagent(agentName: "speckit-test", prompt: JSON.stringify({ pipelineContext: ctx }))
+```
+
+If no PipelineContext is available (standalone invocation), invoke `speckit-test #{issue-number}` as a skill instead.
 
 ## User Input
 

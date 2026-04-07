@@ -197,3 +197,175 @@ Describe 'pipeline wiring for research' {
         $content | Should Match 'docs/research\.md'
     }
 }
+
+Describe 'speckit-test agent' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+    }
+
+    It 'agent.md exists' {
+        $path = Join-Path $speckitRoot 'agents\speckit-test.agent.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'agent.md has correct name in frontmatter' {
+        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-test.agent.md') -Raw
+        $content | Should Match 'name:\s*speckit-test'
+    }
+
+    It 'old speckit-test skill directory is removed' {
+        $path = Join-Path $speckitRoot 'skills\speckit-test'
+        Test-Path $path | Should Be $false
+    }
+}
+
+Describe 'speckit-e2e agent' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+    }
+
+    It 'agent.md exists' {
+        $path = Join-Path $speckitRoot 'agents\speckit-e2e.agent.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'agent.md has correct name in frontmatter' {
+        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-e2e.agent.md') -Raw
+        $content | Should Match 'name:\s*speckit-e2e'
+    }
+
+    It 'old speckit-e2e skill directory is removed' {
+        $path = Join-Path $speckitRoot 'skills\speckit-e2e'
+        Test-Path $path | Should Be $false
+    }
+}
+
+Describe 'speckit-retro agent' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+    }
+
+    It 'agent.md exists' {
+        $path = Join-Path $speckitRoot 'agents\speckit-retro.agent.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'agent.md has correct name in frontmatter' {
+        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-retro.agent.md') -Raw
+        $content | Should Match 'name:\s*speckit-retro'
+    }
+
+    It 'retro-template.md exists in agents/assets' {
+        $path = Join-Path $speckitRoot 'agents\assets\retro-template.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'parking-lot-template.md exists in agents/assets' {
+        $path = Join-Path $speckitRoot 'agents\assets\parking-lot-template.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'old speckit-retro skill directory is removed' {
+        $path = Join-Path $speckitRoot 'skills\speckit-retro'
+        Test-Path $path | Should Be $false
+    }
+}
+
+Describe 'speckit-e2e-browser agent' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+    }
+
+    It 'agent.md exists' {
+        $path = Join-Path $speckitRoot 'agents\speckit-e2e-browser.agent.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'agent.md has correct name in frontmatter' {
+        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-e2e-browser.agent.md') -Raw
+        $content | Should Match 'name:\s*speckit-e2e-browser'
+    }
+
+    It 'old e2e-recorder agent is removed' {
+        $path = Join-Path $speckitRoot 'agents\speckit-e2e-recorder.agent.md'
+        Test-Path $path | Should Be $false
+    }
+}
+
+Describe 'speckit-e2e-api agent' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+    }
+
+    It 'agent.md exists' {
+        $path = Join-Path $speckitRoot 'agents\speckit-e2e-api.agent.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'agent.md has correct name in frontmatter' {
+        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-e2e-api.agent.md') -Raw
+        $content | Should Match 'name:\s*speckit-e2e-api'
+    }
+}
+
+Describe 'install.ps1 agent registration' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+        $installContent = Get-Content (Join-Path $speckitRoot 'install.ps1') -Raw
+    }
+
+    It 'registers speckit-test in Agents array' {
+        $installContent | Should Match "'speckit-test'"
+    }
+
+    It 'registers speckit-e2e in Agents array' {
+        $installContent | Should Match "'speckit-e2e'"
+    }
+
+    It 'registers speckit-retro in Agents array' {
+        $installContent | Should Match "'speckit-retro'"
+    }
+
+    It 'registers speckit-e2e-browser in Agents array' {
+        $installContent | Should Match "'speckit-e2e-browser'"
+    }
+
+    It 'registers speckit-e2e-api in Agents array' {
+        $installContent | Should Match "'speckit-e2e-api'"
+    }
+
+    It 'does NOT register speckit-e2e-recorder in Agents array' {
+        $installContent | Should Not Match "'speckit-e2e-recorder'"
+    }
+
+    It 'does NOT register speckit-test in Skills array' {
+        # speckit-test was moved to agents; should not appear in Skills
+        $installContent -replace '\$Agents[\s\S]*', '' | Should Not Match "'speckit-test'"
+    }
+}
+
+Describe 'handoff schema' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+    }
+
+    It 'HANDOFF-SCHEMA.md exists' {
+        $path = Join-Path $speckitRoot 'references\HANDOFF-SCHEMA.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'AGENT-PROTOCOL.md references circuit breaker' {
+        $content = Get-Content (Join-Path $speckitRoot 'references\AGENT-PROTOCOL.md') -Raw
+        $content | Should Match 'Circuit Breaker'
+    }
+
+    It 'router SKILL.md references PipelineContext' {
+        $content = Get-Content (Join-Path $speckitRoot 'SKILL.md') -Raw
+        $content | Should Match 'PipelineContext'
+    }
+
+    It 'router SKILL.md references runSubagent for test' {
+        $content = Get-Content (Join-Path $speckitRoot 'SKILL.md') -Raw
+        $content | Should Match 'runSubagent.*speckit-test'
+    }
+}

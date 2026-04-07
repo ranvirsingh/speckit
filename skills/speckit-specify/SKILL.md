@@ -11,10 +11,37 @@ description: >-
 
 ## Next Steps
 
-After the spec is written, **auto-continue** to the next step based on the **complexity signal** (from Nexus pre-reasoning or inline assessment). Do NOT stop to suggest or ask the user which step to take — invoke the next skill directly:
-- **Needs research** (technology unknowns, library selection, unfamiliar APIs): Auto-invoke **speckit-research** `#{issue-number}`
-- **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Auto-invoke **speckit-plan** `#{issue-number}`
-- **Simple & scoped** (no schema, API, or domain unknowns): Auto-invoke **speckit-implement** `#{issue-number}`
+After the spec is written and the GitHub Issue is created, **build the initial PipelineContext** and **auto-continue** to the next step. Do NOT stop to suggest or ask the user which step to take.
+
+### Build PipelineContext
+
+After issue creation, construct the initial context:
+
+```jsonc
+{
+  "issueNumber": {issue-number},
+  "issueTitle": "{issue title}",
+  "workType": "{feature|bug|chore}",
+  "specNumber": "{spec-number}",
+  "branch": "{branch-name}",
+  "owner": "{owner}",
+  "repo": "{repo}",
+  "livingContext": {
+    "summary": "{living-docs-loader summary from Pre-Execution}",
+    "loadedAt": "{ISO timestamp}"
+  },
+  "constitutionCompliant": true,    // set to false if compliance check failed
+  "complexitySignal": "{research|plan|implement}",
+  "retryCount": { "specify": 0, "research": 0, "plan": 0, "implement": 0, "test": 0, "e2e": 0, "retro": 0 }
+}
+```
+
+### Auto-Continue (with PipelineContext)
+
+Pass the built context to the next phase:
+- **Needs research** (technology unknowns, library selection, unfamiliar APIs): Auto-invoke **speckit-research** `#{issue-number}` with the PipelineContext
+- **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Auto-invoke **speckit-plan** `#{issue-number}` with the PipelineContext
+- **Simple & scoped** (no schema, API, or domain unknowns): Auto-invoke **speckit-implement** `#{issue-number}` with the PipelineContext
 
 > **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
 
