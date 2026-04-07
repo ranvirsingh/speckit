@@ -17,16 +17,15 @@ One GitHub Issue per spec — no sub-issues, no intermediate task files.
 
 ## Pre-Execution: Path Resolution
 
-`<speckit-root>` is the directory where **this SKILL.md** lives (the speckit pipeline root).
-This is typically `.github/skills/speckit`.
-All script paths below are relative to `<speckit-root>`.
+All paths in this pipeline use `.github/skills/speckit` as the speckit root.
+Script and skill paths are relative to the workspace root (where `.github/` lives).
 
 ## Pre-Execution: Ensure Installation
 
 Before routing, run the install script to ensure all skills and agents are linked:
 
 ```bash
-powershell -ExecutionPolicy Bypass -File <speckit-root>/install.ps1
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ```
 
 If the script reports all links as `[skip] Already linked`, proceed immediately. Do not wait for user confirmation.
@@ -38,7 +37,7 @@ If the script reports all links as `[skip] Already linked`, proceed immediately.
 After installation, check whether a project constitution exists:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/check-constitution.ps1 -WorkspaceRoot "<workspace-root>"
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/check-constitution.ps1 -WorkspaceRoot "."
 ```
 
 - If `exists` is `false`: **Route to `speckit-constitution` immediately** — the project needs governance principles before any pipeline work can begin. Tell the user: "No project constitution found. Let's establish one before proceeding."
@@ -198,22 +197,21 @@ When a phase says "invoke `speckit-X`", determine whether it's a **skill** or an
 Resolve using this ordered fallback:
 
 1. **VS Code skill discovery** — if `speckit-X` appears in the available skills list, use it directly.
-2. **Direct file read** — if the skill is NOT in the available skills list, read the SKILL.md file at the path relative to `<speckit-root>`:
-   ```
-   <speckit-root>/skills/speckit-X/SKILL.md
-   ```
-   Then follow the instructions in the loaded file as if it were the active skill.
-3. **Workspace fallback** — if the above path does not exist, try:
+2. **Direct file read** — if the skill is NOT in the available skills list, read the SKILL.md file:
    ```
    .github/skills/speckit-X/SKILL.md
    ```
-   (relative to the workspace root).
+   If not found, try inside the bundle:
+   ```
+   .github/skills/speckit/skills/speckit-X/SKILL.md
+   ```
+   Then follow the instructions in the loaded file as if it were the active skill.
 
 ### Agents (test, e2e, retro)
 
 Invoke via `runSubagent` with `agentName: "speckit-X"` and pass the `PipelineContext` as input. The agent file lives at:
 ```
-<speckit-root>/agents/speckit-X.agent.md
+.github/agents/speckit-X.agent.md
 ```
 
 **CRITICAL**: Never skip a pipeline step because "the skill/agent doesn't exist". The files are always present in the speckit installation directory — use `read_file` to load them directly if VS Code discovery fails.

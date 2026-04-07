@@ -106,7 +106,7 @@ For bugs and chores, the issue body contains the fix description, affected files
 3. Mark all verification items as complete
 4. **Constitution compliance check** before committing:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
    ```
    For each MUST and NON-NEGOTIABLE rule, verify the implementation complies.
    If any NON-NEGOTIABLE rule is violated, fix the code before proceeding.
@@ -189,7 +189,7 @@ Skip all steps below — they are for the Full Implementation Flow only.
 
 10. **Constitution compliance check** before committing:
     ```powershell
-    powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+    powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
     ```
     For each MUST and NON-NEGOTIABLE rule, verify the implementation complies (e.g., tests exist if required, naming conventions followed, documentation updated).
     If any NON-NEGOTIABLE rule is violated, fix the code before proceeding to commit.
@@ -204,9 +204,9 @@ Skip all steps below — they are for the Full Implementation Flow only.
       - **Footer**: `Closes #{issue_number}`
     - **Validate the commit message (deterministic — use script)** before committing:
       ```powershell
-      & "<speckit-root>/skills/speckit-implement/scripts/validate-commit-msg.ps1" -Message "{full commit message}"
+      & ".github/skills/speckit-implement/scripts/validate-commit-msg.ps1" -Message "{full commit message}"
       ```
-      Where `<speckit-root>` is the speckit pipeline root directory (where the main SKILL.md lives).
+      If the script is not found at that path, try `.github/skills/speckit/skills/speckit-implement/scripts/validate-commit-msg.ps1` (inside the bundle).
       If output is not `VALID`, fix the message and re-validate. Do NOT commit until validated.
     - Commit: `git commit -m "{type}({scope}): {subject}" -m "{body}" -m "Closes #{issue_number}"`
     - Push: `git push origin {branch_name}`

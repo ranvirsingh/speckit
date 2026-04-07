@@ -43,7 +43,7 @@ Pass the built context to the next phase:
 - **Needs plan** (schema changes, new/changed APIs, or unfamiliar domain): Auto-invoke **speckit-plan** `#{issue-number}` with the PipelineContext
 - **Simple & scoped** (no schema, API, or domain unknowns): Auto-invoke **speckit-implement** `#{issue-number}` with the PipelineContext
 
-> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
+> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `.github/skills/{skill-name}/SKILL.md` (or `.github/skills/speckit/skills/{skill-name}/SKILL.md` inside the bundle). Never skip a pipeline step because a skill appears unavailable.
 
 ## User Input
 
@@ -171,14 +171,15 @@ Given that feature description, do this:
    - Get the Git remote: `git config --get remote.origin.url` → extract `owner/repo`
    - **Derive the next spec number (deterministic — use script)**:
      ```powershell
-     $specNumber = & "<speckit-root>/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
+     $specNumber = & ".github/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
      ```
-     Where `<speckit-root>` is the speckit pipeline root directory (where the main SKILL.md lives).
+     If the script is not found at that path, try `.github/skills/speckit/skills/speckit-specify/scripts/next-spec-number.ps1` (inside the bundle).
      Use the output directly — do NOT manually scan branches or do arithmetic.
    - **Validate the branch name (deterministic — use script)**:
      ```powershell
-     & "<speckit-root>/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
+     & ".github/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
      ```
+     If the script is not found at that path, try `.github/skills/speckit/skills/speckit-specify/scripts/validate-branch-name.ps1` (inside the bundle).
      If output is not `VALID`, fix the name and re-validate before proceeding.
    - Create branch: `git checkout -b {specNumber}-{short-name}`
 
@@ -197,7 +198,7 @@ Given that feature description, do this:
 
    Then run a **constitution compliance check** on the lightweight spec:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
    ```
    For each MUST and NON-NEGOTIABLE rule, check whether the spec content satisfies it.
    If any NON-NEGOTIABLE rule is violated, fix the issue body before proceeding.
@@ -214,14 +215,15 @@ Given that feature description, do this:
    - Get the Git remote: `git config --get remote.origin.url` → extract `owner/repo`
    - **Derive the next spec number (deterministic — use script)**:
      ```powershell
-     $specNumber = & "<speckit-root>/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
+     $specNumber = & ".github/skills/speckit-specify/scripts/next-spec-number.ps1" -RepoFlag "{owner}/{repo}"
      ```
-     Where `<speckit-root>` is the speckit pipeline root directory (where the main SKILL.md lives).
+     If the script is not found at that path, try `.github/skills/speckit/skills/speckit-specify/scripts/next-spec-number.ps1` (inside the bundle).
      Use the output directly — do NOT manually scan branches or do arithmetic.
    - **Validate the branch name (deterministic — use script)**:
      ```powershell
-     & "<speckit-root>/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
+     & ".github/skills/speckit-specify/scripts/validate-branch-name.ps1" -Name "{specNumber}-{short-name}"
      ```
+     If the script is not found at that path, try `.github/skills/speckit/skills/speckit-specify/scripts/validate-branch-name.ps1` (inside the bundle).
      If output is not `VALID`, fix the name and re-validate before proceeding.
    - Create branch: `git checkout -b {specNumber}-{short-name}`
 
@@ -259,7 +261,7 @@ Given that feature description, do this:
 
 7. **Constitution compliance check**: Extract constitution rules and verify the spec complies:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
    ```
    For each MUST and NON-NEGOTIABLE rule, check whether the spec content satisfies it.
    If any NON-NEGOTIABLE rule is violated, fix the spec before proceeding.

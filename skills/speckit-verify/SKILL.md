@@ -42,7 +42,7 @@ pass/fail result.
 Run the extraction script to get structured rules:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
 ```
 
 Parse the JSON output. If `exists` is `false`, report: "No constitution found. Run speckit-constitution first." and stop.

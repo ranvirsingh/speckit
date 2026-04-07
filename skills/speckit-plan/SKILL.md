@@ -15,7 +15,7 @@ description: >-
 
 After planning is complete, **automatically proceed** to `speckit-implement #{issue-number}` — do NOT stop to ask or suggest. Start implementing the tasks immediately.
 
-> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `<speckit-root>/skills/{skill-name}/SKILL.md` (or `.github/skills/{skill-name}/SKILL.md`). Never skip a pipeline step because a skill appears unavailable.
+> **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `.github/skills/{skill-name}/SKILL.md` (or `.github/skills/speckit/skills/{skill-name}/SKILL.md` inside the bundle). Never skip a pipeline step because a skill appears unavailable.
 
 ## Complexity Gate
 
@@ -182,7 +182,7 @@ Before publishing to the GitHub Issue, run these checks. If any fail, fix them b
 3. **Ambiguity check**: Scan the task descriptions for vague terms (`various`, `etc.`, `as needed`, `TBD`, `some`). Rewrite to be specific.
 4. **Constitution compliance check**: Extract constitution rules and verify the plan complies:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "<workspace-root>"
+   powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
    ```
    For each MUST and NON-NEGOTIABLE rule, check whether the design decisions and task list satisfy it. If any NON-NEGOTIABLE rule is violated, fix the plan before proceeding. Report SHOULD violations as warnings.
 5. **Dependency order**: Tasks within each phase should be sequenced so no task depends on a later task. Flag circular or misordered dependencies.
