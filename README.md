@@ -39,8 +39,8 @@ powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ### Updating
 
 ```powershell
-# Re-run the installer with -Update to pull the latest release
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1 -Update
+# Re-run the installer — it auto-updates from GitHub and overwrites by default
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ```
 
 The installer creates directory junctions (Windows) or symlinks (macOS/Linux) so VS Code discovers everything automatically:
@@ -48,7 +48,7 @@ The installer creates directory junctions (Windows) or symlinks (macOS/Linux) so
 - Subagents → `.github/agents/speckit-codebase-scanner`, `speckit-living-docs-loader`
 - Updates `.gitignore` to exclude the generated links **and** `.github/skills/speckit/` itself
 
-> **After cloning**: Since speckit is gitignored, each developer runs the quick install one-liner (or `install.ps1 -Update`) once after cloning the repo.
+> **After cloning**: Since speckit is gitignored, each developer runs the install one-liner once after cloning the repo. The installer always pulls the latest release.
 
 To uninstall: `powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1 -Uninstall`
 

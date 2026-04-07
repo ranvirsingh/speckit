@@ -47,6 +47,18 @@ powershell -ExecutionPolicy Bypass -File <speckit-root>/scripts/check-constituti
 
 This applies to both greenfield and brownfield projects.
 
+## Auto-Freshness Check
+
+**Before starting the first pipeline phase** and **after the last phase completes**, ensure speckit is up to date:
+
+```
+run_in_terminal: powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+```
+
+This always downloads the latest release from GitHub and overwrites existing links (Force + Update are on by default). The command is idempotent — safe to run every time.
+
+Pass `-NoUpdate` if you know the local copy is current (e.g., just installed). Pass `-NoForce` to skip overwriting existing links.
+
 ## Pipeline Flow
 
 ```

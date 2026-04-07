@@ -6,7 +6,10 @@
     Copies speckit sub-skill and subagent directories into .github/skills/ and
     .github/agents/ so VS Code discovers them without manual settings.json
     configuration. A manifest is written to .github/speckit-manifest.json so
-    -Update and -Uninstall know exactly which paths to clean up.
+    -Uninstall knows exactly which paths to clean up.
+
+    By default, the script downloads the latest release from GitHub and
+    overwrites any existing links (Force + Update are ON by default).
 
     Usage from any project root:
       Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1 | Invoke-Expression
@@ -19,19 +22,23 @@
 .PARAMETER Uninstall
     Remove all speckit links from .github/skills/ and .github/agents/.
 
-.PARAMETER Force
-    Overwrite existing copied directories. Without this flag, the script
-    skips directories that already exist at the destination.
+.PARAMETER NoForce
+    Skip overwriting existing copied directories. By default, the script
+    always overwrites.
 
-.PARAMETER Update
-    Download the latest speckit release from GitHub and replace the local copy
-    before linking. Requires internet access.
+.PARAMETER NoUpdate
+    Skip downloading the latest release from GitHub. By default, the script
+    always fetches the latest release before linking.
 #>
 [CmdletBinding()]
 param(
     [switch]$Uninstall,
-    [switch]$Force,
-    [switch]$Update,
+
+    [Parameter(HelpMessage = 'Skip Force (do not overwrite existing links).')]
+    [switch]$NoForce,
+
+    [Parameter(HelpMessage = 'Skip auto-update from GitHub.')]
+    [switch]$NoUpdate,
 
     [Parameter(HelpMessage = 'Override the workspace root directory.')]
     [string]$WorkspaceRoot
@@ -39,7 +46,11 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$script:ForceMode = $Force.IsPresent
+
+# Default behaviour: always overwrite existing links and auto-update from GitHub.
+# Pass -NoForce or -NoUpdate to opt out.
+$script:ForceMode = -not $NoForce.IsPresent
+$Update           = -not $NoUpdate.IsPresent
 
 # --- Download helper ----------------------------------------------------------
 function Get-SpeckitFromGitHub {
