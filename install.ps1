@@ -318,6 +318,7 @@ if ($Uninstall) {
         foreach ($agent in $Agents) {
             Remove-Link (Join-Path $AgentsDir "$agent.agent.md")
         }
+        Remove-Link (Join-Path $AgentsDir 'assets')
     }
 
     Write-Host ''
@@ -387,11 +388,19 @@ foreach ($agent in $Agents) {
     New-Link -LinkPath $link -TargetPath $target
 }
 
+# Copy agents/assets/ directory (templates used by agent files)
+$agentAssetsSource = Join-Path (Join-Path $SpeckitRoot 'agents') 'assets'
+$agentAssetsDest   = Join-Path $AgentsDir 'assets'
+if (Test-Path $agentAssetsSource) {
+    New-Link -LinkPath $agentAssetsDest -TargetPath $agentAssetsSource
+}
+
 # --- Git ignore the links and speckit root ------------------------------------
 $gitignorePath = Join-Path $WorkspaceRoot '.gitignore'
 $linksToIgnore = @('.github/skills/speckit')
 foreach ($skill in $Skills) { $linksToIgnore += ".github/skills/$skill" }
 foreach ($agent in $Agents) { $linksToIgnore += ".github/agents/$agent.agent.md" }
+$linksToIgnore += ".github/agents/assets"
 
 $existingIgnore = if (Test-Path $gitignorePath) { Get-Content $gitignorePath -Raw } else { '' }
 $newEntries = @()
@@ -445,6 +454,15 @@ foreach ($agent in $Agents) {
             link   = ".github/agents/$agentFile"
             target = ".github/skills/speckit/agents/$agentFile"
         }
+    }
+}
+# Include the shared assets directory in the manifest
+$agentAssetsPath = Join-Path $AgentsDir 'assets'
+if (Test-Path $agentAssetsPath) {
+    $linkedAgents += @{
+        name   = 'assets'
+        link   = '.github/agents/assets'
+        target = '.github/skills/speckit/agents/assets'
     }
 }
 
