@@ -68,8 +68,8 @@ Use the `runSubagent` tool with `agentName: "speckit-e2e-browser"` and provide:
 - **title**: The issue title
 - **scenarios**: The extracted acceptance scenarios
 - **baseUrl**: From `pipelineContext.implementation.baseUrl` or detect from dev server config
-- **screenshotDir**: `e2e/screenshots/e2e-{issueNumber}/`
-- **gifDir**: `e2e/gifs/e2e-{issueNumber}/`
+- **screenshotDir**: `e2e/.tmp/screenshots/e2e-{issueNumber}/`
+- **gifDir**: `e2e/.tmp/gifs/e2e-{issueNumber}/`
 
 #### API Projects → delegate to `speckit-e2e-api`
 
@@ -111,19 +111,33 @@ Run `terraform plan` / `cdk diff` and capture the output to `e2e/e2e-{issueNumbe
 
 ### Step 5 — Attach E2E Results to PR
 
-1. Find the PR:
+GIF/screenshot artifacts **must NOT be committed to the feature branch** — they bloat Git history. Instead, push them to a dedicated orphan branch and reference via raw GitHub URLs.
+
+1. Find the PR and derive repo info:
    ```bash
-   gh pr view --json number,url --jq '.number'
+   pr_number=$(gh pr view --json number --jq '.number')
+   repo_slug=$(gh repo view --json nameWithOwner --jq '.nameWithOwner')
    ```
 
-2. Commit and push e2e assets:
+2. Push e2e assets to the orphan `e2e-assets` branch:
    ```bash
-   git add e2e/
-   git commit -m "test(e2e): add e2e test artifacts for #{issueNumber}"
-   git push
+   # Save current branch
+   current_branch=$(git branch --show-current)
+
+   # Create or switch to orphan branch (no history)
+   git checkout --orphan e2e-assets 2>/dev/null || git checkout e2e-assets
+
+   # Remove everything, then add only the e2e temp artifacts
+   git rm -rf --cached . > /dev/null 2>&1
+   git add e2e/.tmp/
+   git commit -m "e2e: assets for PR #${pr_number}" --allow-empty
+   git push origin e2e-assets --force
+
+   # Return to feature branch
+   git checkout "$current_branch"
    ```
 
-3. Format the e2e evidence section for the PR body using this template:
+3. Format the e2e evidence section for the PR body using raw GitHub URLs:
 
    **For UI projects** (GIF recordings):
    ````markdown
@@ -131,8 +145,8 @@ Run `terraform plan` / `cdk diff` and capture the output to `e2e/e2e-{issueNumbe
 
    | Scenario | Result | Recording |
    |----------|--------|-----------|
-   | US1-SC1: {scenario title} | :white_check_mark: Pass | ![US1-SC1](e2e/gifs/e2e-{issueNumber}/sc1.gif) |
-   | US1-SC2: {scenario title} | :white_check_mark: Pass | ![US1-SC2](e2e/gifs/e2e-{issueNumber}/sc2.gif) |
+   | US1-SC1: {scenario title} | :white_check_mark: Pass | ![US1-SC1](https://raw.githubusercontent.com/{repo_slug}/e2e-assets/e2e/.tmp/gifs/e2e-{issueNumber}/sc1.gif) |
+   | US1-SC2: {scenario title} | :white_check_mark: Pass | ![US1-SC2](https://raw.githubusercontent.com/{repo_slug}/e2e-assets/e2e/.tmp/gifs/e2e-{issueNumber}/sc2.gif) |
 
    <details><summary>Playwright trace</summary>
 
@@ -161,21 +175,28 @@ Run `terraform plan` / `cdk diff` and capture the output to `e2e/e2e-{issueNumbe
    ````
 
    **Rules for GIF embedding:**
-   - Use relative paths from the repo root (e.g., `e2e/gifs/e2e-42/sc1.gif`)
+   - Use raw GitHub URLs pointing to the `e2e-assets` branch: `https://raw.githubusercontent.com/{repo_slug}/e2e-assets/e2e/.tmp/gifs/e2e-{issueNumber}/sc{n}.gif`
    - One GIF per scenario — name them `sc1.gif`, `sc2.gif`, etc. matching scenario order
    - For failing scenarios, use `:x: Fail` and still include the GIF (it shows where it broke)
-   - If a GIF exceeds 5 MB after ffmpeg conversion, use a screenshot instead: `e2e/screenshots/e2e-{issueNumber}/sc{n}.png`
+   - If a GIF exceeds 5 MB after ffmpeg conversion, use a screenshot instead with the same URL pattern
 
 4. Update PR body — read the existing body, append the evidence section, then write back:
    ```bash
-   existing_body=$(gh pr view {pr-number} --json body --jq '.body')
+   existing_body=$(gh pr view ${pr_number} --json body --jq '.body')
    updated_body="${existing_body}
 
    $(cat <<'EVIDENCE'
    {formatted e2e evidence section from step 3}
    EVIDENCE
    )"
-   gh pr edit {pr-number} --body "$updated_body"
+   gh pr edit ${pr_number} --body "$updated_body"
+   ```
+
+5. Commit the test **source files** only (no binary artifacts) to the feature branch:
+   ```bash
+   git add e2e/e2e-{issueNumber}.* --ignore-missing
+   git commit -m "test(e2e): add e2e test for #{issueNumber}"
+   git push
    ```
 
 ## Return Value
@@ -186,9 +207,11 @@ Return a structured result for the router / parent agent:
 {
   "passed": true,
   "projectType": "web-ui",          // "web-ui" | "api" | "cli" | "library" | "infrastructure"
-  "artifacts": [                     // Paths to committed e2e artifacts
-    "e2e/e2e-42.spec.ts",
-    "e2e/gifs/e2e-42/sc1.gif"
+  "artifacts": [                     // Paths to committed e2e test source files
+    "e2e/e2e-42.spec.ts"
+  ],
+  "assetUrls": [                     // Raw GitHub URLs for GIF/screenshot assets (on e2e-assets branch)
+    "https://raw.githubusercontent.com/{owner}/{repo}/e2e-assets/e2e/.tmp/gifs/e2e-42/sc1.gif"
   ],
   "scenarioResults": [               // Per-scenario results
     { "id": "US1-SC1", "passed": true },
