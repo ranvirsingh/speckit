@@ -84,7 +84,7 @@ The issue auto-closes when the PR merges via `Closes #N`. No manual close needed
 
 #### 4a. Scan for TODO(speckit) markers
 ```powershell
-Select-String -Path "*.ts","*.tsx","*.js","*.jsx","*.py","*.rs","*.go" -Pattern "TODO\(speckit\):" -Recurse
+Get-ChildItem -Recurse -Include "*.ts","*.tsx","*.js","*.jsx","*.py","*.rs","*.go" | Select-String -Pattern "TODO\(speckit\):"
 ```
 
 #### 4b. Classify and add to Parking Lot
