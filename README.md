@@ -459,4 +459,6 @@ To uninstall: `powershell -ExecutionPolicy Bypass -File .github/skills/speckit/i
 
 ## License
 
-Private repository. All rights reserved.
+This project is licensed under the [MIT License](LICENSE).
+
+Inspired by [github/spec-kit](https://github.com/github/spec-kit).
