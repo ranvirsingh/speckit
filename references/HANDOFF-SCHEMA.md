@@ -22,6 +22,9 @@ The context is built incrementally — each phase adds its fields and passes the
   "owner": "acme",
   "repo": "webapp",
 
+  // --- Project board (set by specify, from .speckit-project.json) ---
+  "projectNumber": 17,              // GitHub Project number for Issue State tracking
+
   // --- Living context (set by specify, cached for downstream) ---
   "livingContext": {
     "summary": "Compressed summary from speckit-living-docs-loader...",
