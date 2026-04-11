@@ -94,7 +94,7 @@ Simple & scoped?                       specify → implement → test → e2e �
 All subagents operate under the [Subagent Autonomy Protocol](references/AGENT-PROTOCOL.md) — they do NOT follow human-in-the-loop. They resolve questions autonomously or escalate via a structured `## Unresolved Questions` block. Each has a **token bucket** limiting re-invocation attempts to prevent deadlocks.
 
 | Subagent | Codename | Bucket | Used By | Purpose |
-|----------|----------|--------|---------|---------|
+|----------|----------|--------|---------|----------|
 | `speckit-codebase-scanner` | **Dijkstra** | 2 | `speckit-plan`, `speckit-research` | Read-only codebase exploration — returns distilled findings for design research |
 | `speckit-living-docs-loader` | **Hypatia** | 1 | `speckit-specify` (one-time load) | Loads and compresses living docs into a focused context summary |
 | `speckit-nexus` | **Babbage** | 2 | `speckit-specify` | Pre-reasoning — classifies work type, extracts problem/actors/constraints/edge cases |
@@ -105,15 +105,26 @@ All subagents operate under the [Subagent Autonomy Protocol](references/AGENT-PR
 
 ## Routing Logic
 
+**Issue State Tracking**: Before routing to any phase, advance the Issue State on the GitHub Project board. Read `.speckit-project.json` from the workspace root for `projectNumber` and `owner`. If the file does not exist, skip state tracking silently.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "{phase}"
+```
+
+Phase-to-state mapping: specify→Specify, research→Research, plan→Plan, implement→Implement, test→Test, e2e→E2E, retro→Retro. After retro completes successfully, advance to "Done".
+
+**Default state**: When an issue is first added to the project (auto-add), it is set to "Parking Lot" before advancing to the requested state. This ensures every issue has a visible starting point on the board.
+
 1. **No issue yet?** → Route to `speckit-specify`
-2. **Issue exists, needs technology research?** → Route to `speckit-research`
-3. **Issue exists, needs design?** → Route to `speckit-plan`
-4. **Issue exists, ready to code?** → Route to `speckit-implement`
-5. **Code done, needs UAT?** → Invoke `speckit-test` via `runSubagent` with PipelineContext
-6. **UAT passed, need e2e?** → Invoke `speckit-e2e` via `runSubagent` with PipelineContext
-7. **E2E done, PR created?** → Invoke `speckit-retro` via `runSubagent` with PipelineContext
-8. **Setting up project governance?** → Route to `speckit-constitution`
-9. **Checking compliance?** → Route to `speckit-verify`
+2. **Issue exists, needs technology research?** → Advance state to "Research", route to `speckit-research`
+3. **Issue exists, needs design?** → Advance state to "Plan", route to `speckit-plan`
+4. **Issue exists, ready to code?** → Advance state to "Implement", route to `speckit-implement`
+5. **Code done, needs UAT?** → Advance state to "Test", invoke `speckit-test` via `runSubagent` with PipelineContext
+6. **UAT passed, need e2e?** → Advance state to "E2E", invoke `speckit-e2e` via `runSubagent` with PipelineContext
+7. **E2E done, PR created?** → Advance state to "Retro", invoke `speckit-retro` via `runSubagent` with PipelineContext
+8. **Retro complete?** → Advance state to "Done"
+9. **Setting up project governance?** → Route to `speckit-constitution`
+10. **Checking compliance?** → Route to `speckit-verify`
 
 ### Invoking Agent Phases (test, e2e, retro)
 
