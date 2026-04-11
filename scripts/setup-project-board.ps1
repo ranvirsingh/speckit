@@ -131,9 +131,19 @@ if ($Owner -eq "@me") {
     $resolvedOwner = (gh api user --jq '.login') 2>&1
 }
 
-$projectQuery = 'query { user(login: \"' + $resolvedOwner + '\") { projectV2(number: ' + $ProjectNumber + ') { id views(first: 20) { nodes { id name layout } } } } }'
+# -- Detect owner type (user vs org) ----
+$ownerType = (gh api "users/$resolvedOwner" --jq '.type') 2>&1
+if ($ownerType -eq 'Organization') {
+    $gqlOwnerRoot = 'organization'
+} else {
+    $gqlOwnerRoot = 'user'
+}
+Write-Host "  Owner '$resolvedOwner' is a $ownerType (using $gqlOwnerRoot GraphQL root)" -ForegroundColor White
 
-$projectData = (gh api graphql -f query="$projectQuery" --jq '.data.user.projectV2') 2>&1 | ConvertFrom-Json
+$projectQuery = 'query { ' + $gqlOwnerRoot + '(login: \"' + $resolvedOwner + '\") { projectV2(number: ' + $ProjectNumber + ') { id views(first: 20) { nodes { id name layout } } } } }'
+
+$gqlJqPath = '.data.' + $gqlOwnerRoot + '.projectV2'
+$projectData = (gh api graphql -f query="$projectQuery" --jq "$gqlJqPath") 2>&1 | ConvertFrom-Json
 $projectId = $projectData.id
 
 Write-Host "  Project node ID: $projectId" -ForegroundColor White

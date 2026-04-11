@@ -75,6 +75,15 @@ if ($Owner -eq "@me") {
     $resolvedOwner = (gh api user --jq '.login') 2>&1
 }
 
+# -- Detect owner type (user vs org) ----
+$ownerType = (gh api "users/$resolvedOwner" --jq '.type') 2>&1
+if ($ownerType -eq 'Organization') {
+    $gqlOwnerRoot = 'organization'
+} else {
+    $gqlOwnerRoot = 'user'
+}
+Write-Host "Owner '$resolvedOwner' is a $ownerType (using $gqlOwnerRoot GraphQL root)" -ForegroundColor White
+
 # -- Step 1: Get the field ID and option ID ----
 Write-Host "Finding field '$FieldName' option '$State'..." -ForegroundColor Yellow
 
@@ -124,9 +133,11 @@ Write-Host "  Issue #${IssueNumber}: $($issueData.title)" -ForegroundColor White
 # -- Step 3: Find the project item ID for this issue ----
 Write-Host "Finding project item..." -ForegroundColor Yellow
 
-$projectQuery = 'query { user(login: \"' + $resolvedOwner + '\") { projectV2(number: ' + $ProjectNumber + ') { id items(first: 100) { nodes { id content { ... on Issue { id number } } } } } } }'
+$projectQuery = 'query { ' + $gqlOwnerRoot + '(login: \"' + $resolvedOwner + '\") { projectV2(number: ' + $ProjectNumber + ') { id items(first: 100) { nodes { id content { ... on Issue { id number } } } } } } }'
 
-$projectData = (gh api graphql -f query="$projectQuery" --jq '.data.user.projectV2') 2>&1 | ConvertFrom-Json
+$gqlJqPath = '.data.' + $gqlOwnerRoot + '.projectV2'
+
+$projectData = (gh api graphql -f query="$projectQuery" --jq "$gqlJqPath") 2>&1 | ConvertFrom-Json
 $projectId = $projectData.id
 
 $projectItem = $projectData.items.nodes | Where-Object { $_.content.id -eq $issueNodeId }
