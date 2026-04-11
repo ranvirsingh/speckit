@@ -29,6 +29,10 @@
 .PARAMETER FieldName
     The name of the state field. Defaults to "Issue State".
 
+.PARAMETER DefaultState
+    The default state to set when auto-adding an issue to the project for the first time.
+    Defaults to "Parking Lot". Set to empty string to skip default state assignment.
+
 .EXAMPLE
     .\set-issue-state.ps1 -ProjectNumber 17 -Owner ranvirsingh -IssueNumber 5 -Repo ranvirsingh/typetime -State "Implement"
     .\set-issue-state.ps1 -ProjectNumber 17 -Owner ranvirsingh -IssueUrl "https://github.com/ranvirsingh/typetime/issues/5" -State "Specify"
@@ -51,7 +55,9 @@ param(
     [ValidateSet("Parking Lot", "Backlog", "Specify", "Research", "Plan", "Implement", "Test", "E2E", "Retro", "Done")]
     [string]$State,
 
-    [string]$FieldName = "Issue State"
+    [string]$FieldName = "Issue State",
+
+    [string]$DefaultState = "Parking Lot"
 )
 
 Set-StrictMode -Version Latest
@@ -130,6 +136,16 @@ if (-not $projectItem) {
     $addResult = gh project item-add $ProjectNumber --owner $Owner --url "https://github.com/$Repo/issues/$IssueNumber" --format json 2>&1 | ConvertFrom-Json
     $itemId = $addResult.id
     Write-Host "  [done] Added to project (item id: $itemId)" -ForegroundColor Green
+
+    # Set default state on newly added items
+    if ($DefaultState -and $DefaultState -ne $State) {
+        $defaultOption = $field.options | Where-Object { $_.name -eq $DefaultState }
+        if ($defaultOption) {
+            Write-Host "  Setting default state '$DefaultState' first..." -ForegroundColor White
+            $defaultMutation = 'mutation { updateProjectV2ItemFieldValue(input: { projectId: \"' + $projectId + '\", itemId: \"' + $itemId + '\", fieldId: \"' + $fieldId + '\", value: { singleSelectOptionId: \"' + $defaultOption.id + '\" } }) { projectV2Item { id } } }'
+            gh api graphql -f query="$defaultMutation" --silent 2>&1 | Out-Null
+        }
+    }
 } else {
     $itemId = $projectItem.id
     Write-Host "  Found item: $itemId" -ForegroundColor White
