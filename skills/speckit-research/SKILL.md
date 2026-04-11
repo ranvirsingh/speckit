@@ -9,6 +9,14 @@ description: >-
   "investigate approaches", "compare libraries", "what's the best way to", or "explore before planning".
 ---
 
+## Issue State Tracking
+
+On entry, advance the Issue State to "Research". Read `.speckit-project.json` from the workspace root for `projectNumber` and `owner`. If the file does not exist, skip silently.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Research"
+```
+
 ## Next Steps (AUTO-CONTINUE)
 
 After research is complete, **automatically proceed** — do NOT stop to ask or suggest:
@@ -141,7 +149,7 @@ Append a new research entry to `docs/research.md`:
 #### Synthesis
 
 | Decision Area | Options | Recommendation | Confidence |
-|--------------|---------|---------------|-----------|
+|--------------|---------|---------------|------------|
 | {area} | {A, B, C} | {recommended} | High/Medium/Low |
 
 #### Open Questions
@@ -151,7 +159,7 @@ Append a new research entry to `docs/research.md`:
 #### Risk Register
 
 | Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
+|------|-----------|--------|------------|
 | {risk} | Low/Med/High | Low/Med/High | {strategy} |
 
 ---

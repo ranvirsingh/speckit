@@ -9,6 +9,16 @@ description: >-
   spec", "fix this bug", or any feature ideation, bug reporting, and scoping task.
 ---
 
+## Issue State Tracking
+
+On entry, advance the Issue State to "Specify". Read `.speckit-project.json` from the workspace root for `projectNumber` and `owner`. If the file does not exist, skip silently.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Specify"
+```
+
+Run this after the GitHub Issue is created (you need the issue number).
+
 ## Next Steps
 
 After the spec is written and the GitHub Issue is created, **build the initial PipelineContext** and **auto-continue** to the next step. Do NOT stop to suggest or ask the user which step to take.
