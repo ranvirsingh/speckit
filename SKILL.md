@@ -113,6 +113,8 @@ powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issu
 
 Phase-to-state mapping: specify→Specify, research→Research, plan→Plan, implement→Implement, test→Test, e2e→E2E, retro→Retro. After retro completes successfully, advance to "Done".
 
+**Default state**: When an issue is first added to the project (auto-add), it is set to "Parking Lot" before advancing to the requested state. This ensures every issue has a visible starting point on the board.
+
 1. **No issue yet?** → Route to `speckit-specify`
 2. **Issue exists, needs technology research?** → Advance state to "Research", route to `speckit-research`
 3. **Issue exists, needs design?** → Advance state to "Plan", route to `speckit-plan`
