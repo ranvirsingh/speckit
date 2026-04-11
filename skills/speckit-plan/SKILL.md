@@ -11,9 +11,17 @@ description: >-
    Skip docs/research.md unless the domain is unfamiliar.
 ---
 
+## Issue State Tracking
+
+On entry, advance the Issue State to "Plan". Read `.speckit-project.json` from the workspace root for `projectNumber` and `owner`. If the file does not exist, skip silently.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Plan"
+```
+
 ## Next Steps (AUTO-CONTINUE)
 
-After planning is complete, **automatically proceed** to `speckit-implement #{issue-number}` — do NOT stop to ask or suggest. Start implementing the tasks immediately.
+After planning is complete, **automatically proceed** to `speckit-implement #{issue-number}` - do NOT stop to ask or suggest. Start implementing the tasks immediately.
 
 > **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `.github/skills/{skill-name}/SKILL.md` (or `.github/skills/speckit/skills/{skill-name}/SKILL.md` inside the bundle). Never skip a pipeline step because a skill appears unavailable.
 

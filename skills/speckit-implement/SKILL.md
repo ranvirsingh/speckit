@@ -8,6 +8,14 @@ description: >-
   project. Requires a GitHub issue number.
 ---
 
+## Issue State Tracking
+
+On entry, advance the Issue State to "Implement". Read `.speckit-project.json` from the workspace root for `projectNumber` and `owner`. If the file does not exist, skip silently.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Implement"
+```
+
 ## Next Steps (AUTO-CONTINUE)
 
 After implementation is complete (including commit and push), **enrich the PipelineContext** with implementation details and **automatically proceed** to user acceptance testing via `runSubagent`.
@@ -32,6 +40,12 @@ After creating the PR, add the `implementation` block to the PipelineContext:
 Detect `baseUrl` from `package.json` scripts (the dev server port) or project configuration. If not detectable, leave as `null`.
 
 ### Invoke Test Agent
+
+Before invoking the test agent, advance Issue State to "Test":
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Test"
+```
 
 Use `runSubagent` with `agentName: "speckit-test"` and pass the enriched PipelineContext:
 
