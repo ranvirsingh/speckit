@@ -101,7 +101,7 @@ Determine the work type and whether a plan exists from the GitHub Issue:
 
 1. Read the issue body and labels: `gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body,labels`
 2. Check labels for `bug`, `chore`, `feature`, and `plan`.
-3. **If the issue has a `plan` label** (or the body contains a `<!-- speckit-plan:start -->` block, or a `## Design Notes` / `### Tasks` section) → follow the **Full Implementation Flow** below, regardless of work type.
+3. **If the issue has a `plan` label** (or an issue comment contains `<!-- speckit-plan:start -->`, or a comment contains `## Design Notes` / `### Tasks`) → follow the **Full Implementation Flow** below, regardless of work type.
 4. **If type is Bug or Chore with no plan** → follow the **Lightweight Implementation Flow** below.
 5. **If type is Feature (or no type label)** → follow the **Full Implementation Flow** below.
 
@@ -132,18 +132,18 @@ Skip all steps below — they are for the Full Implementation Flow only.
 
 ### Full Implementation Flow (Feature)
 
-1. **Load the task checklist from the GitHub Issue**:
+1. **Load the task checklist from the GitHub Issue comments**:
+   ```bash
+   gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --comments --json comments
+   ```
+   The plan is posted as an **issue comment** (not in the issue body). Search the comments for
+   one containing `<!-- speckit-plan:start --> ... <!-- speckit-plan:end -->` markers and parse the
+   task checklist from that comment.
+   For backward compatibility, also check the issue body for a `<!-- speckit-plan:start -->` block
+   or a `## Design Notes` / `### Tasks` section:
    ```bash
    gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body
    ```
-   Treat the issue body as two layers:
-   - the original spec from **speckit-specify** at the top
-   - the appended plan block from **speckit-plan** below it
-
-   Parse the task checklist from the appended plan block only.
-   Prefer content inside `<!-- speckit-plan:start --> ... <!-- speckit-plan:end -->`.
-   For backward compatibility, fall back to the appended `## Design Notes` / `### Tasks` section if
-   the markers are absent.
 
 2. **Load implementation context**: Use the living-docs-loader summary from the Context Loading step (Pre-Execution Checks). The data model, contracts, and research findings are already available.
    - **IF EXISTS**: Read `docs/research.md` for technical decisions and constraints (if not already covered by the summary)
@@ -184,15 +184,15 @@ Skip all steps below — they are for the Full Implementation Flow only.
    - Provide clear error messages with context for debugging
    - Suggest next steps if implementation cannot proceed
 
-8. **Update the GitHub Issue checklist**: After completing tasks, tick them off in the issue:
+8. **Update the plan comment checklist**: After completing tasks, update the plan comment with `- [x]` for completed tasks:
    ```bash
-   gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body
+   gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --comments --json comments
    ```
-   Update only the appended plan block with `- [x]` for completed tasks. Preserve the original
-   spec above it unchanged. If speckit plan markers are present, modify only the content inside
-   `<!-- speckit-plan:start --> ... <!-- speckit-plan:end -->`:
+   Find the comment containing `<!-- speckit-plan:start -->` and update it with checked tasks.
+   If the plan was found in the issue body (backward compatibility), update only the plan block
+   in the body. Otherwise, update the plan comment:
    ```bash
-   gh issue edit {ISSUE_NUMBER} --repo {owner}/{repo} --body "{updated body}"
+   gh api repos/{owner}/{repo}/issues/comments/{comment_id} -X PATCH -f body="{updated plan comment}"
    ```
 
 9. Completion validation:

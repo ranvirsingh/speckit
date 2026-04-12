@@ -6,7 +6,6 @@ description: >-
   and success criterion defined in the GitHub Issue. Receives PipelineContext from the router
   or a bare issue number for standalone invocation. Returns a structured UAT report.
 user-invocable: true
-model: ['GPT-5.3-Codex (copilot)', 'Claude Sonnet 4.6 (copilot)', 'Grok Code Fast 1 (copilot)']
 ---
 
 # Speckit Test Agent

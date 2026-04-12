@@ -7,7 +7,6 @@ description: >-
   API tests are first-class CI/CD citizens alongside browser tests. Returns file paths
   and pass/fail results.
 user-invocable: false
-model: ['GPT-5.3-Codex (copilot)', 'Grok Code Fast 1 (copilot)', 'Claude Sonnet 4.6 (copilot)']
 ---
 
 # Speckit E2E API

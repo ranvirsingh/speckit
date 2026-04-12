@@ -5,7 +5,6 @@ description: >-
   best practices from the web. Codename "Curie". Returns structured findings for technology
   decisions and implementation guidance.
 user-invocable: false
-model: ['Claude Sonnet 4.6 (copilot)', 'Gemini 3 Flash (Preview) (copilot)']
 ---
 
 # Speckit Web Researcher

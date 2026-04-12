@@ -2,10 +2,10 @@
 name: speckit-plan
 user-invocable: true
 description: >-
-  Design the architecture and update the GitHub Issue with a task checklist — all in one flow.
+  Design the architecture and post the task checklist as a GitHub Issue comment — all in one flow.
   Use this skill when the user wants to plan a feature, design the architecture, create a data model,
    or define API contracts. Requires a GitHub Issue (created by speckit-specify).
-   Append design notes and tasks beneath the existing issue-backed spec; do not replace it.
+   Post design notes and tasks as an issue comment; do not modify the issue body.
   Generate plan artifacts only when needed — update docs/data-model.md for schema changes,
    docs/contracts/*.md for new APIs, and docs/adr/*.md for significant architecture decisions.
    Skip docs/research.md unless the domain is unfamiliar.
@@ -35,13 +35,13 @@ You are a **design and planning** skill. You produce documentation artifacts, ta
 - Write application source code (`.ts`, `.js`, `.py`, `.rs`, `.go`, etc.)
 - Create source files, components, modules, or services
 - Install packages or run application code
-- Modify any file outside `docs/` and the GitHub Issue body
+- Modify any file outside `docs/` and the GitHub Issue comments
 - Run tests or verify implementation
 - Start executing tasks from the checklist you just created
 
 **You MUST:**
 - Produce design artifacts in `docs/` (data-model, contracts, ADRs)
-- Produce a task checklist in the GitHub Issue body
+- Produce a task checklist as a GitHub Issue comment
 - Hand off to `speckit-implement` cleanly with the issue number
 - STOP after the handoff — the implement phase takes over from here
 
@@ -81,10 +81,10 @@ This skill runs 2 steps sequentially:
 
 ```
 Step 1: Design (research, data model, contracts) — generate only what's needed
-Step 2: Update GitHub Issue — add design notes and task checklist to the existing issue
+Step 2: Post to GitHub Issue — add design notes and task checklist as an issue comment
 ```
 
-After Step 1 (design complete), pause and ask the user: **"Design is ready for review. Ready to update the GitHub Issue with design notes and task checklist?"** before proceeding to Step 2.
+After Step 1 (design complete), pause and ask the user: **"Design is ready for review. Ready to post the plan as a GitHub Issue comment?"** before proceeding to Step 2.
 
 ---
 
@@ -151,7 +151,7 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
 
 ---
 
-## Step 2: Update GitHub Issue
+## Step 2: Post Plan to GitHub Issue Comment
 
 ### Prerequisites
 
@@ -217,32 +217,25 @@ Before publishing to the GitHub Issue, run these checks. If any fail, fix them b
 
 If issues are found, fix them inline. Report a brief validation summary (pass/fail with counts) before asking the user to review.
 
-### Update the Issue Description
+### Post Plan as Issue Comment
 
 #### Preservation Rule
 
-Treat the current GitHub Issue body as the canonical spec created by **speckit-specify**.
+The GitHub Issue body is the canonical spec created by **speckit-specify**. **Never modify the issue body.**
 
-- Never overwrite or rewrite the original spec sections when adding plan details.
-- Append the plan beneath the existing spec in the same issue body.
-- If a plan block already exists, replace **only** that appended plan block.
-- Issue comments may be used for discussion, but the canonical plan consumed by downstream skills
-  must remain in the issue body.
+- Plans are posted as **issue comments**, not appended to the issue body.
+- This keeps the spec lean and prevents context bloat that causes agent hangs.
+- If a previous plan comment exists (search for `<!-- speckit-plan:start -->`), edit that comment instead of creating a new one.
 
-1. Read the current issue body:
+1. Check for an existing plan comment:
    ```bash
-   gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body
+   gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --comments --json comments
    ```
+   Search the returned comments for one containing `<!-- speckit-plan:start -->`.
 
-2. Compose the updated body by appending design notes and the task checklist beneath the spec.
-   Use the existing issue body as-is above the plan block. If a previous speckit plan block exists,
-   replace only the text inside that block.
+2. Compose the plan comment:
 
    ```markdown
-   {existing issue body without old speckit-plan block}
-
-   ---
-
    <!-- speckit-plan:start -->
    ## Design Notes
 
@@ -252,14 +245,19 @@ Treat the current GitHub Issue body as the canonical spec created by **speckit-s
    {tasks checklist from above}
 
    ---
-   _Plan appended by speckit-plan. Preserve the spec above._
+   _Plan posted by speckit-plan._
    <!-- speckit-plan:end -->
    ```
 
-3. Update the issue body by appending or replacing only the plan block:
-   ```bash
-   gh issue edit {ISSUE_NUMBER} --repo {owner}/{repo} --body "{updated body}"
-   ```
+3. Post or update the plan comment:
+   - **If no existing plan comment**: Create a new comment:
+     ```bash
+     gh issue comment {ISSUE_NUMBER} --repo {owner}/{repo} --body "{plan comment body}"
+     ```
+   - **If an existing plan comment was found**: Edit that comment:
+     ```bash
+     gh api repos/{owner}/{repo}/issues/comments/{comment_id} -X PATCH -f body="{plan comment body}"
+     ```
 
 4. Add the `plan` label (create if it doesn't exist):
    ```bash
@@ -289,12 +287,13 @@ Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey =
 - ERROR on gate failures or unresolved clarifications
 - Update living docs in `docs/` — do not create per-feature artifact folders
 - The spec stays in the GitHub Issue body — do not create `specs/` or local `spec.md`
-- Append the plan beneath the spec — never replace the original spec sections
-- Keep the canonical plan in the issue body, not only in issue comments
+- Append the plan as an issue comment — never modify the original issue body
+- Keep the canonical plan in an issue comment with `<!-- speckit-plan:start/end -->` markers
+- Issue body is the spec only — plans go in comments to prevent context bloat
 - ADRs belong to the plan phase — create or update them here when architecture decisions are made
 - Generate plan artifacts only when needed (data-model.md for schema, contracts/ for APIs)
 - Skip research.md unless the domain is unfamiliar
 - ONE GitHub Issue per spec — no sub-issues
-- Task checklist lives in the issue description
+- Task checklist lives in an issue comment (not the issue body)
 - **NEVER write application source code** — if you are writing `.ts`, `.js`, `.py`, or any non-doc file, you have violated the scope boundary. STOP and hand off to implement.
 - **Handoff is a new context** — loading `speckit-implement` is the handoff. Do NOT bleed implementation work into the plan phase.
