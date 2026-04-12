@@ -19,6 +19,7 @@ Saves context tokens by distilling multiple docs into a focused context block.
 The invoking agent provides:
 1. **Doc paths** — list of files to load (typically `docs/retro.md`, `docs/constitution.md`, `docs/data-model.md`, `docs/contracts/*`)
 2. **Work context** — brief description of the current task (to prioritize which insights matter)
+3. **Issue number** (optional) — GitHub Issue number to load plan and research findings from issue comments
 
 ## Procedure
 
@@ -48,6 +49,17 @@ The invoking agent provides:
    - List existing contracts with their status (draft/ratified)
    - Summarize endpoints/interfaces defined
    - **Output**: Contract inventory table
+
+   ### GitHub Issue Comments (if issue number provided)
+   If an issue number was provided, load the issue comments and extract plan and research data:
+   ```bash
+   gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --comments --json comments
+   ```
+   - Search for a comment containing `<!-- speckit-plan:start -->` — extract the plan block (design notes, task checklist)
+   - Search for a comment containing `<!-- speckit-research:start -->` — extract the research findings (synthesis, decisions, risks)
+   - Summarize each into the relevant output section below
+   - If no matching comments exist, skip silently
+   - **Output**: Plan summary + Research summary (if found)
 
 3. **Prioritize by work context** — highlight findings most relevant to the current task.
 
@@ -81,6 +93,16 @@ Recent changes: {last 3 changelog entries}
 | Contract | Status | Endpoints |
 |----------|--------|-----------|
 | ...      | ...    | ...       |
+
+### Plan (from issue comment)
+- **Approach**: {key architecture decisions}
+- **Tasks**: {task count and phase breakdown}
+- **Living docs updated**: {list}
+
+### Research (from issue comment)
+- **Decisions**: {key decisions made}
+- **Risks**: {key risks identified}
+- **Open Questions**: {unresolved items}
 ```
 
 ## Constraints

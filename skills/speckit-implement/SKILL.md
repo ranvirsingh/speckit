@@ -88,6 +88,7 @@ This skill **requires a GitHub issue number** as input. The issue number can be 
 Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
 - **Docs to load**: `docs/retro.md`, `docs/data-model.md`, `docs/contracts/*`, `docs/constitution.md`
 - **Work context**: The issue title and work type
+- **Issue number**: The GitHub Issue number (to load plan and research findings from issue comments)
 
 Use the returned summary for retro insights and implementation context. Do not read these files directly.
 

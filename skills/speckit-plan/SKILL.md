@@ -65,8 +65,9 @@ The input should include a GitHub Issue number (e.g. `#18`). If not provided, as
 ### Load Living Context
 
 Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
-- **Docs to load**: `docs/retro.md`, `docs/constitution.md`, `docs/data-model.md`, `docs/research.md`, `docs/contracts/*`
+- **Docs to load**: `docs/retro.md`, `docs/constitution.md`, `docs/data-model.md`, `docs/contracts/*`
 - **Work context**: The spec title and summary from the GitHub Issue
+- **Issue number**: The GitHub Issue number (to load plan and research findings from issue comments)
 
 Use the returned summary for retro insights, constitution principles, research findings, and current schema understanding. Do not read these files directly.
 

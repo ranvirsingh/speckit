@@ -39,8 +39,9 @@ The input should include a GitHub Issue number and/or a description of what to r
 ### Load Living Context
 
 Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
-- **Docs to load**: `docs/constitution.md`, `docs/research.md`, `docs/data-model.md`
+- **Docs to load**: `docs/constitution.md`, `docs/data-model.md`
 - **Work context**: The issue title and research intent
+- **Issue number**: The GitHub Issue number, if available (to load prior research from issue comments)
 
 Use the returned summary for constitution constraints and prior research. Do not read these files directly.
 
