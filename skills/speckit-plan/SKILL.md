@@ -19,11 +19,31 @@ On entry, advance the Issue State to "Plan". Read `.speckit-project.json` from t
 powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Plan"
 ```
 
-## Next Steps (AUTO-CONTINUE)
+## Next Steps (AUTO-CONTINUE — HANDOFF ONLY)
 
-After planning is complete, **automatically proceed** to `speckit-implement #{issue-number}` - do NOT stop to ask or suggest. Start implementing the tasks immediately.
+After planning is complete, **hand off** to `speckit-implement #{issue-number}` by loading the implement skill as a new context. Do NOT start implementing within this skill's execution.
+
+> **Critical**: AUTO-CONTINUE means "invoke the next phase as a separate skill load". It does NOT mean "start writing application code here". Plan produces design artifacts and task lists. Implementation is a separate phase with its own scope, context, and accountability. If you find yourself writing application source code, creating components, writing functions, or modifying non-doc files — STOP. You have crossed the scope boundary.
 
 > **Skill resolution**: If a skill is not in your available skills list, use `read_file` to load its SKILL.md directly from `.github/skills/{skill-name}/SKILL.md` (or `.github/skills/speckit/skills/{skill-name}/SKILL.md` inside the bundle). Never skip a pipeline step because a skill appears unavailable.
+
+## Scope Boundaries (MANDATORY — read before executing)
+
+You are a **design and planning** skill. You produce documentation artifacts, task checklists, and architecture decisions. You operate under the [Scope Discipline](../../references/AGENT-PROTOCOL.md) rules.
+
+**You MUST NOT:**
+- Write application source code (`.ts`, `.js`, `.py`, `.rs`, `.go`, etc.)
+- Create source files, components, modules, or services
+- Install packages or run application code
+- Modify any file outside `docs/` and the GitHub Issue body
+- Run tests or verify implementation
+- Start executing tasks from the checklist you just created
+
+**You MUST:**
+- Produce design artifacts in `docs/` (data-model, contracts, ADRs)
+- Produce a task checklist in the GitHub Issue body
+- Hand off to `speckit-implement` cleanly with the issue number
+- STOP after the handoff — the implement phase takes over from here
 
 ## Complexity Gate
 
@@ -276,3 +296,5 @@ Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey =
 - Skip research.md unless the domain is unfamiliar
 - ONE GitHub Issue per spec — no sub-issues
 - Task checklist lives in the issue description
+- **NEVER write application source code** — if you are writing `.ts`, `.js`, `.py`, or any non-doc file, you have violated the scope boundary. STOP and hand off to implement.
+- **Handoff is a new context** — loading `speckit-implement` is the handoff. Do NOT bleed implementation work into the plan phase.

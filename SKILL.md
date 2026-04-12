@@ -99,7 +99,7 @@ All subagents operate under the [Subagent Autonomy Protocol](references/AGENT-PR
 | `speckit-living-docs-loader` | **Hypatia** | 1 | `speckit-specify` (one-time load) | Loads and compresses living docs into a focused context summary |
 | `speckit-nexus` | **Babbage** | 2 | `speckit-specify` | Pre-reasoning — classifies work type, extracts problem/actors/constraints/edge cases |
 | `speckit-e2e-browser` | **Turing** | 3 | `speckit-e2e` | Browser automation for UI project e2e testing via Playwright |
-| `speckit-e2e-api` | **Berners-Lee** | 3 | `speckit-e2e` | HTTP exchange recording for API-focused e2e testing |
+| `speckit-e2e-api` | **Berners-Lee** | 3 | `speckit-e2e` | API e2e testing via Playwright `request` context (JS/TS) or project-native test framework |
 | `speckit-pipeline-checker` | **Hopper** | 2 | `speckit-verify` | Checks PR status checks (CI green/red/pending) |
 | `speckit-web-researcher` | **Curie** | 3 | `speckit-research` | External web research for libraries, APIs, and best practices |
 

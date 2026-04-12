@@ -16,6 +16,43 @@ The codename is part of the agent's identity line in its frontmatter description
 3. **Escalate via structured response.** When a question genuinely cannot be answered with available tools, include an `## Unresolved Questions` block in your output (see format below).
 4. **Single-shot by default.** Subagents aim to complete their work in one invocation. Re-invocation is the exception, not the rule.
 
+## Scope Discipline (MANDATORY)
+
+Every agent and skill has a **defined scope**. An agent MUST NOT perform work that belongs to another pipeline phase. This is the single most important rule for pipeline integrity.
+
+### Phase Boundaries
+
+| Phase | Scope | NEVER Does |
+|-------|-------|------------|
+| **specify** | Write spec, create issue, classify complexity | Implement code, create tests, modify source files |
+| **research** | Investigate technologies, compare options | Make decisions, write code, modify source files |
+| **plan** | Design architecture, create task lists, update design docs | Write application/source code, create source files, run tests |
+| **implement** | Write code, commit, push, create PR | Write specs, modify design docs, run e2e tests |
+| **test** | Verify implementation against spec (read-only UAT) | Fix code, write tests, modify source/test files, implement changes |
+| **e2e** | Generate and run e2e test artifacts | Fix application code, modify source files, change the implementation |
+| **retro** | Update living docs, triage TODOs, close the loop | Write application code, create new features, fix bugs |
+
+### Hard Rules
+
+1. **Stay in your lane.** If you discover a problem outside your scope (e.g., test agent finds a bug), report it in your return value. Do NOT fix it. The parent/router decides what happens next.
+2. **Return, don't recurse.** When your work is done, return your structured result to the parent. Do NOT invoke the next pipeline phase yourself unless your instructions explicitly say "AUTO-CONTINUE" and you are a **skill** (not a subagent).
+3. **Subagents return to parent.** Subagents (`.agent.md`) ALWAYS return their result to the invoking parent. They NEVER invoke other pipeline phases, load other skills, or continue the pipeline. The parent/router owns orchestration.
+4. **Skills auto-continue via handoff.** Skills with AUTO-CONTINUE hand off to the next phase by invoking it as a new context (new skill load or `runSubagent`). They do NOT bleed work from the next phase into their own execution.
+5. **Context is the handoff.** The `PipelineContext` JSON is the contract between phases. Enrich it with your phase's fields, return it. The router takes it from there.
+
+### Anti-Patterns (explicitly forbidden)
+
+- A **test agent** seeing failures and then editing source code to fix them
+- A **plan skill** starting to write application code after producing the task list
+- An **e2e agent** modifying the implementation to make tests pass
+- A **research agent** making technology decisions instead of presenting options
+- Any subagent invoking `speckit-implement`, `speckit-plan`, or any other pipeline skill directly
+- Any subagent loading another skill's `SKILL.md` to continue the pipeline
+
+### Model Behaviour Guidance
+
+Some models (particularly creative/eager ones) tend to exceed their scope by "helpfully" doing work that belongs to the next phase. This is a **protocol violation**, not helpfulness. The protocol exists to maintain clear accountability, auditable handoffs, and circuit-breaker integrity. An agent that silently does another phase's work breaks the retry loop tracking, skips constitution checks, and produces unauditable changes.
+
 ## Re-Invocation Request Format
 
 When a subagent cannot complete its work due to missing information, it MUST return its partial results **plus** an unresolved-questions block:
