@@ -115,12 +115,12 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
 
    Use the scanner's structured findings to inform design decisions. Do not manually scan the codebase.
 
-3. **Consolidate findings**: If the domain is unfamiliar or there are significant decisions, update `docs/research.md` with findings. Format:
+3. **Consolidate findings**: If the domain is unfamiliar or there are significant decisions, post findings as a GitHub Issue comment (with `<!-- speckit-research:start/end -->` markers). Format:
    - Decision: [what was chosen]
    - Rationale: [why chosen]
    - Alternatives considered: [what else evaluated]
 
-   If research is trivial (well-known patterns, small scope), skip the file and keep notes inline.
+   If research is trivial (well-known patterns, small scope), skip and keep notes inline.
 
 ### Phase 1: Design & Contracts
 

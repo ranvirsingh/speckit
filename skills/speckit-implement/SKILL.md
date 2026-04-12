@@ -146,7 +146,7 @@ Skip all steps below — they are for the Full Implementation Flow only.
    ```
 
 2. **Load implementation context**: Use the living-docs-loader summary from the Context Loading step (Pre-Execution Checks). The data model, contracts, and research findings are already available.
-   - **IF EXISTS**: Read `docs/research.md` for technical decisions and constraints (if not already covered by the summary)
+   - Also check issue comments for research findings (`<!-- speckit-research:start -->` marker) and `docs/research.md` as a fallback for technical decisions and constraints not already covered by the summary.
 
 3. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:

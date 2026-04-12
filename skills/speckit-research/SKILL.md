@@ -5,7 +5,7 @@ description: >-
   Research assistant that investigates both the internal codebase and external resources
   (libraries, APIs, design patterns, best practices) to inform architectural decisions.
   Use between specify and plan, or standalone when you need technology research.
-  Writes findings to docs/research.md. Triggers on requests like "research options for",
+  Posts findings as a GitHub Issue comment. Triggers on requests like "research options for",
   "investigate approaches", "compare libraries", "what's the best way to", or "explore before planning".
 ---
 
@@ -120,50 +120,77 @@ Combine internal and external research into a cohesive analysis:
 3. **Flag trade-offs** that require human decision-making
 4. **Prioritise options** based on fit with existing architecture and constitution
 
-### Step 5 — Write Research Document
+### Step 5 — Post Research to GitHub Issue Comment
+
+Post the research findings as a GitHub Issue comment (do not write to `docs/research.md` or modify the issue body). If no issue number is available (standalone invocation), fall back to writing `docs/research.md`.
+
+#### When an issue number is available
+
+1. Check for an existing research comment:
+   ```bash
+   gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --comments --json comments
+   ```
+   Search the returned comments for one containing `<!-- speckit-research:start -->`.
+
+2. Compose the research comment:
+
+   ```markdown
+   <!-- speckit-research:start -->
+   ### Research: #{issue-number} — {title}
+
+   **Date**: {today}
+   **Scope**: {brief description of what was researched}
+   **Status**: Complete
+
+   #### Research Questions
+
+   1. {question 1}
+   2. {question 2}
+
+   #### Internal Findings
+
+   {Summary of codebase scanner results — existing patterns, conventions, gaps}
+
+   #### External Findings
+
+   {Summary of web researcher results — library comparisons, best practices, recommendations}
+
+   #### Synthesis
+
+   | Decision Area | Options | Recommendation | Confidence |
+   |--------------|---------|---------------|------------|
+   | {area} | {A, B, C} | {recommended} | High/Medium/Low |
+
+   #### Open Questions
+
+   - {Questions that couldn't be answered by research alone — need human input or prototyping}
+
+   #### Risk Register
+
+   | Risk | Likelihood | Impact | Mitigation |
+   |------|-----------|--------|------------|
+   | {risk} | Low/Med/High | Low/Med/High | {strategy} |
+
+   ---
+   _Research posted by speckit-research._
+   <!-- speckit-research:end -->
+   ```
+
+3. Post or update the research comment:
+   - **If no existing research comment**: Create a new comment:
+     ```bash
+     gh issue comment {ISSUE_NUMBER} --repo {owner}/{repo} --body "{research comment body}"
+     ```
+   - **If an existing research comment was found**: Edit that comment:
+     ```bash
+     gh api repos/{owner}/{repo}/issues/comments/{comment_id} -X PATCH -f body="{research comment body}"
+     ```
+
+#### Standalone fallback (no issue number)
 
 If `docs/research.md` does not exist, initialise it from this skill's `assets/research-template.md`.
 
-Append a new research entry to `docs/research.md`:
-
-```markdown
-### Research: #{issue-number} — {title}
-
-**Date**: {today}
-**Scope**: {brief description of what was researched}
-**Status**: Complete
-
-#### Research Questions
-
-1. {question 1}
-2. {question 2}
-
-#### Internal Findings
-
-{Summary of codebase scanner results — existing patterns, conventions, gaps}
-
-#### External Findings
-
-{Summary of web researcher results — library comparisons, best practices, recommendations}
-
-#### Synthesis
-
-| Decision Area | Options | Recommendation | Confidence |
-|--------------|---------|---------------|------------|
-| {area} | {A, B, C} | {recommended} | High/Medium/Low |
-
-#### Open Questions
-
-- {Questions that couldn't be answered by research alone — need human input or prototyping}
-
-#### Risk Register
-
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| {risk} | Low/Med/High | Low/Med/High | {strategy} |
-
----
-```
+Append a new research entry to `docs/research.md` using the same format above (without the HTML markers).
 
 ### Step 6 — Present Summary
 
