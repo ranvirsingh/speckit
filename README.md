@@ -1,12 +1,26 @@
 # Speckit
 
+[![Release](https://img.shields.io/github/v/release/ranvirsingh/speckit?label=release&color=brightgreen)](https://github.com/ranvirsingh/speckit/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Spec-driven development pipeline for AI-assisted coding agents.
 
 ## What is Speckit?
 
 Speckit is a coordinated system of [Agent Skills](https://agentskills.io/) and subagents that turn a one-line idea into a shipped, tested, documented feature — without you babysitting the AI.
 
-You describe what to build. Speckit writes a structured spec, creates a GitHub Issue, classifies the complexity, routes through the right phases (research, plan, implement, test, e2e), and runs a retrospective that feeds learnings back into your project's living documentation.
+You describe what to build. Speckit writes a structured spec, creates a GitHub Issue, classifies the complexity, routes through the right phases (research, plan, implement, test, e2e), and — at "done-done" — updates your project's living documentation so the next cycle starts smarter.
+
+## What's new in v2.0
+
+- **Enforcement via frontmatter.** Every skill and agent declares its `tools:` allowlist; read-only subagents physically cannot edit files or run commands.
+- **Model tiering.** FAST (GPT-5.3-Codex) for mechanical work, MID/DEEP (Sonnet 4.6) for reasoning, TOP (Opus 4.7) reserved for the constitution.
+- **Lean roster (18 → 11 entities).** Removed agents that duplicated `#codebase`/`read_file`, wrapped a single CLI command, or were better folded into adjacent phases. Retro doc updates moved into `speckit-implement` done-done; repo hygiene checks moved into `speckit-verify --scope repo`.
+- **Asset co-location.** Templates live next to the skill that owns them, fanned out by `install.ps1` into the host repo's `.github/`.
+- **Draft-first PR flow.** `speckit-implement` opens PRs as drafts, runs `pipeline-guard` locally, then marks ready only on a clean check.
+- **Dogfooded.** This repo runs its own pipeline (`.github/copilot-instructions.md`, PR template, issue templates, pipeline-guard workflow).
+
+Full notes: [v2.0.0 release](https://github.com/ranvirsingh/speckit/releases/tag/v2.0.0).
 
 **Core principles:**
 
@@ -384,10 +398,11 @@ powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ```
 
-The installer creates directory junctions (Windows) or symlinks (macOS/Linux) so VS Code discovers everything automatically:
-- Sub-skills → `.github/skills/speckit-specify`, `speckit-plan`, etc.
-- Subagents → `.github/agents/speckit-web-researcher`, `speckit-e2e-browser`, `speckit-e2e-api`, `speckit-test`, `speckit-e2e`
-- Updates `.gitignore` to exclude the generated links **and** `.github/skills/speckit/` itself
+The installer copies everything into `.github/` for VS Code discovery:
+- Sub-skills → `.github/skills/speckit-specify`, `speckit-plan`, `speckit-research`, `speckit-implement`, `speckit-verify`, `speckit-constitution`
+- Subagents → `.github/agents/speckit-web-researcher.agent.md`, `speckit-e2e-browser.agent.md`, `speckit-e2e-api.agent.md`, `speckit-test.agent.md`, `speckit-e2e.agent.md`
+- Canonical assets fanned out into `.github/` (PR template, issue templates, `pipeline-guard.yml` workflow)
+- Updates `.gitignore` to exclude the generated copies **and** `.github/skills/speckit/` itself
 
 > **After cloning**: Since speckit is gitignored, each developer runs the install one-liner once after cloning the repo. The installer always pulls the latest release.
 
