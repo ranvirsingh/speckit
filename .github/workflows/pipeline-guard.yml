@@ -1,0 +1,58 @@
+name: Pipeline Guard
+
+# Enforces speckit pipeline hygiene on every pull request:
+#   1. PR body MUST contain `Closes #N` (or `Fixes #N` / `Resolves #N`).
+#   2. Every unchecked phase checkbox MUST have a matching
+#      `skip-speckit: <phase> — <reason>` line in the PR body.
+# Failures here block merge regardless of branch protection settings on
+# downstream checks — make this required in branch protection.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, ready_for_review]
+    branches: [main]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR body
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = String(context.payload.pull_request.body || '').split('\r').join('');
+            const errors = [];
+
+            const linkRe = /\b(?:Closes|Fixes|Resolves)\s+#\d+/i;
+            if (!linkRe.test(body)) {
+              errors.push('Missing `Closes #N` (or `Fixes` / `Resolves`) — every PR must close a speckit-tracked issue.');
+            }
+
+            // Each row: [display name, skip-line key, pre-escaped regex source for the bold name].
+            const phases = [
+              ['Specify',    'specify',    'Specify'],
+              ['Research',   'research',   'Research'],
+              ['Plan',       'plan',       'Plan'],
+              ['Implement',  'implement',  'Implement'],
+              ['Test (UAT)', 'test',       'Test \\(UAT\\)'],
+              ['E2E',        'e2e',        'E2E'],
+              ['Retro',      'retro',      'Retro'],
+            ];
+
+            for (const [name, key, escaped] of phases) {
+              const checkedRe = new RegExp('-\\s*\\[x\\]\\s*\\*\\*' + escaped + '\\*\\*', 'i');
+              const skipRe = new RegExp('^skip-speckit:\\s*' + key + '\\b', 'mi');
+              if (!checkedRe.test(body) && !skipRe.test(body)) {
+                errors.push('Phase `' + name + '` is unchecked and has no `skip-speckit: ' + key + ' — <reason>` justification.');
+              }
+            }
+
+            if (errors.length) {
+              core.setFailed('Speckit pipeline guard failed:\n  - ' + errors.join('\n  - '));
+            } else {
+              core.info('Speckit pipeline guard passed.');
+            }

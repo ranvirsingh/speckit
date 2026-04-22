@@ -1,0 +1,23 @@
+name: Chore
+description: Internal change with no observable behaviour shift (deps, lint, refactor, docs).
+title: "chore: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: spec
+    attributes:
+      label: Chore
+      value: |
+        <!-- speckit-spec:start -->
+        ## What
+
+        ## Why
+
+        ## Affected files
+        -
+
+        ## Acceptance criteria
+        - [ ] ...
+        <!-- speckit-spec:end -->
+    validations:
+      required: true
