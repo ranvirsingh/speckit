@@ -208,16 +208,11 @@ $Skills = @(
 
 # Agents: link into .github/agents/
 $Agents = @(
-    'speckit-codebase-scanner'
-    'speckit-living-docs-loader'
     'speckit-e2e-browser'
     'speckit-e2e-api'
-    'speckit-nexus'
-    'speckit-pipeline-checker'
     'speckit-web-researcher'
     'speckit-test'
     'speckit-e2e'
-    'speckit-retro'
 )
 
 # --- Helpers ------------------------------------------------------------------

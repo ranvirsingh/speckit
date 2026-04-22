@@ -7,4 +7,4 @@
 |---|--------|---------------|-------|--------|
 | | | | | |
 
-<!-- speckit-retro appends new entries to this table during TODO triage (Step 4). -->
+<!-- speckit-implement appends new entries to this table during done-done TODO triage. -->

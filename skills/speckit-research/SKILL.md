@@ -3,7 +3,7 @@ name: speckit-research
 user-invocable: true
 model: Claude Sonnet 4.6 (copilot)
 tools: ['search', 'codebase', 'web', 'fetch', 'editFiles', 'runCommands', 'githubRepo']
-agents: ['speckit-web-researcher', 'speckit-codebase-scanner']
+agents: ['speckit-web-researcher']
 description: >-
   Research assistant that investigates both the internal codebase and external resources
   (libraries, APIs, design patterns, best practices) to inform architectural decisions.
@@ -41,12 +41,13 @@ The input should include a GitHub Issue number and/or a description of what to r
 
 ### Load Living Context
 
-Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
-- **Docs to load**: `docs/constitution.md`, `docs/data-model.md`
-- **Work context**: The issue title and research intent
-- **Issue number**: The GitHub Issue number, if available (to load prior research from issue comments)
+Read the relevant living docs directly with the `read_file` / `#codebase` tools — only what you need for the current research scope:
 
-Use the returned summary for constitution constraints and prior research. Do not read these files directly.
+- `docs/constitution.md` — for any technology / architecture constraints
+- `docs/data-model.md` — for the existing schema
+- (optional) Prior research from earlier issue comments via `gh issue view {N} --repo {owner}/{repo} --comments`
+
+Keep what's relevant to the research questions. Skip the rest.
 
 **Check for extension hooks (before research)**:
 Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_research`.
@@ -76,12 +77,9 @@ Present the research questions to the user for confirmation before proceeding. A
 
 ### Step 2 — Internal Codebase Research
 
-Use the `runSubagent` tool with `agentName: "speckit-codebase-scanner"` and provide:
-- **Spec body**: The feature spec or research description
-- **Research questions**: The internal-focused subset of questions (existing patterns, current architecture, tech debt in the affected area)
-- **Codebase root**: The workspace root path
+Use the built-in `#codebase` semantic search and `grep_search` to investigate the internal-focused subset of questions: existing patterns, current architecture, tech debt in the affected area.
 
-The codebase scanner will return:
+Focus on:
 - Existing patterns and conventions
 - Relevant file locations
 - Gaps that need to be filled

@@ -3,7 +3,7 @@ name: speckit-plan
 user-invocable: true
 model: Claude Sonnet 4.6 (copilot)
 tools: ['search', 'codebase', 'web', 'fetch', 'usages', 'editFiles', 'runCommands', 'githubRepo']
-agents: ['speckit-living-docs-loader', 'speckit-codebase-scanner', 'speckit-web-researcher']
+agents: ['speckit-web-researcher']
 description: >-
   Design the architecture and post the task checklist as a GitHub Issue comment — all in one flow.
   Use this skill when the user wants to plan a feature, design the architecture, create a data model,
@@ -67,12 +67,15 @@ The input should include a GitHub Issue number (e.g. `#18`). If not provided, as
 
 ### Load Living Context
 
-Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
-- **Docs to load**: `docs/retro.md`, `docs/constitution.md`, `docs/data-model.md`, `docs/contracts/*`
-- **Work context**: The spec title and summary from the GitHub Issue
-- **Issue number**: The GitHub Issue number (to load plan and research findings from issue comments)
+Read the relevant living docs directly via `read_file` / `#codebase` — only what's needed for the design at hand:
 
-Use the returned summary for retro insights, constitution principles, research findings, and current schema understanding. Do not read these files directly.
+- `docs/constitution.md` — principles and constraints
+- `docs/data-model.md` — current schema
+- `docs/contracts/*` — existing API surface
+- (optional) `docs/retro.md` — recent retro insights, if relevant to this work
+- The issue body and comments (`gh issue view {N} --repo {owner}/{repo} --comments`)
+
+Keep only what's relevant to the planning scope.
 
 **Check for extension hooks (before planning)**:
 Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_plan`.
@@ -101,7 +104,7 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
    gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body,title,labels
    ```
 
-2. **Load context**: Constitution principles are already available from the living-docs-loader summary (loaded in Pre-Execution Checks).
+2. **Load context**: Read `docs/constitution.md` directly for principles and constraints (loaded in Pre-Execution Checks).
 
 3. **Determine current branch**: `git branch --show-current` — use this to identify the feature context.
 
@@ -112,12 +115,12 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
    - For each dependency → best practices question
    - For each integration → patterns question
 
-2. **Research**: Use the `runSubagent` tool with `agentName: "speckit-codebase-scanner"` and provide:
-   - **Spec body**: The feature specification from the GitHub Issue
-   - **Research questions**: The list of unknowns extracted above
-   - **Codebase root**: Current working directory
+2. **Research**: Use the built-in `#codebase` semantic search and `grep_search` against the workspace to investigate the unknowns. Look for:
+   - Existing patterns and conventions for the area you're touching
+   - Cross-cutting concerns and shared utilities
+   - Gaps the design needs to fill
 
-   Use the scanner's structured findings to inform design decisions. Do not manually scan the codebase.
+   For external/library research, load and follow `.github/skills/speckit-research/SKILL.md` as a sub-skill (it can call `speckit-web-researcher` for web-grounded queries) only when the domain is unfamiliar.
 
 3. **Consolidate findings**: If the domain is unfamiliar or there are significant decisions, post findings as a GitHub Issue comment (with `<!-- speckit-research:start/end -->` markers). Format:
    - Decision: [what was chosen]

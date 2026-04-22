@@ -14,7 +14,6 @@ Each skill checks for hooks at a specific lifecycle point (e.g., `before_specify
 | `speckit-implement` (PR creation) | `hooks.before_pr` | `hooks.after_pr` |
 | `speckit-test` | `hooks.before_test` | `hooks.after_test` |
 | `speckit-e2e` | `hooks.before_e2e` | `hooks.after_e2e` |
-| `speckit-retro` | `hooks.before_retro` | `hooks.after_retro` |
 
 `before_pr` runs after the implementation is complete but before
 `gh pr create` is executed. The default behaviour for `speckit-implement`

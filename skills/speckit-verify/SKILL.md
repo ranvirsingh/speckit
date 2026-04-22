@@ -3,12 +3,14 @@ name: speckit-verify
 user-invocable: true
 model: Claude Sonnet 4.6 (copilot)
 tools: ['search', 'codebase', 'editFiles', 'runCommands', 'githubRepo']
-agents: ['speckit-pipeline-checker']
 description: >-
-  Verify that specs, plans, or implementations comply with the project constitution.
-  Run this skill to check compliance before completing any pipeline step. Use when
-  the user says "verify", "check compliance", "validate against constitution", or
-  when invoked automatically by other speckit pipeline skills as a quality gate.
+  Verify that specs, plans, or implementations comply with the project constitution
+  and audit repository hygiene. Run with `--scope pr` (default) for the current PR
+  or `--scope repo` for a wider audit (open issues missing spec markers, PRs missing
+  Closes/checklist, branches not following the `<issue>-` convention). Use when the
+  user says "verify", "check compliance", "audit speckit", "doctor", "validate
+  against constitution", or when invoked automatically by other speckit pipeline
+  skills as a quality gate.
 ---
 
 ## Next Steps
@@ -38,7 +40,51 @@ Check that the current work product (spec, plan, or code) adheres to every MUST 
 NON-NEGOTIABLE rule in the project constitution. Report violations, warnings, and a
 pass/fail result.
 
-## Outline
+## Scope Argument
+
+`speckit-verify` accepts a `--scope` argument:
+
+| Scope | Default | What it checks |
+|-------|---------|----------------|
+| `--scope pr` | yes | Constitution compliance for the current PR + CI pipeline status (Steps 1–7 below) |
+| `--scope repo` | no  | Repository-wide hygiene audit (open issues missing spec markers, PRs missing `Closes #N`, PRs with unjustified unchecked phases, branches not following `<issue>-` convention) |
+
+If `--scope` is not provided, default to `--scope pr`. If the user says "doctor" or
+"audit speckit", treat that as `--scope repo`.
+
+### Repo-Scope Audit (only when `--scope repo`)
+
+When invoked with `--scope repo`, run the following audit instead of Steps 1–7:
+
+1. **Detect the repo**: `gh repo view --json owner,name`.
+2. **Audit open issues**:
+   ```bash
+   gh issue list --repo {owner}/{repo} --state open --limit 100 --json number,title,body,labels
+   ```
+   Flag issues whose body does NOT contain `<!-- speckit-spec:start -->`.
+3. **Audit open PRs**:
+   ```bash
+   gh pr list --repo {owner}/{repo} --state open --limit 100 --json number,title,body,headRefName
+   ```
+   For each PR:
+   - Check the body for `Closes #N` / `Fixes #N` / `Resolves #N` (case-insensitive).
+   - Check each Speckit phase line is `- [x] **{Phase}**` OR has a matching
+     `skip-speckit: {phase} — <reason>` line.
+   - Check the branch name (`headRefName`) starts with `<issue-number>-`.
+4. **Audit recent branches**:
+   ```bash
+   git for-each-ref --sort=-committerdate --count=20 --format='%(refname:short)' refs/remotes/origin/
+   ```
+   Flag any non-`main`/`master` branch that does not start with a digit followed by `-`.
+5. **Produce the audit report** as a markdown table grouped by category (issues missing
+   markers, PRs missing `Closes`, PRs with unjustified unchecked phases, branches not
+   matching the convention).
+6. **Exit code**: print the summary, then exit 1 if any rule was violated. Suitable for
+   running in CI as a scheduled job.
+
+The audit is **read-only** — it never opens issues, comments on PRs, or renames branches.
+
+## Outline (PR scope)
 
 ### Step 1: Extract Constitution Rules
 
@@ -126,10 +172,13 @@ Beyond extracted text rules, verify these common constitution-enforced patterns:
 
 ### Step 6: Check Pipeline Status
 
-After constitution compliance passes, check whether the CI pipeline is green using the `runSubagent` tool with `agentName: "speckit-pipeline-checker"` and provide:
-- **prNumber**: The PR number (if known from Step 2)
+After constitution compliance passes, check the CI pipeline directly:
 
-Include the pipeline status in the final report.
+```bash
+gh pr checks {pr_number} --repo {owner}/{repo}
+```
+
+Report `green`, `red`, or `pending`. Include any failing check names in the final report.
 
 ### Step 7: Report Result
 

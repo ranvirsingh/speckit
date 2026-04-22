@@ -3,7 +3,7 @@ This template is a guide for the GitHub Issue body created by speckit-specify.
 
 Do not create a local spec file from this template.
 Do not create `specs/` or `spec.md`.
-Living documents belong in `docs/` and are updated later by speckit-plan / speckit-retro.
+Living documents belong in `docs/` and are updated later by speckit-plan / speckit-implement (done-done step).
 -->
 
 # [TITLE]

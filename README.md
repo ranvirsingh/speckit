@@ -35,10 +35,6 @@ flowchart TD
 
   subgraph SPECIFY ["Phase 1 — Specify"]
     S([Specify])
-    NX{{Nexus — classify<br/>complexity}}
-    HY[[Hypatia — load<br/>living docs]]
-    S --- HY
-    S --- NX
   end
 
   subgraph ROUTE ["Routing Decision"]
@@ -48,20 +44,16 @@ flowchart TD
     R3["⚡ simple<br/>& scoped"]
   end
 
-  NX --> ROUTE
+  S --> ROUTE
 
   subgraph RESEARCH ["Phase 2 — Research"]
     RE([Research])
-    DJ[[Dijkstra — scan<br/>codebase]]
     CU[[Curie — web<br/>research]]
-    RE --- DJ
     RE --- CU
   end
 
   subgraph PLAN ["Phase 3 — Plan"]
     PL([Plan])
-    DJ2[[Dijkstra — scan<br/>codebase]]
-    PL --- DJ2
   end
 
   R1 --> RE
@@ -71,7 +63,7 @@ flowchart TD
   RE -- "research only" --> I
   PL --> I
 
-  subgraph IMPLEMENT ["Phase 4 — Implement"]
+  subgraph IMPLEMENT ["Phase 4 — Implement (incl. done-done living-doc updates)"]
     I([Implement])
   end
 
@@ -87,27 +79,18 @@ flowchart TD
     E -. "api" .-> BL
   end
 
-  subgraph RETRO ["Phase 7 — Retro"]
-    RET([Retro])
-  end
-
   I --> UAT
   UAT -- "FAIL<br/>(max 2 retries)" --> I
   UAT -- "PASS" --> E
   E -- "FAIL<br/>(max 2 retries)" --> I
-  E -- "PASS" --> RET
-  RET -. "updates living docs<br/>→ Hypatia loads next cycle" .-> HY
-  RET -. "parking lot items<br/>→ future specs" .-> S
 
-  subgraph VERIFY ["Verify — invocable at any point"]
+  subgraph VERIFY ["Verify — invocable at any point (--scope pr | --scope repo)"]
     V([Verify])
-    HOP[[Hopper — CI<br/>status check]]
-    V --- HOP
   end
 
   V -. "checks compliance" .-> I
   V -. "checks compliance" .-> S
-  V -. "merge gate" .-> RET
+  V -. "merge gate" .-> E
 
   classDef phase fill:#1f2937,color:#ffffff,stroke:#111827,stroke-width:2px;
   classDef sub fill:#334155,color:#e2e8f0,stroke:#475569,stroke-width:1px;
@@ -225,27 +208,9 @@ User-invocable skills triggered via slash commands in VS Code:
 
 ## The Agents — A Coordinated Ensemble
 
-Speckit is not a chain of isolated scripts. It's a **persona-driven agency** — ten agents, each named after a pioneer whose philosophy shapes how they think and what they contribute to the shared context.
+Speckit is a **persona-driven agency** — a small set of agents, each named after a pioneer whose philosophy shapes how they think and what they contribute to the shared context. The roster has been deliberately trimmed to the entities that earn their keep: anything VS Code's built-in `#codebase` semantic search, a one-line `gh` command, or the parent LLM can already do has been folded back in instead of wrapped in a subagent.
 
 Every agent follows the [Subagent Autonomy Protocol](references/AGENT-PROTOCOL.md): **never ask the user**, resolve what you can with tools, escalate only via structured partial results. Token buckets cap re-invocations to prevent deadlocks.
-
-### Babbage — _The Analyst_ (speckit-nexus)
-
-> _"Get the problem right, and implementation follows logically."_
-
-Named after Charles Babbage, father of programmatic computation. Babbage is the pipeline's first thinker — invoked during **Specify** to classify the work before anyone builds. She dissects the user's description into a structured pre-analysis: work type, core problem, actors, constraints, edge cases, and a **complexity signal** (`research` / `plan` / `implement`) that routes the entire pipeline. Bucket: **2**.
-
-### Hypatia — _The Context Librarian_ (speckit-living-docs-loader)
-
-> _"Large context is noise. I extract signal."_
-
-Named after Hypatia of Alexandria, legendary knowledge synthesizer. Hypatia despises verbosity. She loads `retro.md`, `constitution.md`, `data-model.md`, and `contracts/` then distills them into a single **200-line compressed block** — the last 5 retro entries as actionable patterns, constitution principles as numbered rules, schema state as entity tables. Every downstream agent receives only what matters. Bucket: **1** — if docs don't exist, they don't exist.
-
-### Dijkstra — _The Code Archaeologist_ (speckit-codebase-scanner)
-
-> _"Patterns exist for a reason. Find them. Respect them."_
-
-Named after Edsger Dijkstra, systematic algorithm pioneer. Dijkstra believes features succeed when they fit existing patterns. He scans for schemas, routes, auth patterns, type definitions, test infrastructure, and naming conventions — then returns per-question structured answers (finding, relevant files, patterns to follow, gaps). Invoked by **Research** and **Plan**. Bucket: **2**.
 
 ### Curie — _The Empiricist_ (speckit-web-researcher)
 
@@ -277,18 +242,6 @@ Named after Alan Turing, pioneer of machine testing. Turing converts user scenar
 
 Named after Tim Berners-Lee, inventor of the Web. Berners-Lee speaks HTTP fluently. He creates `.http` request files, executes them via curl, captures full exchanges (headers + body), and produces structured proof tables. For API projects, he's the acceptance test runner who demonstrates every scenario with real HTTP exchanges. Bucket: **3**.
 
-### Hopper — _The CI Sentinel_ (speckit-pipeline-checker)
-
-> _"Green pipeline gates shipping."_
-
-Named after Grace Hopper, debugging visionary. Hopper is the gatekeeper. Before code ships, the CI pipeline must be green. She classifies outcomes rigidly: all green → ship, red → fix, pending → wait, stale → flag for re-trigger. Invoked by **Verify**. Bucket: **2**.
-
-### Deming — _The Reflectionist_ (speckit-retro)
-
-> _"End every cycle smarter than you started."_
-
-Named after W. Edwards Deming, pioneer of continuous improvement. Deming closes the learning loop. She compares changed files against documented schemas and APIs, updates living docs when they've drifted, scans for `TODO(speckit):` markers and triages them to `PARKING_LOT.md`, audits for stale docs, and appends a retro entry so the **next** cycle knows what this one learned. Bucket: **1**.
-
 ## Focused Context — How the Agents Share What Matters
 
 The essence of Speckit is **focused context**: every agent receives exactly what it needs — no more, no less. Context flows through two mechanisms working in concert.
@@ -302,7 +255,7 @@ flowchart LR
   subgraph PC ["PipelineContext"]
     direction TB
     L1["<b>Specify</b><br/>issueNumber, branch, workType,<br/>specNumber, complexitySignal"]
-    L2["<b>+ Hypatia's livingContext</b><br/>200-line compressed block:<br/>retro patterns · constitution rules<br/>schema state · contract inventory"]
+    L2["<b>+ livingContext</b><br/>focused summary of relevant docs<br/>read directly via #codebase / read_file<br/>retro patterns · constitution rules · schema state"]
     L3["<b>+ Research</b><br/>summary, completedAt"]
     L4["<b>+ Plan</b><br/>taskCount, completedAt"]
     L5["<b>+ Implement</b><br/>prNumber, prUrl, commitSha, baseUrl"]
@@ -319,66 +272,55 @@ A **circuit breaker** tracks `retryCount` per phase — if any phase fails twice
 
 See [HANDOFF-SCHEMA.md](references/HANDOFF-SCHEMA.md) for the full schema.
 
-### 2. Hypatia's Compression — The Context Membrane
+### 2. Focused Living-Doc Reads — The Context Membrane
 
-Raw living docs can be thousands of lines. Hypatia compresses them into a **single 200-line block** that every downstream agent receives. This is the pipeline's shared memory:
+Living docs can be thousands of lines. Each phase reads only what it needs via `#codebase` semantic search and direct `read_file` calls, focused on the work in scope:
 
-| Source Document | What Hypatia Extracts | Who Consumes It |
-|-----------------|----------------------|-----------------|
-| `docs/retro.md` | Last 5 entries as actionable patterns | All phases — avoids repeating past mistakes |
-| `docs/constitution.md` | All MUST/SHOULD/NON-NEGOTIABLE principles as numbered rules | Specify (compliance gate), Verify, Test |
-| `docs/data-model.md` | Entity summary + recent changelog entries | Plan, Implement, Retro |
-| `docs/contracts/*.md` | Status (draft/ratified), endpoint inventory | Plan, Implement, Retro |
+| Source Document | Typical Consumers | Why |
+|-----------------|-------------------|-----|
+| `docs/retro.md` | All phases | Avoid repeating past mistakes (last few entries are usually enough) |
+| `docs/constitution.md` | Specify (compliance gate), Verify, Test | Numbered MUST/SHOULD/NON-NEGOTIABLE rules |
+| `docs/data-model.md` | Plan, Implement | Entity summary + recent changelog entries |
+| `docs/contracts/*.md` | Plan, Implement | Endpoint inventory and status |
 
-Deming (Retro) closes the loop — she updates these same documents at the end of every cycle, which Hypatia will compress for the _next_ cycle. The pipeline learns.
+`speckit-implement` closes the loop at done-done — it updates these same documents at the end of every cycle, so the **next** cycle starts with accurate context. The pipeline learns.
 
 ### 3. What Each Agent Contributes Downstream
 
 ```mermaid
 flowchart TD
-  BA["🧠 <b>Babbage</b><br/>complexity signal"]
-  HY["📚 <b>Hypatia</b><br/>compressed living context"]
-  DJ["🔍 <b>Dijkstra</b><br/>codebase patterns &amp; gaps"]
   CU["🔬 <b>Curie</b><br/>tech recommendations &amp; risks"]
   NG["✅ <b>Nightingale</b><br/>UAT verdict &amp; failing scenarios"]
   LV["🎯 <b>Lovelace</b><br/>E2E verdict &amp; artifact URLs"]
   TU["🎬 <b>Turing</b><br/>GIFs &amp; screenshots"]
   BL["📡 <b>Berners-Lee</b><br/>HTTP exchanges"]
-  HP["🚦 <b>Hopper</b><br/>CI pipeline verdict"]
-  DM["📝 <b>Deming</b><br/>updated living docs &amp; retro entry"]
 
-  BA --> |"routes pipeline"| ROUTER["Router"]
-  HY --> |"context for all"| ALL["All Downstream Phases"]
-  DJ --> |"patterns"| PLAN_IMPL["Plan &amp; Implement"]
-  CU --> |"evidence"| PLAN_IMPL
-  NG --> |"PASS → continue<br/>FAIL → retry implement"| ROUTER2["Router — retry or continue"]
+  CU --> |"evidence"| PLAN_IMPL["Plan &amp; Implement"]
+  NG --> |"PASS → continue<br/>FAIL → retry implement"| ROUTER["Router — retry or continue"]
   LV --> |"proof in PR"| PR["Pull Request"]
   TU --> |"visual proof"| LV
   BL --> |"API proof"| LV
-  HP --> |"merge gate"| VERIFY["Verify — any-phase<br/>compliance check"]
-  DM --> |"updated docs feed<br/>next cycle"| HY
-  DM --> |"parking lot items<br/>seed future specs"| BA
-  VERIFY --> |"checks constitution<br/>at any point"| ALL
+  VERIFY["Verify — any-phase compliance check<br/>(--scope pr or --scope repo)"] --> |"merge gate"| PR
 
   classDef agent fill:#1e293b,color:#f8fafc,stroke:#334155,stroke-width:2px;
   classDef target fill:#f8fafc,color:#0f172a,stroke:#94a3b8,stroke-width:1px;
 
-  class BA,HY,DJ,CU,NG,LV,TU,BL,HP,DM agent;
-  class ROUTER,ALL,PLAN_IMPL,ROUTER2,PR,VERIFY target;
+  class CU,NG,LV,TU,BL agent;
+  class ROUTER,PLAN_IMPL,PR,VERIFY target;
 ```
 
-**Legend:** Dark nodes = agents (each named after a pioneer) &nbsp; Light nodes = pipeline targets they feed into &nbsp; Arrows show what each agent contributes and who consumes it
+**Legend:** Dark nodes = subagents (each named after a pioneer) &nbsp; Light nodes = pipeline targets they feed into &nbsp; Arrows show what each agent contributes and who consumes it
 
-> The installer links all agents into `.github/agents/` for automatic discovery. No `settings.json` changes needed.
+> The installer copies all agents into `.github/agents/` for automatic discovery. No `settings.json` changes needed.
 
 ### The Learning Loop
 
 Speckit is cyclical by design. The end of one cycle primes the next:
 
-1. **Deming** (Retro) updates `docs/retro.md`, `data-model.md`, `contracts/`, and triages TODOs to `PARKING_LOT.md`
-2. **Hypatia** (Living Docs Loader) compresses those updated docs into a focused context block for the **next** `speckit-specify` invocation
-3. **Babbage** (Nexus) uses that compressed context — retro patterns, constitution rules, schema state — to classify the next piece of work more accurately
-4. Parking lot items from the previous cycle become candidates for future specs
+1. `speckit-implement` (done-done) updates `docs/retro.md`, `data-model.md`, `contracts/`, and triages TODOs to `PARKING_LOT.md` immediately after the PR is created.
+2. The **next** `speckit-specify` invocation reads those updated docs directly via `#codebase` / `read_file` and uses them as focused context.
+3. The complexity signal it derives from that context routes the next piece of work more accurately.
+4. Parking lot items from the previous cycle become candidates for future specs.
 
 Every cycle makes the pipeline smarter: past mistakes surface as retro patterns, schema drift gets corrected, and discovered TODOs feed future work.
 
@@ -444,7 +386,7 @@ powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 
 The installer creates directory junctions (Windows) or symlinks (macOS/Linux) so VS Code discovers everything automatically:
 - Sub-skills → `.github/skills/speckit-specify`, `speckit-plan`, etc.
-- Subagents → `.github/agents/speckit-codebase-scanner`, `speckit-living-docs-loader`
+- Subagents → `.github/agents/speckit-web-researcher`, `speckit-e2e-browser`, `speckit-e2e-api`, `speckit-test`, `speckit-e2e`
 - Updates `.gitignore` to exclude the generated links **and** `.github/skills/speckit/` itself
 
 > **After cloning**: Since speckit is gitignored, each developer runs the install one-liner once after cloning the repo. The installer always pulls the latest release.

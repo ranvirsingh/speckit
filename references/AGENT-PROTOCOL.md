@@ -7,19 +7,19 @@ regardless of what its prose says.
 
 ## Identity
 
-Every subagent has a codename inspired by a veteran or notable figure
-(Dijkstra, Hypatia, Curie, Babbage, Hopper, Turing, Berners-Lee,
-Lovelace, Nightingale, Deming). The codename is part of the agent's
-identity line in its frontmatter description and opening section.
+Every agent and subagent has a codename inspired by a notable figure
+(Curie, Turing, Berners-Lee, Lovelace, Nightingale). The codename is part
+of the agent's identity line in its frontmatter description and opening
+section.
 
 ## Roles by tool scope
 
 | Class | Examples | Tools | Purpose |
 |---|---|---|---|
-| **Read-only subagent** | codebase-scanner, living-docs-loader, web-researcher, nexus, pipeline-checker | `search`, `codebase`, `web`, `fetch`, `usages`, `githubRepo` | Investigate, summarise, escalate via `## Unresolved Questions` — never write |
+| **Read-only subagent** | web-researcher | `search`, `codebase`, `web`, `fetch`, `usages`, `githubRepo` | Investigate, summarise, escalate via `## Unresolved Questions` — never write |
 | **Artifact subagent** | e2e-browser, e2e-api | read-only set + `editFiles`, `runCommands`, `runTests` | Generate scoped artifacts under `e2e/`, `screenshots/`, `gifs/`, `test-results/` |
-| **Pipeline agent** | speckit-test, speckit-e2e, speckit-retro | as needed for the phase | Autonomous (no `vscode_askQuestions`); orchestrates one phase end-to-end |
-| **User-invocable skill** | speckit-{specify, plan, research, implement, verify, constitution, doctor} | full toolset | Human-in-the-loop allowed; can ask questions |
+| **Pipeline agent** | speckit-test, speckit-e2e | as needed for the phase | Autonomous (no `vscode_askQuestions`); orchestrates one phase end-to-end |
+| **User-invocable skill** | speckit-{specify, plan, research, implement, verify, constitution} | full toolset | Human-in-the-loop allowed; can ask questions |
 
 ## Autonomy Rules (still apply, now enforced by frontmatter)
 
@@ -47,10 +47,10 @@ parent (router) will reject during handoff.
 | specify | Spec, issue, classify | Write code, create tests |
 | research | Investigate options | Write code, decide |
 | plan | Design, task list, design docs | Write app code, run tests |
-| implement | Code, commit, push, PR | Write specs, modify design docs |
+| implement | Code, commit, push, PR, update living docs, triage TODOs | Write specs, modify governance |
 | test | UAT verification | Fix code, modify source/test files |
 | e2e | Generate proof-of-work artifacts | Fix application code |
-| retro | Update living docs, triage | Write app code, fix bugs |
+| verify | Constitution + repo-hygiene audit (`--scope pr` or `--scope repo`) | Fix code, modify source files |
 
 ## Re-Invocation Request Format
 
@@ -79,16 +79,11 @@ new `speckit-specify` invocation.
 
 | Subagent | Budget |
 |----------|--------|
-| codebase-scanner | 2 |
-| living-docs-loader | 1 |
 | web-researcher | 3 |
-| nexus | 2 |
-| pipeline-checker | 2 |
 | e2e-browser | 3 |
 | e2e-api | 3 |
 | test | 2 |
 | e2e | 2 |
-| retro | 1 |
 
 ## Circuit Breaker
 

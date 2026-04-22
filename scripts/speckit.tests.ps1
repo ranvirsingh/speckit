@@ -124,10 +124,9 @@ Describe 'speckit-research skill' {
         $content | Should Match 'user-invocable:\s*true'
     }
 
-    It 'SKILL.md references both subagents' {
+    It 'SKILL.md references the web-researcher subagent' {
         $path = Join-Path $speckitRoot 'skills\speckit-research\SKILL.md'
         $content = Get-Content $path -Raw
-        $content | Should Match 'speckit-codebase-scanner'
         $content | Should Match 'speckit-web-researcher'
     }
 
@@ -240,37 +239,6 @@ Describe 'speckit-e2e agent' {
     }
 }
 
-Describe 'speckit-retro agent' {
-    BeforeAll {
-        $speckitRoot = Split-Path $PSScriptRoot -Parent
-    }
-
-    It 'agent.md exists' {
-        $path = Join-Path $speckitRoot 'agents\speckit-retro.agent.md'
-        Test-Path $path | Should Be $true
-    }
-
-    It 'agent.md has correct name in frontmatter' {
-        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-retro.agent.md') -Raw
-        $content | Should Match 'name:\s*speckit-retro'
-    }
-
-    It 'retro-template.md exists in agents/assets' {
-        $path = Join-Path $speckitRoot 'agents\assets\retro-template.md'
-        Test-Path $path | Should Be $true
-    }
-
-    It 'parking-lot-template.md exists in agents/assets' {
-        $path = Join-Path $speckitRoot 'agents\assets\parking-lot-template.md'
-        Test-Path $path | Should Be $true
-    }
-
-    It 'old speckit-retro skill directory is removed' {
-        $path = Join-Path $speckitRoot 'skills\speckit-retro'
-        Test-Path $path | Should Be $false
-    }
-}
-
 Describe 'speckit-e2e-browser agent' {
     BeforeAll {
         $speckitRoot = Split-Path $PSScriptRoot -Parent
@@ -322,16 +290,34 @@ Describe 'install.ps1 agent registration' {
         $installContent | Should Match "'speckit-e2e'"
     }
 
-    It 'registers speckit-retro in Agents array' {
-        $installContent | Should Match "'speckit-retro'"
-    }
-
     It 'registers speckit-e2e-browser in Agents array' {
         $installContent | Should Match "'speckit-e2e-browser'"
     }
 
     It 'registers speckit-e2e-api in Agents array' {
         $installContent | Should Match "'speckit-e2e-api'"
+    }
+
+    It 'registers speckit-web-researcher in Agents array' {
+        $installContent | Should Match "'speckit-web-researcher'"
+    }
+
+    It 'retro-template.md still exists in agents/assets (used by speckit-implement at done-done)' {
+        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'agents\assets\retro-template.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'parking-lot-template.md still exists in agents/assets (used by speckit-implement at done-done)' {
+        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'agents\assets\parking-lot-template.md'
+        Test-Path $path | Should Be $true
+    }
+
+    It 'deprecated retro/doctor/loader/scanner/nexus/pipeline-checker agents are removed' {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+        foreach ($name in 'speckit-retro','speckit-living-docs-loader','speckit-codebase-scanner','speckit-nexus','speckit-pipeline-checker') {
+            (Test-Path (Join-Path $speckitRoot "agents\$name.agent.md")) | Should Be $false
+        }
+        (Test-Path (Join-Path $speckitRoot 'skills\speckit-doctor')) | Should Be $false
     }
 
     It 'does NOT register speckit-e2e-recorder in Agents array' {

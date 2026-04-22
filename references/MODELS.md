@@ -21,26 +21,20 @@ the durable contract.
 ## Per-Agent Mapping
 
 ### FAST tier (read-only or single-shot)
-- `speckit-codebase-scanner` (Dijkstra)
-- `speckit-living-docs-loader` (Hypatia)
 - `speckit-web-researcher` (Curie)
-- `speckit-nexus` (Babbage)
-- `speckit-pipeline-checker` (Hopper)
 - `speckit-e2e-api` (Berners-Lee)
 - `speckit-e2e-browser` (Turing)
 
 ### MID tier (pipeline orchestration)
 - `speckit-test` (Nightingale) — UAT against acceptance scenarios
 - `speckit-e2e` (Lovelace) — orchestrates Turing/Berners-Lee
-- `speckit-verify` — constitution + pipeline compliance check
-- `speckit-doctor` — repo hygiene audit
+- `speckit-verify` — constitution + pipeline + repo-hygiene audit
 
 ### DEEP tier (user-invocable, generates significant output)
 - `speckit-specify` — spec + issue creation
 - `speckit-plan` — architecture, data model, contracts
 - `speckit-research` — research synthesis
-- `speckit-implement` — code, commits, PR
-- `speckit-retro` (Deming) — living-doc updates
+- `speckit-implement` — code, commits, PR, post-merge living-doc updates
 
 ### TOP tier (rare, high-leverage)
 - `speckit-constitution` — project governance is hard to change later;
@@ -61,7 +55,7 @@ the durable contract.
 ## How parents apply it
 
 When a skill (e.g., `speckit-implement`) calls `runSubagent` to delegate to a
-subagent (e.g., `speckit-codebase-scanner`), it reads the subagent's `model:`
+subagent (e.g., `speckit-web-researcher`), it reads the subagent's `model:`
 frontmatter and passes the qualified name (`Model Name (Vendor)`) to the
 `model` parameter of `runSubagent`. The parent may override if it has reason
 (e.g., a budget-constrained run that downgrades everything to FAST).

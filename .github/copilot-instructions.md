@@ -23,17 +23,17 @@ Use the `speckit` pipeline for any code change work (feature, bug, or chore).
 - `speckit-specify` — create or refine the spec in a single GitHub Issue.
 - `speckit-research` — when there are technology unknowns.
 - `speckit-plan` — for complex work (schema changes, new APIs, unfamiliar domain).
-- `speckit-implement` — execute the checklist.
+- `speckit-implement` — execute the checklist, ship the PR, update living docs and triage TODOs at done-done.
 - `speckit-test` — UAT against the spec.
 - `speckit-e2e` — generate end-to-end proof-of-work artifacts.
-- `speckit-retro` — update living docs and triage follow-ups.
-- `speckit-doctor` — audit repo hygiene.
 - `speckit-constitution` — define or update governance.
-- `speckit-verify` — check compliance against the constitution.
+- `speckit-verify` — check compliance against the constitution (`--scope pr`) or audit repo hygiene (`--scope repo`).
 
 ### Pipeline Shape
-- Simple/scoped: `specify → implement → test → e2e → retro`
-- Complex: `specify → research → plan → implement → test → e2e → retro`
+- Simple/scoped: `specify → implement → test → e2e`
+- Complex: `specify → research → plan → implement → test → e2e`
+
+Living-doc updates and TODO triage happen at the tail end of `speckit-implement` ("done-done"), not as a separate phase.
 
 ### GitHub Issue Rules
 - One issue per spec.
