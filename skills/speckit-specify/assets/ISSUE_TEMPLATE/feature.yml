@@ -1,0 +1,43 @@
+name: Feature
+description: New capability or user-visible change. Backed by a speckit spec.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue body IS the spec. The speckit pipeline reads it directly —
+        do not split into sub-issues or `spec.md` files.
+  - type: textarea
+    id: spec
+    attributes:
+      label: Spec
+      description: User stories, acceptance criteria, success metrics. The speckit-specify skill will refine this.
+      value: |
+        <!-- speckit-spec:start -->
+        ## Problem
+
+        ## User stories
+        - As a ..., I want ..., so that ...
+
+        ## Acceptance criteria
+        - [ ] ...
+
+        ## Out of scope
+        -
+
+        ## Success metrics
+        -
+        <!-- speckit-spec:end -->
+    validations:
+      required: true
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Implementation checklist
+      description: Filled by speckit-plan or speckit-implement once design is settled.
+      value: |
+        <!-- speckit-plan:start -->
+        ### Tasks
+        - [ ] ...
+        <!-- speckit-plan:end -->

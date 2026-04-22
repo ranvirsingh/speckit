@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Speckit pipeline docs
+    url: https://github.com/ranvirsingh/speckit/blob/main/.github/copilot-instructions.md
+    about: How we work — read before opening any issue.

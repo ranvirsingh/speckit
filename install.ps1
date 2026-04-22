@@ -208,16 +208,11 @@ $Skills = @(
 
 # Agents: link into .github/agents/
 $Agents = @(
-    'speckit-codebase-scanner'
-    'speckit-living-docs-loader'
     'speckit-e2e-browser'
     'speckit-e2e-api'
-    'speckit-nexus'
-    'speckit-pipeline-checker'
     'speckit-web-researcher'
     'speckit-test'
     'speckit-e2e'
-    'speckit-retro'
 )
 
 # --- Helpers ------------------------------------------------------------------
@@ -299,6 +294,22 @@ if ($Uninstall) {
             }
             else {
                 Write-Host "  [skip] Not found: $($a.link)" -ForegroundColor DarkGray
+            }
+        }
+
+        # Fanned-out assets in .github/ — only present in manifest v2+
+        if ($oldManifest.PSObject.Properties.Name -contains 'fanouts' -and $oldManifest.fanouts) {
+            Write-Host ''
+            Write-Host 'Fanned-out assets:' -ForegroundColor Cyan
+            foreach ($f in $oldManifest.fanouts) {
+                $p = Join-Path $WorkspaceRoot $f
+                if (Test-Path $p) {
+                    Remove-Item $p -Force
+                    Write-Host "  [removed] $f" -ForegroundColor Yellow
+                }
+                else {
+                    Write-Host "  [skip] Not found: $f" -ForegroundColor DarkGray
+                }
             }
         }
 
@@ -395,6 +406,64 @@ if (Test-Path $agentAssetsSource) {
     New-Link -LinkPath $agentAssetsDest -TargetPath $agentAssetsSource
 }
 
+# --- Fan out skill assets into the host .github/ -----------------------------
+# These artifacts must live at the canonical .github/ paths for GitHub itself
+# to honour them (PR template, workflows, issue templates). They are COMMITTED
+# by the host repo (not gitignored). Re-running install only overwrites when
+# -ForceMode is on, so a host repo can customise the templates and keep them.
+
+$fanouts = @(
+    @{
+        Source = Join-Path $SpeckitRoot 'skills/speckit-implement/assets/pull_request_template.md'
+        Target = Join-Path $GithubDir 'pull_request_template.md'
+        Label  = '.github/pull_request_template.md'
+    }
+    @{
+        Source = Join-Path $SpeckitRoot 'skills/speckit-implement/assets/pipeline-guard.yml'
+        Target = Join-Path $GithubDir 'workflows/pipeline-guard.yml'
+        Label  = '.github/workflows/pipeline-guard.yml'
+    }
+)
+
+# Issue templates fan out file-by-file
+$issueTplSource = Join-Path $SpeckitRoot 'skills/speckit-specify/assets/ISSUE_TEMPLATE'
+if (Test-Path $issueTplSource) {
+    foreach ($tpl in (Get-ChildItem $issueTplSource -Filter '*.yml')) {
+        $fanouts += @{
+            Source = $tpl.FullName
+            Target = Join-Path $GithubDir "ISSUE_TEMPLATE/$($tpl.Name)"
+            Label  = ".github/ISSUE_TEMPLATE/$($tpl.Name)"
+        }
+    }
+}
+
+$fannedOut = @()
+if ($fanouts.Count -gt 0) {
+    Write-Host ''
+    Write-Host 'Fanning out canonical assets into .github/ (committed by host repo):' -ForegroundColor Cyan
+
+    foreach ($f in $fanouts) {
+        if (-not (Test-Path $f.Source)) {
+            Write-Warning "  [missing] $($f.Source)"
+            continue
+        }
+
+        $targetDir = Split-Path -Parent $f.Target
+        if (-not (Test-Path $targetDir)) {
+            New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+        }
+
+        if ((Test-Path $f.Target) -and -not $script:ForceMode) {
+            Write-Host "  [skip] Already exists (use -Force to overwrite): $($f.Label)" -ForegroundColor DarkGray
+        }
+        else {
+            Copy-Item -Path $f.Source -Destination $f.Target -Force
+            Write-Host "  [copy] $($f.Label)" -ForegroundColor Green
+        }
+        $fannedOut += $f.Label
+    }
+}
+
 # --- Git ignore the links and speckit root ------------------------------------
 $gitignorePath = Join-Path $WorkspaceRoot '.gitignore'
 $linksToIgnore = @('.github/skills/speckit')
@@ -467,12 +536,13 @@ if (Test-Path $agentAssetsPath) {
 }
 
 $manifest = @{
-    version            = 1
+    version            = 2
     installedAt        = (Get-Date -Format 'o')
     speckitHash        = $speckitHash
     speckitRootLinked  = $SpeckitIsExternal
     skills             = $linkedSkills
     agents             = $linkedAgents
+    fanouts            = $fannedOut
 }
 
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8

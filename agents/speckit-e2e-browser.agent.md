@@ -6,6 +6,9 @@ description: >-
   scenarios, records video, converts recordings to low-size GIFs, and captures screenshots.
   Returns file paths of captured assets including GIFs for PR embedding.
 user-invocable: false
+disable-model-invocation: false
+model: GPT-5.3-Codex (copilot)
+tools: ['search', 'codebase', 'editFiles', 'runCommands', 'runTests', 'githubRepo']
 ---
 
 > **Note**: The `browser` tool requires a Playwright MCP server or equivalent browser automation extension. If unavailable, fall back to `runCommands` for Playwright CLI execution only.

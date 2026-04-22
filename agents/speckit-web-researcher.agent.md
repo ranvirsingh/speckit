@@ -5,6 +5,9 @@ description: >-
   best practices from the web. Codename "Curie". Returns structured findings for technology
   decisions and implementation guidance.
 user-invocable: false
+disable-model-invocation: false
+model: GPT-5.3-Codex (copilot)
+tools: ['search', 'codebase', 'web', 'fetch', 'githubRepo']
 ---
 
 # Speckit Web Researcher

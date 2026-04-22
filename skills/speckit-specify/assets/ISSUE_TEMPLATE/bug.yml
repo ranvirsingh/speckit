@@ -1,0 +1,26 @@
+name: Bug
+description: Something is broken or behaves incorrectly.
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: spec
+    attributes:
+      label: Bug report
+      value: |
+        <!-- speckit-spec:start -->
+        ## What happened
+
+        ## Expected
+
+        ## Reproduction
+        1.
+
+        ## Affected files / routes
+        -
+
+        ## Acceptance criteria
+        - [ ] ...
+        <!-- speckit-spec:end -->
+    validations:
+      required: true

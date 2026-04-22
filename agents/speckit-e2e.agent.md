@@ -7,6 +7,9 @@ description: >-
   proof-of-work artifacts directly. Receives PipelineContext from the router or a bare issue number
   for standalone invocation. Returns e2e results and artifact paths.
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'editFiles', 'runCommands', 'runTests', 'web', 'fetch', 'githubRepo']
+agents: ['speckit-e2e-browser', 'speckit-e2e-api']
 ---
 
 # Speckit E2E Agent

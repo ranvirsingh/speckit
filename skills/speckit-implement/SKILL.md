@@ -1,6 +1,14 @@
 ---
 name: speckit-implement
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'usages', 'editFiles', 'runCommands', 'runTasks', 'runTests', 'web', 'fetch', 'githubRepo', 'problems', 'changes']
+agents: ['speckit-test', 'speckit-e2e']
+handoffs:
+  - label: Run UAT
+    agent: speckit-test
+    prompt: Run user acceptance testing against the spec for this issue.
+    send: false
 description: >-
   Execute the implementation by working through the task checklist in the GitHub Issue,
   or directly implement a bug fix or chore from a lightweight spec. Use this skill when the
@@ -85,12 +93,15 @@ This skill **requires a GitHub issue number** as input. The issue number can be 
 
 ### Context Loading
 
-Use the `runSubagent` tool with `agentName: "speckit-living-docs-loader"` and provide:
-- **Docs to load**: `docs/retro.md`, `docs/data-model.md`, `docs/contracts/*`, `docs/constitution.md`
-- **Work context**: The issue title and work type
-- **Issue number**: The GitHub Issue number (to load plan and research findings from issue comments)
+Read the relevant living docs directly via `read_file` — only what's needed for the work in scope:
 
-Use the returned summary for retro insights and implementation context. Do not read these files directly.
+- `docs/constitution.md` — MUST/NON-NEGOTIABLE rules to honour
+- `docs/data-model.md` — current schema (if implementation touches it)
+- `docs/contracts/*` — API contracts (if implementation touches an API)
+- (optional) `docs/retro.md` — recent retro insights, if directly relevant
+- The issue body, plan comment, and any research comment for this issue
+
+Keep what's relevant to the implementation scope. Skip the rest.
 
 ---
 
@@ -146,8 +157,8 @@ Skip all steps below — they are for the Full Implementation Flow only.
    gh issue view {ISSUE_NUMBER} --repo {owner}/{repo} --json body
    ```
 
-2. **Load implementation context**: Use the living-docs-loader summary from the Context Loading step (Pre-Execution Checks). The data model, contracts, and research findings are already available.
-   - Also check issue comments for research findings (`<!-- speckit-research:start -->` marker) and `docs/research.md` as a fallback for technical decisions and constraints not already covered by the summary.
+2. **Load implementation context**: The data model, contracts, and research findings were loaded directly during Context Loading (Pre-Execution Checks) — refer back to them as you implement.
+   - Also check issue comments for research findings (`<!-- speckit-research:start -->` marker) and `docs/research.md` as a fallback for technical decisions and constraints not already covered.
 
 3. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:
@@ -230,10 +241,26 @@ Skip all steps below — they are for the Full Implementation Flow only.
       2. Resolve conflicts (prefer the implementation changes for files in scope; keep upstream changes for unrelated files)
       3. Continue rebase: `git rebase --continue`
       4. Push again: `git push origin {branch_name} --force-with-lease`
-    - Create PR via GitHub CLI:
+    - Create PR via GitHub CLI (DRAFT FIRST — `before_pr` hook below):
       ```bash
-      gh pr create --repo {owner}/{repo} --title "{type}: {title}" --body "{PR description}" --base main --head {branch_name}
+      gh pr create --repo {owner}/{repo} --title "{type}: {title}" --body "{PR description}" --base main --head {branch_name} --draft
       ```
+
+      **`before_pr` gate** — after the draft PR is created, validate the PR body
+      against the bundled `pipeline-guard.yml` regex set BEFORE marking ready.
+      Check both rules locally:
+        1. Body contains `Closes #N` (or `Fixes` / `Resolves`)
+        2. Every Speckit phase line is either `- [x] **{Phase}**` OR there is a matching
+           `skip-speckit: {phase} — <reason>` in the body
+      If either rule fails, edit the PR body via `gh pr edit {pr_number} --body-file ...`
+      until both rules pass. Then run extension hooks:
+      Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_pr`.
+
+      Once the body is valid, mark the PR ready for review:
+      ```bash
+      gh pr ready {pr_number}
+      ```
+
     - Add PR to project board:
       ```bash
       gh project item-add {project_number} --owner {owner} --url {pr_url}
@@ -243,7 +270,7 @@ Skip all steps below — they are for the Full Implementation Flow only.
 
 ## TODO Capture Convention
 
-During implementation, when you discover something **out of scope** for the current feature (bug, tech debt, missing capability), capture it for the retrospective to triage:
+During implementation, when you discover something **out of scope** for the current feature (bug, tech debt, missing capability), capture it for triage:
 
 ### Code Comments
 
@@ -258,9 +285,46 @@ Add `TODO(speckit):` markers in the code where you discover the issue:
 ### Rules for TODO Capture
 
 - **Only capture out-of-scope items** — things that should NOT be fixed as part of the current feature
-- **Do NOT stop implementation** to address discovered items — that's the retrospective's job
-- **Classify loosely** — feature/bug/chore is enough; the retrospective will create proper specs
+- **Do NOT stop implementation** to address discovered items — triage them at done-done
+- **Classify loosely** — feature/bug/chore is enough; the triage step creates proper specs
 - **Include enough context** — file path, what's wrong, why it matters
+
+---
+
+## Done-Done: Living Docs + TODO Triage
+
+Before marking the PR ready, update the living documents and triage any discovered TODOs. This replaces the deprecated separate "retro" phase — the cost of keeping docs in sync is tiny when done immediately after the implementation, and impossible weeks later.
+
+### 1. Update living docs
+
+For every change made, update the matching living doc IF it is now out of date:
+
+- **`docs/data-model.md`** — schema changes, new entities, modified relationships
+- **`docs/contracts/*.md`** — API changes, new endpoints, modified request/response shapes
+- **`docs/adr/adr-NNN-*.md`** — only if the implementation diverged from the plan in a way that needs explaining
+
+If no such doc exists yet and the change warrants one, create it. Use the templates under `agents/assets/` (legacy retro/parking-lot templates are still useful starting points).
+
+### 2. Triage TODO(speckit) markers
+
+```bash
+git diff main...HEAD | Select-String -Pattern 'TODO\(speckit\)' -Context 0,2
+```
+
+For each marker introduced in this PR:
+
+- If the item is small enough to fit in a chore: open a chore issue immediately via `gh issue create --template chore.yml`.
+- Otherwise: append a row to `PARKING_LOT.md` (create the file if missing, using `agents/assets/parking-lot-template.md` as a starting point).
+
+### 3. One-line retro summary
+
+Append a single line to `docs/retro.md` (create if missing):
+
+```markdown
+- {date} #{N} — {one-sentence summary of what shipped, what surprised, what's parked}
+```
+
+Keep it short. The PR description, commits, and updated docs already capture detail.
 
 ---
 

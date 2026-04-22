@@ -1,7 +1,7 @@
 ---
 description: >-
   Living retrospective document. Accumulates learnings, process improvements, and tooling
-  gaps across all completed features. Updated by speckit-retro after every implementation.
+  gaps across all completed features. Updated by speckit-implement at done-done after every implementation.
   Reviewed periodically by the human to identify actionable process improvements.
 ---
 
@@ -42,7 +42,7 @@ description: >-
 
 ## Retrospective Entries
 
-<!-- Each speckit-retro invocation appends a new entry below using this format:
+<!-- speckit-implement appends a new entry below at done-done using this format:
 
 ### {spec-number} — {title}
 

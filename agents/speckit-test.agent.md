@@ -6,6 +6,8 @@ description: >-
   and success criterion defined in the GitHub Issue. Receives PipelineContext from the router
   or a bare issue number for standalone invocation. Returns a structured UAT report.
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'editFiles', 'runCommands', 'runTests', 'githubRepo']
 ---
 
 # Speckit Test Agent
@@ -50,7 +52,7 @@ When `pipelineContext` is provided, extract:
 If only an issue number is provided:
 1. Derive `owner`/`repo` from `git config --get remote.origin.url`
 2. Read the issue: `gh issue view {number} --repo {owner}/{repo} --json number,title,state,labels,body`
-3. Invoke `speckit-living-docs-loader` for constitution principles
+3. Read `docs/constitution.md` directly via `read_file` (or `#codebase` search) for constitution principles
 4. Run the full constitution compliance check (Step 4)
 
 ## Execution
@@ -171,7 +173,7 @@ Return a structured result for the router / parent agent:
 ```
 
 The router uses this to:
-- **All PASS** → proceed to `speckit-e2e` (or `speckit-retro` if e2e not applicable)
+- **All PASS** → proceed to `speckit-e2e` (or stop here if e2e not applicable — `speckit-implement` already handles done-done living-doc updates)
 - **Any FAIL on acceptance scenarios or NON-NEGOTIABLE rules** → loop back to `speckit-implement` (subject to circuit breaker)
 - **Only SHOULD warnings or partial edge cases** → proceed with warnings noted as TODOs
 

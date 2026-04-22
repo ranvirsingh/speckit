@@ -25,16 +25,16 @@ The context is built incrementally — each phase adds its fields and passes the
   // --- Project board (set by specify, from .speckit-project.json) ---
   "projectNumber": 17,              // GitHub Project number for Issue State tracking
 
-  // --- Living context (set by specify, cached for downstream) ---
+  // --- Living context (set by specify) ---
   "livingContext": {
-    "summary": "Compressed summary from speckit-living-docs-loader...",
+    "summary": "Compressed summary of relevant living docs (read directly via #codebase / read_file)...",
     "loadedAt": "2026-04-07T06:30:00Z"
   },
 
   // --- Constitution (set by specify) ---
   "constitutionCompliant": true,     // false → downstream phases should not proceed
 
-  // --- Complexity signal (set by specify / nexus) ---
+  // --- Complexity signal (set by specify) ---
   "complexitySignal": "plan",       // "research" | "plan" | "implement"
 
   // --- Research findings (set by research, optional) ---
@@ -125,7 +125,7 @@ The router checks staleness before passing context to a downstream agent:
 if issue.updatedAt > context.livingContext.loadedAt → reload living context
 ```
 
-If the issue body was modified after the living context was loaded, the router re-invokes `speckit-living-docs-loader` and replaces `livingContext` before proceeding.
+If the issue body was modified after the living context was loaded, the router re-reads the relevant living docs directly (via `read_file` / `#codebase`) and replaces `livingContext` before proceeding.
 
 ### Backward Compatibility
 
@@ -136,7 +136,7 @@ When an agent is invoked **without** a `PipelineContext` (standalone / direct in
    - `gh issue view {number} --json ...` for issue details
    - `git branch --show-current` for branch name
    - `gh pr list --head {branch} --json ...` for PR details
-3. It invokes `speckit-living-docs-loader` directly (old behaviour).
+3. It reads the relevant living docs directly via `read_file` / `#codebase` (no separate loader subagent).
 4. It does NOT build a full `PipelineContext` — it operates with whatever it can derive.
 
 This ensures agents remain usable outside the full pipeline (e.g., running `speckit-test #42` standalone).
