@@ -1,6 +1,9 @@
 ---
 name: speckit-verify
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'editFiles', 'runCommands', 'githubRepo']
+agents: ['speckit-pipeline-checker']
 description: >-
   Verify that specs, plans, or implementations comply with the project constitution.
   Run this skill to check compliance before completing any pipeline step. Use when

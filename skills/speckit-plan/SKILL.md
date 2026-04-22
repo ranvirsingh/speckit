@@ -1,6 +1,9 @@
 ---
 name: speckit-plan
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'web', 'fetch', 'usages', 'editFiles', 'runCommands', 'githubRepo']
+agents: ['speckit-living-docs-loader', 'speckit-codebase-scanner', 'speckit-web-researcher']
 description: >-
   Design the architecture and post the task checklist as a GitHub Issue comment — all in one flow.
   Use this skill when the user wants to plan a feature, design the architecture, create a data model,

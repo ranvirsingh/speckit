@@ -7,6 +7,8 @@ description: >-
   PipelineContext from the router or a bare issue number for standalone invocation. Returns a
   structured retro summary.
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'editFiles', 'runCommands', 'githubRepo']
 ---
 
 # Speckit Retro Agent

@@ -1,6 +1,9 @@
 ---
 name: speckit-specify
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'web', 'fetch', 'usages', 'editFiles', 'runCommands', 'githubRepo']
+agents: ['speckit-living-docs-loader', 'speckit-nexus', 'speckit-codebase-scanner']
 description: >-
   Create or update a feature specification, bug report, or chore definition as a GitHub
   Issue-backed spec from a natural language description. Use this skill when the user wants to

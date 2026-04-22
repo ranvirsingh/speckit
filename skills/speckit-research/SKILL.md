@@ -1,6 +1,9 @@
 ---
 name: speckit-research
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'web', 'fetch', 'editFiles', 'runCommands', 'githubRepo']
+agents: ['speckit-web-researcher', 'speckit-codebase-scanner']
 description: >-
   Research assistant that investigates both the internal codebase and external resources
   (libraries, APIs, design patterns, best practices) to inform architectural decisions.

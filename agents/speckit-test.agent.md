@@ -6,6 +6,8 @@ description: >-
   and success criterion defined in the GitHub Issue. Receives PipelineContext from the router
   or a bare issue number for standalone invocation. Returns a structured UAT report.
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'editFiles', 'runCommands', 'runTests', 'githubRepo']
 ---
 
 # Speckit Test Agent

@@ -1,6 +1,14 @@
 ---
 name: speckit-implement
 user-invocable: true
+model: Claude Sonnet 4.6 (copilot)
+tools: ['search', 'codebase', 'usages', 'editFiles', 'runCommands', 'runTasks', 'runTests', 'web', 'fetch', 'githubRepo', 'problems', 'changes']
+agents: ['speckit-living-docs-loader', 'speckit-test', 'speckit-e2e']
+handoffs:
+  - label: Run UAT
+    agent: speckit-test
+    prompt: Run user acceptance testing against the spec for this issue.
+    send: false
 description: >-
   Execute the implementation by working through the task checklist in the GitHub Issue,
   or directly implement a bug fix or chore from a lightweight spec. Use this skill when the

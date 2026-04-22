@@ -6,6 +6,9 @@ description: >-
   (work type, core problem, actors, constraints, edge cases) so parent skills can skip manual
   clarification rounds.
 user-invocable: false
+disable-model-invocation: false
+model: GPT-5.3-Codex (copilot)
+tools: ['search', 'codebase', 'usages', 'githubRepo']
 ---
 
 # Speckit Nexus

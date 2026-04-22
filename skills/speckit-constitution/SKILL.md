@@ -1,6 +1,8 @@
 ---
 name: speckit-constitution
 user-invocable: true
+model: Claude Opus 4.7 (copilot)
+tools: ['search', 'codebase', 'editFiles', 'runCommands', 'githubRepo']
 description: >-
   Create or update the project constitution from interactive or provided principle inputs,
   ensuring all dependent templates stay in sync. Use this skill when setting up a new project,
