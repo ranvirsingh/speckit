@@ -104,7 +104,21 @@ function Get-SpeckitFromGitHub {
 
 # --- Resolve paths -----------------------------------------------------------
 $SpeckitRoot = $PSScriptRoot
-if (-not $SpeckitRoot) { $SpeckitRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition }
+if (-not $SpeckitRoot) {
+    # When invoked via [scriptblock]::Create (web bootstrap), $PSScriptRoot is
+    # empty and $MyInvocation.MyCommand.Definition returns the script body
+    # (not a path), which would cause Split-Path to throw "Illegal characters
+    # in path". Try to derive a path; if anything fails, leave $SpeckitRoot
+    # null so bootstrap mode kicks in below.
+    try {
+        $invocationPath = $MyInvocation.MyCommand.Definition
+        if ($invocationPath -and (Test-Path -LiteralPath $invocationPath -ErrorAction SilentlyContinue)) {
+            $SpeckitRoot = Split-Path -Parent $invocationPath
+        }
+    } catch {
+        $SpeckitRoot = $null
+    }
+}
 
 # Detect bootstrap mode: running from web (scriptblock::Create) or no valid speckit root
 $IsBootstrap = (-not $SpeckitRoot) -or (-not (Test-Path (Join-Path $SpeckitRoot 'SKILL.md')))
