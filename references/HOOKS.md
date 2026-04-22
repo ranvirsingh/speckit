@@ -3,6 +3,26 @@
 This document describes the standard hook-checking logic used by speckit skills.
 Each skill checks for hooks at a specific lifecycle point (e.g., `before_specify`, `before_plan`, `before_implement`, `after_specify`).
 
+## Standard Hook Keys
+
+| Skill | Pre-hook | Post-hook |
+|-------|----------|-----------|
+| `speckit-specify` | `hooks.before_specify` | `hooks.after_specify` |
+| `speckit-research` | `hooks.before_research` | `hooks.after_research` |
+| `speckit-plan` | `hooks.before_plan` | `hooks.after_plan` |
+| `speckit-implement` | `hooks.before_implement` | `hooks.after_implement` |
+| `speckit-implement` (PR creation) | `hooks.before_pr` | `hooks.after_pr` |
+| `speckit-test` | `hooks.before_test` | `hooks.after_test` |
+| `speckit-e2e` | `hooks.before_e2e` | `hooks.after_e2e` |
+| `speckit-retro` | `hooks.before_retro` | `hooks.after_retro` |
+
+`before_pr` runs after the implementation is complete but before
+`gh pr create` is executed. The default behaviour for `speckit-implement`
+when this hook resolves to no entries is to force `--draft`, locally validate
+the PR body against the bundled `pipeline-guard.yml` regex set, fix the body
+if validation fails, and then `gh pr ready` once green. Extensions can hook
+in to add their own pre-PR validation (lint, type-check, test summary).
+
 ## Hook Checking Procedure
 
 Given a `hookKey` (e.g., `hooks.before_specify`):

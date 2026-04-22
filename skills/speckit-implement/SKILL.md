@@ -238,10 +238,26 @@ Skip all steps below — they are for the Full Implementation Flow only.
       2. Resolve conflicts (prefer the implementation changes for files in scope; keep upstream changes for unrelated files)
       3. Continue rebase: `git rebase --continue`
       4. Push again: `git push origin {branch_name} --force-with-lease`
-    - Create PR via GitHub CLI:
+    - Create PR via GitHub CLI (DRAFT FIRST — `before_pr` hook below):
       ```bash
-      gh pr create --repo {owner}/{repo} --title "{type}: {title}" --body "{PR description}" --base main --head {branch_name}
+      gh pr create --repo {owner}/{repo} --title "{type}: {title}" --body "{PR description}" --base main --head {branch_name} --draft
       ```
+
+      **`before_pr` gate** — after the draft PR is created, validate the PR body
+      against the bundled `pipeline-guard.yml` regex set BEFORE marking ready.
+      Check both rules locally:
+        1. Body contains `Closes #N` (or `Fixes` / `Resolves`)
+        2. Every Speckit phase line is either `- [x] **{Phase}**` OR there is a matching
+           `skip-speckit: {phase} — <reason>` in the body
+      If either rule fails, edit the PR body via `gh pr edit {pr_number} --body-file ...`
+      until both rules pass. Then run extension hooks:
+      Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_pr`.
+
+      Once the body is valid, mark the PR ready for review:
+      ```bash
+      gh pr ready {pr_number}
+      ```
+
     - Add PR to project board:
       ```bash
       gh project item-add {project_number} --owner {owner} --url {pr_url}

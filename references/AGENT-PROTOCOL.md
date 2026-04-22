@@ -1,61 +1,58 @@
 # Subagent Autonomy Protocol
 
-This document defines the standard protocol for all speckit subagents.
-Subagents operate **autonomously** — they do NOT follow human-in-the-loop patterns.
-Instead, they communicate unresolved questions back to their invoking (parent) agent.
+This is the short-form reference. Hard enforcement now lives in each
+`.agent.md` and `SKILL.md` frontmatter via the `tools:` allowlist —
+a subagent without `editFiles` in its tools physically cannot write,
+regardless of what its prose says.
 
 ## Identity
 
-Every subagent has a codename inspired by a veteran or notable figure.
-The codename is part of the agent's identity line in its frontmatter description and opening section.
+Every subagent has a codename inspired by a veteran or notable figure
+(Dijkstra, Hypatia, Curie, Babbage, Hopper, Turing, Berners-Lee,
+Lovelace, Nightingale, Deming). The codename is part of the agent's
+identity line in its frontmatter description and opening section.
 
-## Autonomy Rules
+## Roles by tool scope
 
-1. **No direct user interaction.** Subagents never prompt the user. They never use `askQuestions` or pause for human confirmation.
-2. **Resolve what you can.** Use all available tools (search, read, web fetch, terminal) to answer your own questions before escalating.
-3. **Escalate via structured response.** When a question genuinely cannot be answered with available tools, include an `## Unresolved Questions` block in your output (see format below).
-4. **Single-shot by default.** Subagents aim to complete their work in one invocation. Re-invocation is the exception, not the rule.
+| Class | Examples | Tools | Purpose |
+|---|---|---|---|
+| **Read-only subagent** | codebase-scanner, living-docs-loader, web-researcher, nexus, pipeline-checker | `search`, `codebase`, `web`, `fetch`, `usages`, `githubRepo` | Investigate, summarise, escalate via `## Unresolved Questions` — never write |
+| **Artifact subagent** | e2e-browser, e2e-api | read-only set + `editFiles`, `runCommands`, `runTests` | Generate scoped artifacts under `e2e/`, `screenshots/`, `gifs/`, `test-results/` |
+| **Pipeline agent** | speckit-test, speckit-e2e, speckit-retro | as needed for the phase | Autonomous (no `vscode_askQuestions`); orchestrates one phase end-to-end |
+| **User-invocable skill** | speckit-{specify, plan, research, implement, verify, constitution, doctor} | full toolset | Human-in-the-loop allowed; can ask questions |
 
-## Scope Discipline (MANDATORY)
+## Autonomy Rules (still apply, now enforced by frontmatter)
 
-Every agent and skill has a **defined scope**. An agent MUST NOT perform work that belongs to another pipeline phase. This is the single most important rule for pipeline integrity.
+1. **No direct user interaction** for subagents and pipeline agents. They never
+   prompt the user. They never use `vscode_askQuestions`. The `tools:` allowlist
+   omits the askQuestions capability for these roles.
+2. **Resolve what you can.** Use the read-only tools you have to answer your own
+   questions before escalating.
+3. **Escalate via structured response.** When a question genuinely cannot be
+   answered, include an `## Unresolved Questions` block in your output (format
+   below).
+4. **Single-shot by default.** Subagents complete their work in one invocation.
+   Re-invocation is the exception, not the rule.
 
-### Phase Boundaries
+## Scope Discipline
 
-| Phase | Scope | NEVER Does |
-|-------|-------|------------|
-| **specify** | Write spec, create issue, classify complexity | Implement code, create tests, modify source files |
-| **research** | Investigate technologies, compare options | Make decisions, write code, modify source files |
-| **plan** | Design architecture, create task lists, update design docs | Write application/source code, create source files, run tests |
-| **implement** | Write code, commit, push, create PR | Write specs, modify design docs, run e2e tests |
-| **test** | Verify implementation against spec (read-only UAT) | Fix code, write tests, modify source/test files, implement changes |
-| **e2e** | Generate and run e2e test artifacts | Fix application code, modify source files, change the implementation |
-| **retro** | Update living docs, triage TODOs, close the loop | Write application code, create new features, fix bugs |
+Each agent stays in its phase's lane. A test agent that finds a bug REPORTS it;
+it does NOT fix it. The frontmatter `tools:` allowlist for `speckit-test` lets
+it write to `docs/uat-reports/` and that's it; if it tries to edit `src/` the
+edit might succeed at the tool level but is a protocol violation that the
+parent (router) will reject during handoff.
 
-### Hard Rules
-
-1. **Stay in your lane.** If you discover a problem outside your scope (e.g., test agent finds a bug), report it in your return value. Do NOT fix it. The parent/router decides what happens next.
-2. **Return, don't recurse.** When your work is done, return your structured result to the parent. Do NOT invoke the next pipeline phase yourself unless your instructions explicitly say "AUTO-CONTINUE" and you are a **skill** (not a subagent).
-3. **Subagents return to parent.** Subagents (`.agent.md`) ALWAYS return their result to the invoking parent. They NEVER invoke other pipeline phases, load other skills, or continue the pipeline. The parent/router owns orchestration.
-4. **Skills auto-continue via handoff.** Skills with AUTO-CONTINUE hand off to the next phase by invoking it as a new context (new skill load or `runSubagent`). They do NOT bleed work from the next phase into their own execution.
-5. **Context is the handoff.** The `PipelineContext` JSON is the contract between phases. Enrich it with your phase's fields, return it. The router takes it from there.
-
-### Anti-Patterns (explicitly forbidden)
-
-- A **test agent** seeing failures and then editing source code to fix them
-- A **plan skill** starting to write application code after producing the task list
-- An **e2e agent** modifying the implementation to make tests pass
-- A **research agent** making technology decisions instead of presenting options
-- Any subagent invoking `speckit-implement`, `speckit-plan`, or any other pipeline skill directly
-- Any subagent loading another skill's `SKILL.md` to continue the pipeline
-
-### Model Behaviour Guidance
-
-Some models (particularly creative/eager ones) tend to exceed their scope by "helpfully" doing work that belongs to the next phase. This is a **protocol violation**, not helpfulness. The protocol exists to maintain clear accountability, auditable handoffs, and circuit-breaker integrity. An agent that silently does another phase's work breaks the retry loop tracking, skips constitution checks, and produces unauditable changes.
+| Phase | What it does | NEVER does |
+|-------|--------------|------------|
+| specify | Spec, issue, classify | Write code, create tests |
+| research | Investigate options | Write code, decide |
+| plan | Design, task list, design docs | Write app code, run tests |
+| implement | Code, commit, push, PR | Write specs, modify design docs |
+| test | UAT verification | Fix code, modify source/test files |
+| e2e | Generate proof-of-work artifacts | Fix application code |
+| retro | Update living docs, triage | Write app code, fix bugs |
 
 ## Re-Invocation Request Format
-
-When a subagent cannot complete its work due to missing information, it MUST return its partial results **plus** an unresolved-questions block:
 
 ```markdown
 ## Partial Results
@@ -68,104 +65,44 @@ When a subagent cannot complete its work due to missing information, it MUST ret
 **tokens_remaining**: {number}
 **questions**:
 1. {Specific, actionable question}
-2. {Specific, actionable question}
 
 **context_carry**: |
-  {Summary of work completed so far that the next invocation needs to continue.
-   Keep this under 50 lines. Do not repeat raw file contents — summarize.}
+  {Summary of work completed so far. Keep under 50 lines. Summarise; do not
+  paste raw file contents.}
 ```
 
-The parent agent is responsible for:
-- Answering the questions (via its own tools, other subagents, or the user)
-- Re-invoking the subagent with:  `previous_context` (the `context_carry` block) + `answers` (responses to the questions)
+## Token Bucket
 
-## Token Bucket System
+Each subagent has a re-invocation budget per pipeline run. See individual
+`.agent.md` files for the bucket size. Buckets reset at the start of each
+new `speckit-specify` invocation.
 
-Each subagent has a **token bucket** that limits how many times it can request re-invocation within a single pipeline run. This prevents deadlocks and infinite loops.
-
-### Bucket Rules
-
-| Subagent | Bucket Size | Rationale |
-|----------|-------------|-----------|
-| `speckit-codebase-scanner` | **2** | Codebase is local — most answers are findable in one pass |
-| `speckit-e2e-browser` | **3** | Browser tests may need retry after app-state or config fixes |
-| `speckit-e2e-api` | **3** | API tests may need retry after server-state or auth fixes |
-| `speckit-living-docs-loader` | **1** | Pure file loading — if docs don't exist, they don't exist |
-| `speckit-nexus` | **2** | Reasoning from description + context; one retry if codebase scan needed |
-| `speckit-pipeline-checker` | **2** | CI may be pending; one retry after wait is reasonable |
-| `speckit-web-researcher` | **3** | Web research may need follow-up queries for depth |
-| `speckit-test` | **2** | UAT verification; one retry after implement fixes |
-| `speckit-e2e` | **2** | E2E orchestration; one retry after implement fixes |
-| `speckit-retro` | **1** | Retro is observational — either it works or it doesn't |
-
-### How It Works
-
-1. **Initialization**: When a parent agent first invokes a subagent for a task, the subagent's bucket starts at its maximum.
-2. **Consumption**: Each time the subagent returns `reinvoke: true`, the parent decrements the bucket by 1 before re-invoking.
-3. **Exhaustion**: If the bucket reaches **0** and the subagent still has unresolved questions:
-   - The parent agent MUST NOT re-invoke the subagent.
-   - The parent uses the **partial results** returned so far.
-   - Unresolved questions are surfaced to the user or logged as gaps.
-4. **Scope**: Buckets are **per-task, per-subagent**. A new pipeline task resets all buckets. Different subagents have independent buckets.
-5. **Transparency**: The subagent MUST report `tokens_remaining` in every re-invocation request. The parent verifies this matches its own count.
-
-### Deadlock Prevention
-
-- **No circular invocations**: Subagent A must never invoke Subagent B which invokes Subagent A. The invocation graph is strictly a tree rooted at the parent skill.
-- **Bucket ceiling**: Even if a subagent claims it needs more re-invocations, the bucket is a hard cap.
-- **Timeout assumption**: If a subagent's output does not contain `reinvoke: true`, the work is considered complete (success or best-effort).
-- **Monotonic decrement**: Buckets only go down. No mechanism exists to refill a bucket mid-task.
-
-## Parent Agent Responsibilities
-
-When invoking a subagent, the parent MUST:
-
-1. **Track the bucket** — initialize to the subagent's max, decrement on each `reinvoke: true`.
-2. **Carry context** — pass `previous_context` + `answers` on re-invocation.
-3. **Enforce the cap** — refuse re-invocation when bucket = 0.
-4. **Use partial results** — never discard work done by a subagent, even if incomplete.
-5. **Log gaps** — record any unresolved questions that hit the bucket limit for the retro/verify phases.
+| Subagent | Budget |
+|----------|--------|
+| codebase-scanner | 2 |
+| living-docs-loader | 1 |
+| web-researcher | 3 |
+| nexus | 2 |
+| pipeline-checker | 2 |
+| e2e-browser | 3 |
+| e2e-api | 3 |
+| test | 2 |
+| e2e | 2 |
+| retro | 1 |
 
 ## Circuit Breaker
 
-The circuit breaker prevents runaway retry loops at the **pipeline phase level** (not individual subagents — those are covered by the token bucket above). It governs the implement → test → implement and implement → e2e → implement feedback cycles.
+The router maintains `retryCount.{phase}` in the [PipelineContext](./HANDOFF-SCHEMA.md).
+If `retryCount.{phase} >= 2`, the router stops and escalates to the user.
+Counters reset per pipeline run. See HANDOFF-SCHEMA.md for the full schema.
 
-### How It Works
+## Why frontmatter, not prose
 
-1. The router maintains a `retryCount` object in the [PipelineContext](./HANDOFF-SCHEMA.md) with one counter per phase.
-2. All counters start at `0`.
-3. When a phase fails and the pipeline auto-continues back (e.g., test fails → implement), the router increments `retryCount.{phase}` for the phase being re-entered.
-4. **Before invoking any phase**, the router checks:
-   ```
-   if retryCount.{phase} >= 2 → STOP and escalate to user
-   ```
-5. On escalation, the router presents:
-   - Which phase tripped the breaker
-   - The failure reason from the last attempt
-   - The partial results accumulated so far
-   - A suggestion to the user (e.g., "The test phase has failed twice after implement fixes. Please review the failing scenarios manually.")
+This document used to be ~250 lines of MUST/MUST NOT. In practice some models
+(particularly creative ones) ignored those rules and started implementing code
+during the test phase, or used `vscode_askQuestions` despite "you must not".
 
-### Retry Semantics
-
-| Loop | Trigger | Counter Incremented | Max Retries |
-|------|---------|-------------------|-------------|
-| implement → test → implement | UAT fails | `retryCount.implement` | 2 |
-| implement → e2e → implement | E2E tests fail | `retryCount.implement` | 2 |
-| test → implement → test | Fix didn't resolve UAT | `retryCount.test` | 2 |
-| e2e → implement → e2e | Fix didn't resolve E2E | `retryCount.e2e` | 2 |
-
-### Rules
-
-- Counters are **per pipeline run** — a new `speckit-specify` invocation resets all counters.
-- The circuit breaker is orthogonal to the token bucket — a subagent may exhaust its bucket without tripping the breaker, and vice versa.
-- The breaker applies to the **router's auto-continue logic only**. A user can always manually re-invoke a phase (the counter is not checked for direct invocations).
-
-## Handoff Protocol
-
-Pipeline phases communicate via the `PipelineContext` JSON schema. See [HANDOFF-SCHEMA.md](./HANDOFF-SCHEMA.md) for the full schema definition, field rules, staleness checks, and backward-compatibility behaviour.
-
-### Key Principles
-
-1. **Incremental enrichment**: Each phase adds its fields to the context and passes it downstream. No phase removes or overwrites fields set by an earlier phase.
-2. **Single load**: Living docs are loaded once at specify time and cached in `livingContext`. Downstream phases trust the cache unless the issue body was modified (staleness check).
-3. **Graceful degradation**: If an agent receives no `PipelineContext`, it falls back to CLI-based context derivation (see Backward Compatibility in HANDOFF-SCHEMA.md).
+`tools:` in agent frontmatter is enforced by VS Code itself — the model cannot
+call a tool that is not in the allowlist. So we moved the rules to the place
+that actually enforces them. This file is the rationale; the agent files are
+the truth.
