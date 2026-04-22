@@ -8,7 +8,7 @@ description: >-
 user-invocable: false
 disable-model-invocation: false
 model: GPT-5.3-Codex (copilot)
-tools: ['search', 'codebase', 'editFiles', 'runCommands', 'runTests', 'githubRepo']
+tools: [vscode/memory, vscode/resolveMemoryFileUri, vscode/runCommand, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, read/problems, read/readFile, read/terminalSelection, read/terminalLastCommand, edit/createFile, edit/editFiles, edit/rename, search, browser, todo]
 ---
 
 > **Note**: The `browser` tool requires a Playwright MCP server or equivalent browser automation extension. If unavailable, fall back to `runCommands` for Playwright CLI execution only.

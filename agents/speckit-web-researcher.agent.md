@@ -6,8 +6,8 @@ description: >-
   decisions and implementation guidance.
 user-invocable: false
 disable-model-invocation: false
-model: GPT-5.3-Codex (copilot)
-tools: ['search', 'codebase', 'web', 'fetch', 'githubRepo']
+model: Gemini 3.1 Pro (Preview) (copilot)
+tools: [vscode/memory, vscode/resolveMemoryFileUri, vscode/runCommand, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, read/problems, read/readFile, read/terminalSelection, read/terminalLastCommand, edit/createFile, edit/editFiles, edit/rename, search, browser, todo]
 ---
 
 # Speckit Web Researcher
