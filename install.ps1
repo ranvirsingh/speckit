@@ -85,7 +85,12 @@ function Get-SpeckitFromGitHub {
         $innerDir = Get-ChildItem -Path $tempDir -Directory | Select-Object -First 1
 
         if (Test-Path $DestDir) {
-            Remove-Item $DestDir -Recurse -Force
+            Write-Host "Scheduling removal of old speckit directory after script exit..." -ForegroundColor Yellow
+            Start-Job -ScriptBlock { 
+                param($path)
+                Start-Sleep -Seconds 1
+                Remove-Item $path -Recurse -Force
+            } -ArgumentList $DestDir | Out-Null
         }
         New-Item -ItemType Directory -Path $DestDir -Force | Out-Null
 
