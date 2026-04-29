@@ -135,7 +135,7 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
    Create `docs/` (and `docs/contracts/` when needed) if missing. Do **not** create `specs/`
    or a local `spec.md`.
 
-1. **Data model changes** → update `docs/data-model.md` (if file doesn't exist, initialize from this skill's `assets/data-model-template.md`):
+1. **Data model changes** → update `docs/data-model.md` (if file doesn't exist, initialize from this skill's `assets/DATA-MODEL.TEMPLATE.md`):
    - Add or modify entity definitions, fields, relationships
    - Add validation rules from requirements
    - Add state transitions if applicable
@@ -149,7 +149,7 @@ After Step 1 (design complete), pause and ask the user: **"Design is ready for r
 3. **Architecture Decision Records** (if the design introduces a significant architectural choice) → create/update files in `docs/adr/`:
    - Examples: new dependency, cross-cutting pattern, technology swap, major protocol choice
    - If `docs/adr/` does not exist, create it
-   - Create `docs/adr/adr-NNN-{topic}.md` using this skill's `assets/adr-template.md`
+   - Create `docs/adr/adr-NNN-{topic}.md` using this skill's `assets/ADR.TEMPLATE.md`
    - Capture context, decision, consequences, and alternatives during planning while the rationale is fresh
 
 4. Re-evaluate Constitution Check post-design (if constitution exists).

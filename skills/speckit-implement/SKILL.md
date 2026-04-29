@@ -303,7 +303,7 @@ For every change made, update the matching living doc IF it is now out of date:
 - **`docs/contracts/*.md`** — API changes, new endpoints, modified request/response shapes
 - **`docs/adr/adr-NNN-*.md`** — only if the implementation diverged from the plan in a way that needs explaining
 
-If no such doc exists yet and the change warrants one, create it. Use the templates under `agents/assets/` (legacy retro/parking-lot templates are still useful starting points).
+If no such doc exists yet and the change warrants one, create it. Use the templates under `agents/assets/` (legacy `RETRO.TEMPLATE.md` / `PARKING-LOT.TEMPLATE.md` assets are still useful starting points).
 
 ### 2. Triage TODO(speckit) markers
 
@@ -314,7 +314,7 @@ git diff main...HEAD | Select-String -Pattern 'TODO\(speckit\)' -Context 0,2
 For each marker introduced in this PR:
 
 - If the item is small enough to fit in a chore: open a chore issue immediately via `gh issue create --template chore.yml`.
-- Otherwise: append a row to `PARKING_LOT.md` (create the file if missing, using `agents/assets/parking-lot-template.md` as a starting point).
+- Otherwise: append a row to `PARKING_LOT.md` (create the file if missing, using `agents/assets/PARKING-LOT.TEMPLATE.md` as a starting point).
 
 ### 3. One-line retro summary
 

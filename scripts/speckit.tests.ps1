@@ -130,8 +130,8 @@ Describe 'speckit-research skill' {
         $content | Should Match 'speckit-web-researcher'
     }
 
-    It 'research-template.md exists' {
-        $path = Join-Path $speckitRoot 'skills\speckit-research\assets\research-template.md'
+    It 'RESEARCH.TEMPLATE.md exists' {
+        $path = Join-Path $speckitRoot 'skills\speckit-research\assets\RESEARCH.TEMPLATE.md'
         Test-Path $path | Should Be $true
     }
 }
@@ -302,13 +302,13 @@ Describe 'install.ps1 agent registration' {
         $installContent | Should Match "'speckit-web-researcher'"
     }
 
-    It 'retro-template.md still exists in agents/assets (used by speckit-implement at done-done)' {
-        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'agents\assets\retro-template.md'
+    It 'RETRO.TEMPLATE.md still exists in agents/assets (used by speckit-implement at done-done)' {
+        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'agents\assets\RETRO.TEMPLATE.md'
         Test-Path $path | Should Be $true
     }
 
-    It 'parking-lot-template.md still exists in agents/assets (used by speckit-implement at done-done)' {
-        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'agents\assets\parking-lot-template.md'
+    It 'PARKING-LOT.TEMPLATE.md still exists in agents/assets (used by speckit-implement at done-done)' {
+        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'agents\assets\PARKING-LOT.TEMPLATE.md'
         Test-Path $path | Should Be $true
     }
 

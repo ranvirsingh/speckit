@@ -190,7 +190,7 @@ Post the research findings as a GitHub Issue comment (do not write to `docs/rese
 
 #### Standalone fallback (no issue number)
 
-If `docs/research.md` does not exist, initialise it from this skill's `assets/research-template.md`.
+If `docs/research.md` does not exist, initialise it from this skill's `assets/RESEARCH.TEMPLATE.md`.
 
 Append a new research entry to `docs/research.md` using the same format above (without the HTML markers).
 
