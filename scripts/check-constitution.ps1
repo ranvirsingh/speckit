@@ -22,7 +22,7 @@ $valid = $false
 
 if ($exists) {
     $content = Get-Content $constitutionPath -Raw
-    # Check for known template placeholders from constitution-template.md
+    # Check for known template placeholders from CONSTITUTION.TEMPLATE.md
     $templatePlaceholders = @(
         '\[PROJECT_NAME\]'
         '\[PRINCIPLE_\d+_NAME\]'

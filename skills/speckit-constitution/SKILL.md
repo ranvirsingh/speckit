@@ -32,7 +32,7 @@ Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey =
 
 You are updating the project constitution at `docs/constitution.md`. This file is a TEMPLATE containing placeholder tokens in square brackets (e.g. `[PROJECT_NAME]`, `[PRINCIPLE_1_NAME]`). Your job is to (a) collect/derive concrete values, (b) fill the template precisely, and (c) propagate any amendments across dependent artifacts.
 
-**Note**: If `docs/constitution.md` does not exist yet, initialize it from this skill's `assets/constitution-template.md`. If it's missing, copy the template first.
+**Note**: If `docs/constitution.md` does not exist yet, initialize it from this skill's `assets/CONSTITUTION.TEMPLATE.md`. If it's missing, copy the template first.
 
 Follow this execution flow:
 
@@ -57,7 +57,7 @@ Follow this execution flow:
    - Ensure Governance section lists amendment procedure, versioning policy, and compliance review expectations.
 
 4. Consistency propagation checklist (convert prior checklist into active validations):
-   - Read the speckit-specify skill's `assets/issue-body-template.md` (if it exists) for scope/requirements alignment—update if constitution adds/removes mandatory sections or constraints.
+   - Read the speckit-specify skill's `assets/ISSUE-BODY.TEMPLATE.md` (if it exists) for scope/requirements alignment—update if constitution adds/removes mandatory sections or constraints.
    - Read each skill file in `.github/skills/speckit-*/SKILL.md` to verify no outdated references remain when generic guidance is required.
    - Read any runtime guidance docs (e.g., `README.md`, `docs/process.md`, or agent-specific guidance files if present). Update references to principles changed.
 

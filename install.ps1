@@ -433,7 +433,7 @@ if (Test-Path $agentAssetsSource) {
 
 $fanouts = @(
     @{
-        Source = Join-Path $SpeckitRoot 'skills/speckit-implement/assets/pull_request_template.md'
+        Source = Join-Path $SpeckitRoot 'skills/speckit-implement/assets/PULL-REQUEST.TEMPLATE.md'
         Target = Join-Path $GithubDir 'pull_request_template.md'
         Label  = '.github/pull_request_template.md'
     }
