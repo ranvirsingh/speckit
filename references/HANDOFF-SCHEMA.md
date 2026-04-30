@@ -76,6 +76,43 @@ The context is built incrementally — each phase adds its fields and passes the
     "artifacts": ["e2e/e2e-42.spec.ts", "e2e/gifs/e2e-42/sc1.gif"]
   },
 
+  // --- Artifact index (set incrementally by each phase, optional) ---
+  // See § Artifact Index below for the full contract.
+  "artifactIndex": {
+    "researchCommentId": 4356928435,            // GitHub Issue comment ID for the research block (null until research runs)
+    "planCommentId": 4356953657,                // GitHub Issue comment ID for the plan block (null until plan runs)
+    "dataModelPath": "docs/data-model.md",      // Living-doc path (null if not produced)
+    "openapiPath": "docs/openapi.yaml",         // Living-doc path (null if not produced)
+    "e2eEvidenceDir": "e2e/gifs/e2e-42/",       // Directory of e2e evidence (null until e2e runs)
+    "extra": {
+      "schemaVersion": 1,                       // Independent version for the extra map
+      "entries": {                              // Project-specific named pointers
+        "loadTestReport": "docs/perf/load-42.html"
+      }
+    }
+  },
+
+  // --- Context budget (advisory, set by any phase, optional) ---
+  // See § Context Budget below for the full contract.
+  "contextBudget": {
+    "maxSourceLines": 1500,                     // Advisory cap per phase. speckit-verify --scope pr warns on overrun.
+    "loadedArtifacts": [                        // Audit trail of what the current phase has read.
+      "docs/constitution.md",
+      "references/HANDOFF-SCHEMA.md"
+    ]
+  },
+
+  // --- Phase verdicts (set by each phase, optional) ---
+  // See § Phase Verdicts below for the full contract.
+  "phaseVerdicts": {
+    "specify":   { "verdict": "pass",    "notes": "Spec accepted." },
+    "research":  { "verdict": "pass",    "notes": "Decisions recorded." },
+    "plan":      { "verdict": "pass",    "notes": "Plan posted to issue." },
+    "implement": { "verdict": "pass",    "notes": "PR #99 opened." },
+    "test":      { "verdict": "blocked", "notes": "Acceptance criterion 3 ambiguous." },
+    "e2e":       { "verdict": "fail",    "notes": "Login flow regressed." }
+  },
+
   // --- Circuit breaker (managed by router) ---
   "retryCount": {
     "specify": 0,
@@ -116,6 +153,134 @@ The context is built incrementally — each phase adds its fields and passes the
 | `implementation` | object | implement | PR details, commit SHA, dev-server URL |
 | `uat` | object | test | UAT verdict, counts, and report |
 | `e2e` | object | e2e | Project type, pass/fail, artifact paths |
+| `artifactIndex` | object | any phase | Pointers to durable artifacts. See § Artifact Index. |
+| `contextBudget` | object | any phase | Advisory per-phase context budget. See § Context Budget. |
+| `phaseVerdicts` | object | each phase | Machine-readable pass/fail/blocked per phase. See § Phase Verdicts. |
+
+## Artifact Index
+
+The `artifactIndex` object gives downstream phases a stable, named lookup for durable artifacts produced by earlier phases. It replaces ad-hoc string-matching against issue comments and free-form file scans.
+
+### Required keys (fixed-key set)
+
+| Key | Type | Set By | Description |
+|-----|------|--------|-------------|
+| `researchCommentId` | number \| null | research | GitHub Issue comment ID for the `<!-- speckit-research:start -->` block. `null` until research runs. |
+| `planCommentId` | number \| null | plan | GitHub Issue comment ID for the `<!-- speckit-plan:start -->` block. `null` until plan runs. |
+| `dataModelPath` | string \| null | plan / implement | Workspace-relative path to the data-model living doc, or `null` if none. |
+| `openapiPath` | string \| null | plan / implement | Workspace-relative path to the OpenAPI/contract document, or `null` if none. |
+| `e2eEvidenceDir` | string \| null | e2e | Directory containing e2e evidence (gifs/screenshots/logs), or `null` until e2e runs. |
+
+The five required keys cover the artifacts every speckit pipeline phase needs to find. Keep this list small on purpose — discovery of *other* repo content is better served by `search/codebase` (semantic_search) and `search/textSearch` (grep_search), which require no maintenance.
+
+### Extension via `extra`
+
+Project-specific named artifacts go in `artifactIndex.extra`:
+
+```jsonc
+"extra": {
+  "schemaVersion": 1,                  // Versioned independently of HANDOFF-SCHEMA itself
+  "entries": {                         // Free-form name → path|url map
+    "loadTestReport": "docs/perf/load-42.html"
+  }
+}
+```
+
+Bump `schemaVersion` when a project changes the meaning of an existing entry name. Adding new entries does NOT require a bump.
+
+### Defaults and backward compatibility
+
+- The whole `artifactIndex` object is **optional**. Pipelines that omit it MUST continue to work.
+- When present, the default shape is `{ extra: { schemaVersion: 1, entries: {} } }` with all fixed keys set to `null`.
+- A consumer reading `artifactIndex.dataModelPath` MUST handle `null`/missing gracefully and fall back to `search/codebase` for discovery.
+
+## Context Budget
+
+The `contextBudget` object is an **advisory** per-phase budget. It is not enforced at the tool layer; the router and `speckit-verify` use it for warnings.
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `maxSourceLines` | number | `1500` | Soft cap on source lines a single phase should read. `speckit-verify --scope pr` warns when a phase's `loadedArtifacts` total exceeds this. |
+| `loadedArtifacts` | string[] | `[]` | Audit trail of file paths the current phase has already loaded. Phases SHOULD append rather than re-read. |
+
+### Why advisory, not enforced
+
+Hard enforcement would create false positives whenever a phase legitimately needs to read a large schema or migration file. The dominant token waste is **repeated** reads across phases — addressed by `loadedArtifacts` (so a phase doesn't re-read what it already has) and by `/memories/repo/` reuse hints (so cross-phase facts don't get rediscovered). `maxSourceLines` is the safety net, not the main lever.
+
+### Backward compatibility
+
+- The whole `contextBudget` object is **optional**.
+- A missing `contextBudget` MUST be treated as "no budget configured" — `speckit-verify` skips the warning.
+- A missing `loadedArtifacts` MUST be treated as `[]`.
+
+## Phase Verdicts
+
+The `phaseVerdicts` object is a typed pass/fail/blocked record per phase. It replaces parsing PR-checklist boxes or scraping issue-comment prose.
+
+```jsonc
+"phaseVerdicts": {
+  "specify":   { "verdict": "pass",    "notes": "Spec accepted." },
+  "research":  { "verdict": "pass",    "notes": "Decisions recorded." },
+  "plan":      { "verdict": "pass",    "notes": "Plan posted to issue." },
+  "implement": { "verdict": "pass",    "notes": "PR #99 opened." },
+  "test":      { "verdict": "blocked", "notes": "Acceptance criterion 3 ambiguous." },
+  "e2e":       { "verdict": "fail",    "notes": "Login flow regressed." }
+}
+```
+
+### Verdict enum
+
+| Value | Meaning | Router action |
+|-------|---------|---------------|
+| `"pass"` | Phase completed successfully. | Proceed. |
+| `"fail"` | Phase ran and produced a definitive failure. | Increment `retryCount.{phase}`; do NOT auto-retry if already at limit. |
+| `"blocked"` | Phase cannot proceed without a decision (ambiguous spec, missing dependency, external blocker). | Escalate to the user — do NOT auto-retry. |
+
+### Defaults and backward compatibility
+
+- The whole `phaseVerdicts` object is **optional**.
+- A missing `phaseVerdicts.{phase}` MUST be treated as "no verdict yet" (the phase has not run, or ran on an older pipeline that did not emit verdicts).
+- `notes` is optional but RECOMMENDED for `fail` and `blocked`.
+
+## /memories/repo/ Write Convention
+
+Cross-phase reusable facts (the original "reuseHints" idea) are NOT a schema field. Instead, phases write structured entries to `/memories/repo/{slug}.md` using the existing VS Code Copilot repository-memory shape:
+
+```jsonc
+{
+  "subject": "Short subject line",
+  "fact":    "The factual statement, with enough context to be useful in isolation.",
+  "citations": [
+    "path/to/file.md (line range or anchor)",
+    "https://github.com/{owner}/{repo}/issues/{n}"
+  ],
+  "reason":   "Why this fact matters across future tasks.",
+  "category": "architecture-principle"
+}
+```
+
+### Why no schema field
+
+VS Code Copilot auto-surfaces `/memories/repo/` entries to every future agent invocation as `<repository_memories>`. Adding a parallel `reuseHints` array in `PipelineContext` would create two sources of truth that drift. See `/memories/repo/prefer-vscode-primitives-over-pipelinecontext-fields.md` for the architectural principle.
+
+### Recommended categories
+
+| Category | Written by | Example use |
+|----------|------------|-------------|
+| `architecture-principle` | research, plan | "Prefer VS Code primitives over new schema fields" |
+| `e2e-skill` | implement (consumer: #24) | Pointer to a codified reusable E2E flow |
+| `repo-fact` | any phase | "All Python commands run inside Docker containers" |
+| `decision` | specify, research | "Issue body holds spec only; plan goes to issue comment" |
+
+### When to write
+
+- After a research phase produces a finding that future phases should not have to rediscover.
+- At `speckit-implement` done-done, when an implementation choice should inform future work.
+- NEVER as a substitute for living docs — durable design content still belongs in `docs/`.
+
+### Required fields
+
+All five fields (`subject`, `fact`, `citations`, `reason`, `category`) are required. Entries missing `citations` or `reason` SHOULD be rejected by `speckit-verify --scope repo`.
 
 ### Staleness Check
 
