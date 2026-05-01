@@ -20,6 +20,13 @@ On entry, advance the Issue State to "Research". Read `.speckit-project.json` fr
 powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Research"
 ```
 
+## PipelineContext Fields
+
+See [HANDOFF-SCHEMA.md](../../references/HANDOFF-SCHEMA.md) for the full schema.
+
+- **Reads**: `livingContext`, `constitutionCompliant`, `artifactIndex` (if present, to reuse prior research pointers).
+- **Writes**: `artifactIndex.researchCommentId` (the GitHub comment ID for the `<!-- speckit-research:start -->` block), `phaseVerdicts.research` (`pass`/`fail`/`blocked` with notes), and OPTIONAL durable findings as `/memories/repo/{slug}.md` entries with `category: "architecture-principle"`, `"repo-fact"`, or `"decision"`.
+
 ## Next Steps (AUTO-CONTINUE)
 
 After research is complete, **automatically proceed** — do NOT stop to ask or suggest:

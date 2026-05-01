@@ -34,6 +34,14 @@ The input should indicate what to verify: a spec (GitHub Issue), plan, or implem
 **Check for extension hooks (before verify)**:
 Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_verify`.
 
+## PipelineContext Checks
+
+When a `PipelineContext` is available, `--scope pr` SHOULD additionally:
+
+- **`contextBudget.maxSourceLines` overrun**: warn (do NOT fail) if the cumulative line count of `contextBudget.loadedArtifacts` for any phase exceeds the budget. See [HANDOFF-SCHEMA.md § Context Budget](../../references/HANDOFF-SCHEMA.md#context-budget).
+- **`phaseVerdicts` consistency**: fail when any phase reports `"verdict": "blocked"` and the PR is marked ready-for-merge. Warn when a phase listed in the PR checklist has no entry in `phaseVerdicts`.
+- **`/memories/repo/` entries written by this PR**: spot-check that each new entry has all five required fields (`subject`, `fact`, `citations`, `reason`, `category`). Fail otherwise.
+
 ## Goal
 
 Check that the current work product (spec, plan, or code) adheres to every MUST and

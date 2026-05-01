@@ -58,6 +58,11 @@ When `pipelineContext` is provided, extract:
 - `implementation.authToken` for authenticated endpoints (optional)
 - `uat.verdict` to confirm UAT passed before proceeding
 
+**Writes** (PipelineContext fields this agent SHOULD set on completion):
+- `phaseVerdicts.e2e`: `{ "verdict": "pass"|"fail"|"blocked", "notes": "<short reason>" }`.
+- `artifactIndex.e2eEvidenceDir`: workspace-relative directory containing the e2e evidence (gifs/screenshots/logs) produced this run.
+- `e2e` block (existing): `projectType`, `passed`, `artifacts`. The `phaseVerdicts.e2e` value MUST agree with `e2e.passed` (`true` → `pass`, `false` → `fail`).
+
 ### Backward Compatibility (no PipelineContext)
 
 If only an issue number is provided:

@@ -52,6 +52,10 @@ When `pipelineContext` is provided, extract:
 - `constitutionCompliant` — if `true`, skip the constitution compliance step (Step 4)
 - `implementation.prNumber` for PR linkage
 
+**Writes** (PipelineContext fields this agent SHOULD set on completion):
+- `phaseVerdicts.test`: `{ "verdict": "pass"|"fail"|"blocked", "notes": "<short reason>" }`. Use `"blocked"` when an acceptance criterion is ambiguous or untestable rather than `"fail"`.
+- `uat` block (existing): `verdict`, `passCount`, `failCount`, `report`. The `phaseVerdicts.test` value SHOULD agree with `uat.verdict` (`PASS` → `pass`, `FAIL` → `fail`, `PARTIAL` → `blocked`).
+
 ### Backward Compatibility (no PipelineContext)
 
 If only an issue number is provided:
