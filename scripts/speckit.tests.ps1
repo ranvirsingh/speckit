@@ -562,3 +562,44 @@ Describe 'before_pr guard (#25)' {
     }
 }
 
+Describe 'set-issue-state.ps1 draft item handling' {
+    It 'does not throw when a project item has content without id' {
+        $issueNodeId = 'ISSUE_NODE_123'
+        $items = @(
+            [PSCustomObject]@{ id = 'item-draft'; content = [PSCustomObject]@{} },
+            [PSCustomObject]@{ id = 'item-issue'; content = [PSCustomObject]@{ id = $issueNodeId; number = 36 } }
+        )
+
+        {
+            $null = $items | Where-Object {
+                try {
+                    $_.content.id -eq $issueNodeId
+                }
+                catch {
+                    $false
+                }
+            }
+        } | Should Not Throw
+    }
+
+    It 'finds the matching issue-backed item while skipping draft items' {
+        $issueNodeId = 'ISSUE_NODE_456'
+        $items = @(
+            [PSCustomObject]@{ id = 'item-draft-a'; content = [PSCustomObject]@{} },
+            [PSCustomObject]@{ id = 'item-draft-b'; content = $null },
+            [PSCustomObject]@{ id = 'item-issue'; content = [PSCustomObject]@{ id = $issueNodeId; number = 99 } }
+        )
+
+        $result = $items | Where-Object {
+            try {
+                $_.content.id -eq $issueNodeId
+            }
+            catch {
+                $false
+            }
+        }
+
+        $result.id | Should Be 'item-issue'
+    }
+}
+

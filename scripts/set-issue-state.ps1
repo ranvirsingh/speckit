@@ -140,7 +140,15 @@ $gqlJqPath = '.data.' + $gqlOwnerRoot + '.projectV2'
 $projectData = (gh api graphql -f query="$projectQuery" --jq "$gqlJqPath") 2>&1 | ConvertFrom-Json
 $projectId = $projectData.id
 
-$projectItem = $projectData.items.nodes | Where-Object { $_.content.id -eq $issueNodeId }
+$projectItem = $projectData.items.nodes | Where-Object {
+    try {
+        $_.content.id -eq $issueNodeId
+    }
+    catch {
+        # Draft items and other non-issue content may not expose .content.id
+        $false
+    }
+}
 
 if (-not $projectItem) {
     Write-Host "  Issue not in project - adding it now..." -ForegroundColor DarkYellow
