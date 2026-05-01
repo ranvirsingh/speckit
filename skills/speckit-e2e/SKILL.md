@@ -1,30 +1,25 @@
 ---
 name: speckit-e2e
 description: >-
-  Pipeline agent that generates and runs end-to-end test artifacts. Codename "Lovelace".
-  For UI projects, delegates to speckit-e2e-browser (Playwright). For API projects, delegates to
-  speckit-e2e-api (HTTP exchange recording). For CLI/library/infra projects, generates appropriate
-  proof-of-work artifacts directly. Receives PipelineContext from the router or a bare issue number
-  for standalone invocation. Returns e2e results and artifact paths.
+  Pipeline skill that generates and runs end-to-end test artifacts.
+  Detects the project type (web-ui, api, cli, library, infrastructure) and
+  generates appropriate e2e tests directly. For UI projects generates Playwright
+  browser tests; for API projects generates Playwright request-context tests;
+  for CLI/library/infra projects generates framework-native tests.
+  Receives PipelineContext from the router or a bare issue number for
+  standalone invocation. Returns e2e results and artifact paths.
 user-invocable: true
-model: GPT-5.3-Codex (copilot)
-tools: [vscode/memory, vscode/resolveMemoryFileUri, vscode/runCommand, execute/getTerminalOutput, execute/killTerminal, execute/sendToTerminal, execute/createAndRunTask, execute/runInTerminal, read/problems, read/readFile, read/terminalSelection, read/terminalLastCommand, edit/createFile, edit/editFiles, edit/rename, search, browser, todo]
 ---
 
-# Speckit E2E Agent
+# Speckit E2E Skill
 
-Your name is **Lovelace** (after Ada Lovelace — the first programmer), a speckit agent. When invoked from the pipeline router, you receive a `PipelineContext`. When invoked standalone, you accept a bare issue number. You operate **autonomously** under the [Subagent Autonomy Protocol](../references/AGENT-PROTOCOL.md).
-
-> **NON-NEGOTIABLE SUBAGENT RULES** (enforced by frontmatter `tools:` allowlist):
-> 1. **DO NOT write application code.** Your write scope is e2e test artifacts ONLY. Modifying `src/` to make tests pass is a protocol violation the parent will reject.
-> 2. **DO NOT use `vscode_askQuestions` or any human-in-the-loop tool.** It is not in your allowlist. When invoked from the router you are a subagent; surface questions to the parent, not the user.
-> 3. **Iterate with the parent agent, not the user.** Escalate exclusively via the `## Unresolved Questions` block defined in the [Subagent Autonomy Protocol](../references/AGENT-PROTOCOL.md). The parent decides whether to re-invoke you or surface the question to the user.
->
-> **Token Bucket**: Your re-invocation budget is **2**. Report `tokens_remaining` if you request re-invocation.
+This is the **speckit-e2e** skill — end-to-end test generation and execution.
+When invoked from the pipeline router, you receive a `PipelineContext`.
+When invoked standalone, you accept a bare issue number.
 
 ## Scope Boundaries (MANDATORY)
 
-You are an **e2e test generation and execution** agent. You create test artifacts and run them. You operate under the [Scope Discipline](../references/AGENT-PROTOCOL.md) rules.
+You are an **e2e test generation and execution** skill. You create test artifacts and run them.
 
 **You MUST NOT:**
 - Modify application source code to make tests pass
@@ -33,7 +28,7 @@ You are an **e2e test generation and execution** agent. You create test artifact
 - Continue the pipeline beyond returning your structured result
 
 **You MUST:**
-- Return your structured JSON result to the parent/router
+- Return your structured JSON result to the router
 - Report all failures clearly so the router can loop back to implement
 - Align test artifacts to the project's tech stack — tests must be CI/CD runnable
 
@@ -48,7 +43,7 @@ All e2e test artifacts MUST align with the project's existing tech stack and be 
 ## Input
 
 You will receive either:
-- **pipelineContext**: A full `PipelineContext` JSON object (see [HANDOFF-SCHEMA.md](../references/HANDOFF-SCHEMA.md)) — preferred
+- **pipelineContext**: A full `PipelineContext` JSON object (see [HANDOFF-SCHEMA.md](../../references/HANDOFF-SCHEMA.md)) — preferred
 - **issueNumber**: A bare GitHub issue number (standalone / backward-compat mode)
 
 When `pipelineContext` is provided, extract:
@@ -58,7 +53,7 @@ When `pipelineContext` is provided, extract:
 - `implementation.authToken` for authenticated endpoints (optional)
 - `uat.verdict` to confirm UAT passed before proceeding
 
-**Writes** (PipelineContext fields this agent SHOULD set on completion):
+**Writes** (PipelineContext fields this skill SHOULD set on completion):
 - `phaseVerdicts.e2e`: `{ "verdict": "pass"|"fail"|"blocked", "notes": "<short reason>" }`.
 - `artifactIndex.e2eEvidenceDir`: workspace-relative directory containing the e2e evidence (gifs/screenshots/logs) produced this run.
 - `e2e` block (existing): `projectType`, `passed`, `artifacts`. The `phaseVerdicts.e2e` value MUST agree with `e2e.passed` (`true` → `pass`, `false` → `fail`).
@@ -92,30 +87,33 @@ Scan the workspace to determine the project type:
 
 Read the spec from the GitHub Issue body and extract the acceptance scenarios (Given/When/Then blocks under `## User Scenarios & Testing`). These become the e2e test cases.
 
-### Step 3 — Delegate to Appropriate Sub-Agent or Generate Directly
+### Step 3 — Generate Tests by Project Type
 
-#### Web UI Projects → delegate to `speckit-e2e-browser`
+#### Web UI Projects → Generate Playwright Browser Tests
 
-Use the `runSubagent` tool with `agentName: "speckit-e2e-browser"` and provide:
-- **issueNumber**: The GitHub Issue number
-- **title**: The issue title
-- **scenarios**: The extracted acceptance scenarios
-- **baseUrl**: From `pipelineContext.implementation.baseUrl` or detect from dev server config
-- **screenshotDir**: `e2e/.tmp/screenshots/e2e-{issueNumber}/`
-- **gifDir**: `e2e/.tmp/gifs/e2e-{issueNumber}/`
+Generate a Playwright test file at `e2e/e2e-{issueNumber}.spec.ts` with:
+- One test per acceptance scenario
+- Viewport capped at `1280x720`
+- Video recording enabled (`video: 'on'`)
+- Screenshot capture at key states
 
-#### API Projects → delegate to `speckit-e2e-api`
+Ensure Playwright is installed:
+```bash
+npx playwright --version 2>&1
+# If missing:
+npm install -D @playwright/test && npx playwright install chromium
+```
 
-Use the `runSubagent` tool with `agentName: "speckit-e2e-api"` and provide:
-- **issueNumber**: The GitHub Issue number
-- **title**: The issue title
-- **scenarios**: The extracted acceptance scenarios
-- **baseUrl**: From `pipelineContext.implementation.baseUrl` or detect from dev server config
-- **authToken**: From `pipelineContext.implementation.authToken` (optional)
+Run with:
+```bash
+npx playwright test e2e/e2e-{issueNumber}.spec.ts --project=chromium
+```
 
-The API agent uses **Playwright's `request` context** to generate proper test files (`e2e/e2e-{issueNumber}.spec.ts`) — NOT curl or shell scripts. This ensures API tests are first-class CI/CD citizens sharing the same test runner as browser tests.
+#### API Projects → Generate Playwright API Tests
 
-#### CLI Projects → generate using project's test framework
+Generate a Playwright test file at `e2e/e2e-{issueNumber}.spec.ts` using Playwright's `request` context — NOT curl or shell scripts. This ensures API tests are first-class CI/CD citizens sharing the same test runner as browser tests.
+
+#### CLI Projects → Generate Framework-Native Tests
 
 Detect the project's test framework and generate tests accordingly:
 
@@ -125,8 +123,6 @@ Detect the project's test framework and generate tests accordingly:
 | `pytest` / Python project | Generate a pytest test using `subprocess.run` |
 | `go.mod` / Go project | Generate a Go test using `os/exec` |
 | No detectable test framework | Generate a Playwright test that shells out via `child_process` |
-
-Create `e2e/e2e-{issueNumber}.spec.ts` (or equivalent for the detected stack) that executes each acceptance scenario:
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -143,11 +139,9 @@ test.describe('#{issueNumber}: {title}', () => {
 });
 ```
 
-Execute and capture output. **Never use raw PowerShell scripts or `.ps1` files as test artifacts** — tests must be runnable via the project's test runner in CI/CD.
+#### Library Projects → Generate Framework-Native Tests
 
-#### Library Projects → generate using project's test framework
-
-Detect the project's test framework and generate tests that import the library and verify each scenario with assertions:
+Detect the project's test framework and generate tests that import the library and verify each scenario with assertions.
 
 | Signal | Test Approach |
 |--------|--------------|
@@ -156,11 +150,7 @@ Detect the project's test framework and generate tests that import the library a
 | `go.mod` / Go project | Generate a Go test |
 | Default (JS/TS) | Generate a Playwright test |
 
-Create `e2e/e2e-{issueNumber}.spec.ts` (or equivalent) that imports the library and demonstrates each scenario with assertions. Execute and capture output.
-
-**Never use raw shell scripts (`.ps1`, `.sh`, `.bat`) as test artifacts** — tests must run via the project's test runner in CI/CD.
-
-#### Infrastructure Projects → generate directly
+#### Infrastructure Projects → Generate Directly
 
 Run `terraform plan` / `cdk diff` and capture the output to `e2e/e2e-{issueNumber}-plan.txt`.
 
@@ -181,19 +171,12 @@ GIF/screenshot artifacts **must NOT be committed to the feature branch** — the
 
 2. Push e2e assets to the orphan `e2e-assets` branch:
    ```bash
-   # Save current branch
    current_branch=$(git branch --show-current)
-
-   # Create or switch to orphan branch (no history)
    git checkout --orphan e2e-assets 2>/dev/null || git checkout e2e-assets
-
-   # Remove everything, then add only the e2e temp artifacts
    git rm -rf --cached . > /dev/null 2>&1
    git add e2e/.tmp/
    git commit -m "e2e: assets for PR #${pr_number}" --allow-empty
    git push origin e2e-assets --force
-
-   # Return to feature branch
    git checkout "$current_branch"
    ```
 
@@ -206,15 +189,6 @@ GIF/screenshot artifacts **must NOT be committed to the feature branch** — the
    | Scenario | Result | Recording |
    |----------|--------|-----------|
    | US1-SC1: {scenario title} | :white_check_mark: Pass | ![US1-SC1](https://raw.githubusercontent.com/{repo_slug}/e2e-assets/e2e/.tmp/gifs/e2e-{issueNumber}/sc1.gif) |
-   | US1-SC2: {scenario title} | :white_check_mark: Pass | ![US1-SC2](https://raw.githubusercontent.com/{repo_slug}/e2e-assets/e2e/.tmp/gifs/e2e-{issueNumber}/sc2.gif) |
-
-   <details><summary>Playwright trace</summary>
-
-   ```
-   {paste npx playwright show-trace output or summary here}
-   ```
-
-   </details>
    ````
 
    **For non-UI projects** (API / CLI / library):
@@ -235,21 +209,15 @@ GIF/screenshot artifacts **must NOT be committed to the feature branch** — the
    ````
 
    **Rules for GIF embedding:**
-   - Use raw GitHub URLs pointing to the `e2e-assets` branch: `https://raw.githubusercontent.com/{repo_slug}/e2e-assets/e2e/.tmp/gifs/e2e-{issueNumber}/sc{n}.gif`
-   - One GIF per scenario — name them `sc1.gif`, `sc2.gif`, etc. matching scenario order
-   - For failing scenarios, use `:x: Fail` and still include the GIF (it shows where it broke)
-   - If a GIF exceeds 5 MB after ffmpeg conversion, use a screenshot instead with the same URL pattern
+   - Use raw GitHub URLs pointing to the `e2e-assets` branch
+   - One GIF per scenario — name them `sc1.gif`, `sc2.gif`, etc.
+   - For failing scenarios, use `:x: Fail` and still include the GIF
+   - If a GIF exceeds 5 MB after ffmpeg conversion, use a screenshot instead
 
 4. Update PR body — read the existing body, append the evidence section, then write back:
    ```bash
    existing_body=$(gh pr view ${pr_number} --json body --jq '.body')
-   updated_body="${existing_body}
-
-   $(cat <<'EVIDENCE'
-   {formatted e2e evidence section from step 3}
-   EVIDENCE
-   )"
-   gh pr edit ${pr_number} --body "$updated_body"
+   gh pr edit ${pr_number} --body "${existing_body}\n\n${evidence_section}"
    ```
 
 5. Commit the test **source files** only (no binary artifacts) to the feature branch:
@@ -261,7 +229,7 @@ GIF/screenshot artifacts **must NOT be committed to the feature branch** — the
 
 ## Return Value
 
-Return a structured result for the router / parent agent:
+Return a structured result for the router:
 
 ```jsonc
 {

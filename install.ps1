@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-    Installs speckit skills and subagents into the standard VS Code discovery paths.
+    Installs speckit skills into the standard VS Code discovery paths.
 
 .DESCRIPTION
-    Copies speckit sub-skill and subagent directories into .github/skills/ and
-    .github/agents/ so VS Code discovers them without manual settings.json
-    configuration. A manifest is written to .github/speckit-manifest.json so
-    -Uninstall knows exactly which paths to clean up.
+    Copies speckit sub-skill directories into .github/skills/ so VS Code
+    discovers them without manual settings.json configuration. A manifest is
+    written to .github/speckit-manifest.json so -Uninstall knows exactly
+    which paths to clean up.
 
     By default, the script downloads the latest release from GitHub and
     overwrites any existing links (Force + Update are ON by default).
@@ -20,7 +20,7 @@
     The script is idempotent -- safe to run multiple times.
 
 .PARAMETER Uninstall
-    Remove all speckit links from .github/skills/ and .github/agents/.
+    Remove all speckit links from .github/skills/.
 
 .PARAMETER NoForce
     Skip overwriting existing copied directories. By default, the script
@@ -179,7 +179,7 @@ if (-not $wsHasGit -and -not $wsHasWorkspace) {
 }
 $GithubDir  = Join-Path $WorkspaceRoot '.github'
 $SkillsDir  = Join-Path $GithubDir 'skills'
-$AgentsDir  = Join-Path $GithubDir 'agents'
+
 
 # Determine whether speckit root is already inside .github/skills/speckit/
 $ExpectedSpeckitDir = Join-Path $SkillsDir 'speckit'
@@ -187,7 +187,7 @@ $SpeckitIsExternal  = ($SpeckitRoot -ne (Resolve-Path $ExpectedSpeckitDir -Error
 
 # --- Self-update from GitHub release ------------------------------------------
 if ($Update -and -not $Uninstall -and -not $IsBootstrap) {
-    # Remove previously copied skill/agent directories before re-downloading
+    # Remove previously copied skill directories before re-downloading
     $manifestPath = Join-Path $GithubDir 'speckit-manifest.json'
     if (Test-Path $manifestPath) {
         Write-Host 'Removing previous speckit copies...' -ForegroundColor Cyan
@@ -199,11 +199,14 @@ if ($Update -and -not $Uninstall -and -not $IsBootstrap) {
                 Write-Host "  [removed] $($s.link)" -ForegroundColor Yellow
             }
         }
-        foreach ($a in $oldManifest.agents) {
-            $p = Join-Path $WorkspaceRoot $a.link
-            if (Test-Path $p) {
-                Remove-Item $p -Recurse -Force
-                Write-Host "  [removed] $($a.link)" -ForegroundColor Yellow
+        # Backwards compat: also clean up legacy agent entries from v2 manifests
+        if ($oldManifest.PSObject.Properties.Name -contains 'agents' -and $oldManifest.agents) {
+            foreach ($a in $oldManifest.agents) {
+                $p = Join-Path $WorkspaceRoot $a.link
+                if (Test-Path $p) {
+                    Remove-Item $p -Recurse -Force
+                    Write-Host "  [removed] $($a.link) (legacy agent)" -ForegroundColor Yellow
+                }
             }
         }
         Write-Host ''
@@ -215,23 +218,16 @@ if ($Update -and -not $Uninstall -and -not $IsBootstrap) {
 }
 
 # --- Definitions -------------------------------------------------------------
-# Sub-skills: link into .github/skills/
+# All pipeline phases are skills (no agents)
 $Skills = @(
     'speckit-specify'
     'speckit-research'
     'speckit-plan'
     'speckit-implement'
-    'speckit-constitution'
-    'speckit-verify'
-)
-
-# Agents: link into .github/agents/
-$Agents = @(
-    'speckit-e2e-browser'
-    'speckit-e2e-api'
-    'speckit-web-researcher'
     'speckit-test'
     'speckit-e2e'
+    'speckit-constitution'
+    'speckit-verify'
 )
 
 # --- Helpers ------------------------------------------------------------------
@@ -303,16 +299,16 @@ if ($Uninstall) {
             }
         }
 
-        Write-Host ''
-        Write-Host 'Agents:' -ForegroundColor Cyan
-        foreach ($a in $oldManifest.agents) {
-            $p = Join-Path $WorkspaceRoot $a.link
-            if (Test-Path $p) {
-                Remove-Item $p -Recurse -Force
-                Write-Host "  [removed] $($a.link)" -ForegroundColor Yellow
-            }
-            else {
-                Write-Host "  [skip] Not found: $($a.link)" -ForegroundColor DarkGray
+        # Backwards compat: also clean up legacy agent entries from v2 manifests
+        if ($oldManifest.PSObject.Properties.Name -contains 'agents' -and $oldManifest.agents) {
+            Write-Host ''
+            Write-Host 'Legacy agents:' -ForegroundColor Cyan
+            foreach ($a in $oldManifest.agents) {
+                $p = Join-Path $WorkspaceRoot $a.link
+                if (Test-Path $p) {
+                    Remove-Item $p -Recurse -Force
+                    Write-Host "  [removed] $($a.link)" -ForegroundColor Yellow
+                }
             }
         }
 
@@ -343,12 +339,7 @@ if ($Uninstall) {
             Remove-Link (Join-Path $SkillsDir $skill)
         }
 
-        Write-Host ''
-        Write-Host 'Agents:' -ForegroundColor Cyan
-        foreach ($agent in $Agents) {
-            Remove-Link (Join-Path $AgentsDir "$agent.agent.md")
-        }
-        Remove-Link (Join-Path $AgentsDir 'assets')
+
     }
 
     Write-Host ''
@@ -364,10 +355,6 @@ if (-not $Update -and -not $IsBootstrap) {
     foreach ($skill in $Skills) {
         $src = Join-Path (Join-Path $SpeckitRoot 'skills') $skill
         if (-not (Test-Path $src)) { $missingSources += "skill:$skill" }
-    }
-    foreach ($agent in $Agents) {
-        $src = Join-Path (Join-Path $SpeckitRoot 'agents') "$agent.agent.md"
-        if (-not (Test-Path $src)) { $missingSources += "agent:$agent" }
     }
     if ($missingSources.Count -gt 0) {
         Write-Host 'Stale speckit bundle detected — missing sources:' -ForegroundColor Yellow
@@ -385,7 +372,6 @@ Write-Host ''
 
 # Ensure target directories exist
 if (-not (Test-Path $SkillsDir)) { New-Item -ItemType Directory -Path $SkillsDir -Force | Out-Null }
-if (-not (Test-Path $AgentsDir)) { New-Item -ItemType Directory -Path $AgentsDir -Force | Out-Null }
 
 # --- Link speckit root into .github/skills/speckit/ (if external) -------------
 if ($SpeckitIsExternal) {
@@ -403,26 +389,6 @@ foreach ($skill in $Skills) {
         continue
     }
     New-Link -LinkPath $link -TargetPath $target
-}
-
-Write-Host ''
-Write-Host "Agents (.github/agents/):" -ForegroundColor Cyan
-foreach ($agent in $Agents) {
-    $agentFile = "$agent.agent.md"
-    $target = Join-Path (Join-Path $SpeckitRoot 'agents') $agentFile
-    $link = Join-Path $AgentsDir $agentFile
-    if (-not (Test-Path $target)) {
-        Write-Warning "  [missing] Source not found: $target"
-        continue
-    }
-    New-Link -LinkPath $link -TargetPath $target
-}
-
-# Copy agents/assets/ directory (templates used by agent files)
-$agentAssetsSource = Join-Path (Join-Path $SpeckitRoot 'agents') 'assets'
-$agentAssetsDest   = Join-Path $AgentsDir 'assets'
-if (Test-Path $agentAssetsSource) {
-    New-Link -LinkPath $agentAssetsDest -TargetPath $agentAssetsSource
 }
 
 # --- Fan out skill assets into the host .github/ -----------------------------
@@ -487,8 +453,6 @@ if ($fanouts.Count -gt 0) {
 $gitignorePath = Join-Path $WorkspaceRoot '.gitignore'
 $linksToIgnore = @('.github/skills/speckit')
 foreach ($skill in $Skills) { $linksToIgnore += ".github/skills/$skill" }
-foreach ($agent in $Agents) { $linksToIgnore += ".github/agents/$agent.agent.md" }
-$linksToIgnore += ".github/agents/assets"
 
 $existingIgnore = if (Test-Path $gitignorePath) { Get-Content $gitignorePath -Raw } else { '' }
 $newEntries = @()
@@ -532,35 +496,12 @@ foreach ($skill in $Skills) {
     }
 }
 
-$linkedAgents = @()
-foreach ($agent in $Agents) {
-    $agentFile = "$agent.agent.md"
-    $linkPath = Join-Path $AgentsDir $agentFile
-    if (Test-Path $linkPath) {
-        $linkedAgents += @{
-            name   = $agent
-            link   = ".github/agents/$agentFile"
-            target = ".github/skills/speckit/agents/$agentFile"
-        }
-    }
-}
-# Include the shared assets directory in the manifest
-$agentAssetsPath = Join-Path $AgentsDir 'assets'
-if (Test-Path $agentAssetsPath) {
-    $linkedAgents += @{
-        name   = 'assets'
-        link   = '.github/agents/assets'
-        target = '.github/skills/speckit/agents/assets'
-    }
-}
-
 $manifest = @{
-    version            = 2
+    version            = 3
     installedAt        = (Get-Date -Format 'o')
     speckitHash        = $speckitHash
     speckitRootLinked  = $SpeckitIsExternal
     skills             = $linkedSkills
-    agents             = $linkedAgents
     fanouts            = $fannedOut
 }
 
@@ -572,8 +513,8 @@ if ($speckitHash) {
 }
 
 # --- Keep bundle source sub-directories ----------------------------------------
-# The skills/ and agents/ sub-directories inside the bundle are intentionally
-# preserved so that:
+# The skills/ sub-directories inside the bundle are intentionally preserved
+# so that:
 #   1. Re-running install.ps1 is truly idempotent (sources are always available)
 #   2. The Skill Resolution Protocol fallback paths work — sub-skills can
 #      read_file from <speckit-root>/skills/{name}/SKILL.md when VS Code
@@ -586,5 +527,5 @@ Write-Host ''
 Write-Host 'Done. Speckit is installed.' -ForegroundColor Green
 Write-Host ''
 Write-Host 'The router skill (speckit) is at .github/skills/speckit/SKILL.md' -ForegroundColor DarkGray
-Write-Host 'Sub-skills and agents are copied for VS Code discovery.' -ForegroundColor DarkGray
+Write-Host 'All pipeline phases are skills — copied for VS Code discovery.' -ForegroundColor DarkGray
 Write-Host ''
