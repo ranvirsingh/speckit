@@ -15,6 +15,66 @@ Each skill checks for hooks at a specific lifecycle point (e.g., `before_specify
 | `speckit-test` | `hooks.before_test` | `hooks.after_test` |
 | `speckit-e2e` | `hooks.before_e2e` | `hooks.after_e2e` |
 
+## Bundled Hook Implementations
+
+Speckit ships concrete guards for safety-critical hook keys. Other hook keys
+remain extension surfaces until a project registers commands in
+`.specify/extensions.yml`.
+
+| Hook key | Bundled implementation | Status |
+|----------|------------------------|--------|
+| `hooks.before_specify` | Extension surface only | Stub |
+| `hooks.after_specify` | Extension surface only | Stub |
+| `hooks.before_research` | Extension surface only | Stub |
+| `hooks.after_research` | Extension surface only | Stub |
+| `hooks.before_plan` | Extension surface only | Stub |
+| `hooks.after_plan` | Extension surface only | Stub |
+| `hooks.before_implement` | `scripts/invoke-before-implement-guard.ps1` | Implemented |
+| `hooks.after_implement` | Extension surface only | Stub |
+| `hooks.before_pr` | `scripts/invoke-before-pr-guard.ps1` | Implemented |
+| `hooks.after_pr` | Extension surface only | Stub |
+| `hooks.before_test` | Extension surface only | Stub |
+| `hooks.after_test` | Extension surface only | Stub |
+| `hooks.before_e2e` | Extension surface only | Stub |
+| `hooks.after_e2e` | Extension surface only | Stub |
+| `hooks.before_verify` | Extension surface only | Stub |
+| `hooks.after_verify` | Extension surface only | Stub |
+
+### `before_implement`: Frozen Edit Paths
+
+Run this hook after loading the issue and before editing files. It extracts
+workspace-relative paths from the issue `## Scope`, `## Affected Files`,
+`## Files`, or `## Implementation Scope` section and writes
+`.specify/frozen-edit-paths.json`.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/invoke-before-implement-guard.ps1 `
+  -WorkspaceRoot "." `
+  -IssueBody "{issue body markdown}"
+```
+
+If the scope is intentionally empty, pass `-AllowedPath` values explicitly or
+use `-AllowEmpty` for documentation-only work.
+
+### `before_pr`: Destructive-Change Scan and TODO Triage
+
+Run this hook before marking a PR ready. It checks the branch diff against
+`main` by default and fails when:
+
+- A file is deleted or renamed without `-AllowDestructive`.
+- A changed path falls outside `.specify/frozen-edit-paths.json`.
+- The branch introduces `TODO(speckit)` markers that have not been triaged into
+  an issue or `docs/PARKING_LOT.md`.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/invoke-before-pr-guard.ps1 `
+  -WorkspaceRoot "." `
+  -BaseRef "main"
+```
+
+Use `-AllowUntriagedTodo` only while drafting the PR body; ready-for-review PRs
+should have every introduced `TODO(speckit)` parked or converted to an issue.
+
 `before_pr` runs after the implementation is complete but before
 `gh pr create` is executed. The default behaviour for `speckit-implement`
 when this hook resolves to no entries is to force `--draft`, locally validate

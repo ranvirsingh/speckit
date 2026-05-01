@@ -6,14 +6,27 @@
     Run with: Invoke-Pester -Path scripts/speckit.tests.ps1
 #>
 
+$script:SpeckitTestRoot = Join-Path (Split-Path $PSScriptRoot -Parent) '.tmp'
+if (-not (Test-Path $script:SpeckitTestRoot)) {
+    New-Item -ItemType Directory -Path $script:SpeckitTestRoot -Force | Out-Null
+}
+$env:TEMP = $script:SpeckitTestRoot
+$env:TMP = $script:SpeckitTestRoot
+
+function New-SpeckitTestDirectory {
+    $root = $script:SpeckitTestRoot
+    $tempDir = Join-Path $root "speckit-test-$(Get-Random)"
+    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+    return $tempDir
+}
+
 Describe 'check-constitution.ps1' {
     BeforeAll {
         $scriptPath = Join-Path $PSScriptRoot 'check-constitution.ps1'
     }
 
     It 'returns exists=false when no constitution file' {
-        $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "speckit-test-$(Get-Random)"
-        New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+        $tempDir = New-SpeckitTestDirectory
         try {
             $result = & $scriptPath -WorkspaceRoot $tempDir | ConvertFrom-Json
             $result.exists | Should Be $false
@@ -25,7 +38,7 @@ Describe 'check-constitution.ps1' {
     }
 
     It 'returns valid=false when constitution has template placeholders' {
-        $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "speckit-test-$(Get-Random)"
+        $tempDir = New-SpeckitTestDirectory
         $docsDir = Join-Path $tempDir 'docs'
         New-Item -ItemType Directory -Path $docsDir -Force | Out-Null
         Set-Content (Join-Path $docsDir 'constitution.md') '# Constitution for [PROJECT_NAME]'
@@ -40,7 +53,7 @@ Describe 'check-constitution.ps1' {
     }
 
     It 'returns valid=true when constitution is complete with principles' {
-        $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "speckit-test-$(Get-Random)"
+        $tempDir = New-SpeckitTestDirectory
         $docsDir = Join-Path $tempDir 'docs'
         New-Item -ItemType Directory -Path $docsDir -Force | Out-Null
         $content = @"
@@ -66,7 +79,7 @@ All APIs MUST be documented.
     }
 
     It 'returns valid=false when no principle sections exist' {
-        $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "speckit-test-$(Get-Random)"
+        $tempDir = New-SpeckitTestDirectory
         $docsDir = Join-Path $tempDir 'docs'
         New-Item -ItemType Directory -Path $docsDir -Force | Out-Null
         Set-Content (Join-Path $docsDir 'constitution.md') '# Constitution for MyProject'
@@ -136,28 +149,24 @@ Describe 'speckit-research skill' {
     }
 }
 
-Describe 'speckit-web-researcher agent' {
+Describe 'speckit-research skill ownership' {
     BeforeAll {
         $speckitRoot = Split-Path $PSScriptRoot -Parent
     }
 
-    It 'agent.md exists' {
-        $path = Join-Path $speckitRoot 'agents\speckit-web-researcher.agent.md'
+    It 'research skill owns web research instructions' {
+        $path = Join-Path $speckitRoot 'skills\speckit-research\SKILL.md'
         Test-Path $path | Should Be $true
+        $content = Get-Content $path -Raw
+        $content | Should Match 'web-researcher'
     }
 
-    It 'agent.md has user-invocable false in frontmatter' {
-        $path = Join-Path $speckitRoot 'agents\speckit-web-researcher.agent.md'
+    It 'research skill has structured research dimensions' {
+        $path = Join-Path $speckitRoot 'skills\speckit-research\SKILL.md'
         $content = Get-Content $path -Raw
-        $content | Should Match 'user-invocable:\s*false'
-    }
-
-    It 'agent.md has structured evaluation criteria' {
-        $path = Join-Path $speckitRoot 'agents\speckit-web-researcher.agent.md'
-        $content = Get-Content $path -Raw
-        $content | Should Match 'Maintenance'
-        $content | Should Match 'Popularity'
-        $content | Should Match 'License'
+        $content | Should Match 'Technology choices'
+        $content | Should Match 'Architecture patterns'
+        $content | Should Match 'Security implications'
     }
 }
 
@@ -171,8 +180,8 @@ Describe 'install.ps1 registration' {
         $installContent | Should Match "'speckit-research'"
     }
 
-    It 'registers speckit-web-researcher in Agents array' {
-        $installContent | Should Match "'speckit-web-researcher'"
+    It 'does not use the legacy Agents array' {
+        $installContent | Should Not Match '\$Agents\s*='
     }
 }
 
@@ -197,86 +206,66 @@ Describe 'pipeline wiring for research' {
     }
 }
 
-Describe 'speckit-test agent' {
+Describe 'speckit-test skill' {
     BeforeAll {
         $speckitRoot = Split-Path $PSScriptRoot -Parent
     }
 
-    It 'agent.md exists' {
-        $path = Join-Path $speckitRoot 'agents\speckit-test.agent.md'
+    It 'SKILL.md exists' {
+        $path = Join-Path $speckitRoot 'skills\speckit-test\SKILL.md'
         Test-Path $path | Should Be $true
     }
 
-    It 'agent.md has correct name in frontmatter' {
-        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-test.agent.md') -Raw
+    It 'SKILL.md has correct name in frontmatter' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-test\SKILL.md') -Raw
         $content | Should Match 'name:\s*speckit-test'
     }
 
-    It 'old speckit-test skill directory is removed' {
-        $path = Join-Path $speckitRoot 'skills\speckit-test'
-        Test-Path $path | Should Be $false
+    It 'is user invocable' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-test\SKILL.md') -Raw
+        $content | Should Match 'user-invocable:\s*true'
     }
 }
 
-Describe 'speckit-e2e agent' {
+Describe 'speckit-e2e skill' {
     BeforeAll {
         $speckitRoot = Split-Path $PSScriptRoot -Parent
     }
 
-    It 'agent.md exists' {
-        $path = Join-Path $speckitRoot 'agents\speckit-e2e.agent.md'
+    It 'SKILL.md exists' {
+        $path = Join-Path $speckitRoot 'skills\speckit-e2e\SKILL.md'
         Test-Path $path | Should Be $true
     }
 
-    It 'agent.md has correct name in frontmatter' {
-        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-e2e.agent.md') -Raw
+    It 'SKILL.md has correct name in frontmatter' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-e2e\SKILL.md') -Raw
         $content | Should Match 'name:\s*speckit-e2e'
     }
 
-    It 'old speckit-e2e skill directory is removed' {
-        $path = Join-Path $speckitRoot 'skills\speckit-e2e'
-        Test-Path $path | Should Be $false
+    It 'is user invocable' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-e2e\SKILL.md') -Raw
+        $content | Should Match 'user-invocable:\s*true'
     }
 }
 
-Describe 'speckit-e2e-browser agent' {
+Describe 'speckit-e2e browser/API guidance' {
     BeforeAll {
         $speckitRoot = Split-Path $PSScriptRoot -Parent
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-e2e\SKILL.md') -Raw
     }
 
-    It 'agent.md exists' {
-        $path = Join-Path $speckitRoot 'agents\speckit-e2e-browser.agent.md'
-        Test-Path $path | Should Be $true
+    It 'documents browser e2e generation' {
+        $content | Should Match 'Playwright'
+        $content | Should Match 'browser'
     }
 
-    It 'agent.md has correct name in frontmatter' {
-        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-e2e-browser.agent.md') -Raw
-        $content | Should Match 'name:\s*speckit-e2e-browser'
-    }
-
-    It 'old e2e-recorder agent is removed' {
-        $path = Join-Path $speckitRoot 'agents\speckit-e2e-recorder.agent.md'
-        Test-Path $path | Should Be $false
+    It 'documents API e2e generation' {
+        $content | Should Match 'API'
+        $content | Should Match 'request'
     }
 }
 
-Describe 'speckit-e2e-api agent' {
-    BeforeAll {
-        $speckitRoot = Split-Path $PSScriptRoot -Parent
-    }
-
-    It 'agent.md exists' {
-        $path = Join-Path $speckitRoot 'agents\speckit-e2e-api.agent.md'
-        Test-Path $path | Should Be $true
-    }
-
-    It 'agent.md has correct name in frontmatter' {
-        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-e2e-api.agent.md') -Raw
-        $content | Should Match 'name:\s*speckit-e2e-api'
-    }
-}
-
-Describe 'install.ps1 agent registration' {
+Describe 'install.ps1 skill registration' {
     BeforeAll {
         $speckitRoot = Split-Path $PSScriptRoot -Parent
         $installContent = Get-Content (Join-Path $speckitRoot 'install.ps1') -Raw
@@ -290,43 +279,22 @@ Describe 'install.ps1 agent registration' {
         $installContent | Should Match "'speckit-e2e'"
     }
 
-    It 'registers speckit-e2e-browser in Agents array' {
-        $installContent | Should Match "'speckit-e2e-browser'"
-    }
-
-    It 'registers speckit-e2e-api in Agents array' {
-        $installContent | Should Match "'speckit-e2e-api'"
-    }
-
-    It 'registers speckit-web-researcher in Agents array' {
-        $installContent | Should Match "'speckit-web-researcher'"
-    }
-
-    It 'RETRO.TEMPLATE.md still exists in agents/assets (used by speckit-implement at done-done)' {
-        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'agents\assets\RETRO.TEMPLATE.md'
+    It 'RETRO.TEMPLATE.md exists in implement assets (used at done-done)' {
+        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'skills\speckit-implement\assets\RETRO.TEMPLATE.md'
         Test-Path $path | Should Be $true
     }
 
-    It 'PARKING-LOT.TEMPLATE.md still exists in agents/assets (used by speckit-implement at done-done)' {
-        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'agents\assets\PARKING-LOT.TEMPLATE.md'
+    It 'PARKING-LOT.TEMPLATE.md exists in implement assets (used at done-done)' {
+        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'skills\speckit-implement\assets\PARKING-LOT.TEMPLATE.md'
         Test-Path $path | Should Be $true
     }
 
-    It 'deprecated retro/doctor/loader/scanner/nexus/pipeline-checker agents are removed' {
-        $speckitRoot = Split-Path $PSScriptRoot -Parent
-        foreach ($name in 'speckit-retro','speckit-living-docs-loader','speckit-codebase-scanner','speckit-nexus','speckit-pipeline-checker') {
-            (Test-Path (Join-Path $speckitRoot "agents\$name.agent.md")) | Should Be $false
-        }
+    It 'deprecated doctor skill is removed' {
         (Test-Path (Join-Path $speckitRoot 'skills\speckit-doctor')) | Should Be $false
     }
 
-    It 'does NOT register speckit-e2e-recorder in Agents array' {
+    It 'does NOT register speckit-e2e-recorder' {
         $installContent | Should Not Match "'speckit-e2e-recorder'"
-    }
-
-    It 'does NOT register speckit-test in Skills array' {
-        # speckit-test was moved to agents; should not appear in Skills
-        $installContent -replace '\$Agents[\s\S]*', '' | Should Not Match "'speckit-test'"
     }
 }
 
@@ -350,9 +318,9 @@ Describe 'handoff schema' {
         $content | Should Match 'PipelineContext'
     }
 
-    It 'router SKILL.md references runSubagent for test' {
+    It 'router SKILL.md routes to the test skill' {
         $content = Get-Content (Join-Path $speckitRoot 'SKILL.md') -Raw
-        $content | Should Match 'runSubagent.*speckit-test'
+        $content | Should Match 'route to `speckit-test`'
     }
 }
 
@@ -436,13 +404,13 @@ Describe 'PipelineContext schema (#22) extensions' {
         $content | Should Match 'phaseVerdicts'
     }
 
-    It 'speckit-test agent notes phaseVerdicts.test' {
-        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-test.agent.md') -Raw
+    It 'speckit-test skill notes phaseVerdicts.test' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-test\SKILL.md') -Raw
         $content | Should Match 'phaseVerdicts.test'
     }
 
-    It 'speckit-e2e agent notes phaseVerdicts.e2e and e2eEvidenceDir' {
-        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-e2e.agent.md') -Raw
+    It 'speckit-e2e skill notes phaseVerdicts.e2e and e2eEvidenceDir' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-e2e\SKILL.md') -Raw
         $content | Should Match 'phaseVerdicts.e2e'
         $content | Should Match 'e2eEvidenceDir'
     }
@@ -471,6 +439,126 @@ Describe 'verify-marker-budget.ps1' {
         $result.valid | Should Be $false
         $result.violations[0].Phase | Should Be 'plan'
         $result.violations[0].Lines | Should Be 3
+    }
+}
+
+Describe 'before_implement guard (#25)' {
+    BeforeAll {
+        $scriptPath = Join-Path $PSScriptRoot 'invoke-before-implement-guard.ps1'
+    }
+
+    It 'freezes scoped paths from issue body' {
+        $tempDir = New-SpeckitTestDirectory
+        $body = @(
+            '## Scope'
+            ''
+            '- `scripts/invoke-before-pr-guard.ps1`'
+            '- `references/HOOKS.md`'
+        ) -join "`n"
+        try {
+            & $scriptPath -WorkspaceRoot $tempDir -IssueBody $body | Out-Null
+            $freeze = Get-Content (Join-Path $tempDir '.specify\frozen-edit-paths.json') -Raw | ConvertFrom-Json
+            (@($freeze.allowedPaths) -contains 'scripts/invoke-before-pr-guard.ps1') | Should Be $true
+            (@($freeze.allowedPaths) -contains 'references/HOOKS.md') | Should Be $true
+        }
+        finally {
+            Remove-Item $tempDir -Recurse -Force
+        }
+    }
+
+    It 'rejects an empty scope by default' {
+        $tempDir = New-SpeckitTestDirectory
+        try {
+            { & $scriptPath -WorkspaceRoot $tempDir -IssueBody '## Scope' } | Should Throw
+        }
+        finally {
+            Remove-Item $tempDir -Recurse -Force
+        }
+    }
+}
+
+Describe 'before_pr guard (#25)' {
+    BeforeAll {
+        $scriptPath = Join-Path $PSScriptRoot 'invoke-before-pr-guard.ps1'
+    }
+
+    It 'passes when current changes stay inside frozen edit paths' {
+        $tempDir = New-SpeckitTestDirectory
+        try {
+            Push-Location $tempDir
+            git init -b main | Out-Null
+            git config user.email test@example.com
+            git config user.name 'Speckit Test'
+            New-Item -ItemType Directory -Path 'scripts','.specify' -Force | Out-Null
+            Set-Content scripts\guard.ps1 'base'
+            git add -A
+            git commit -m 'chore: seed' | Out-Null
+            git checkout -b feature | Out-Null
+            $freeze = @{ schemaVersion = 1; allowedPaths = @('scripts') } | ConvertTo-Json
+            Set-Content .specify\frozen-edit-paths.json $freeze
+            Set-Content scripts\guard.ps1 'changed'
+            git add scripts\guard.ps1
+            git commit -m 'chore: change guard' | Out-Null
+
+            $result = & $scriptPath -WorkspaceRoot $tempDir -BaseRef main
+            $result | Should Match 'passed'
+        }
+        finally {
+            Pop-Location
+            Remove-Item $tempDir -Recurse -Force
+        }
+    }
+
+    It 'fails when current changes leave frozen edit paths' {
+        $tempDir = New-SpeckitTestDirectory
+        try {
+            Push-Location $tempDir
+            git init -b main | Out-Null
+            git config user.email test@example.com
+            git config user.name 'Speckit Test'
+            New-Item -ItemType Directory -Path 'scripts','.specify' -Force | Out-Null
+            Set-Content scripts\guard.ps1 'base'
+            git add -A
+            git commit -m 'chore: seed' | Out-Null
+            git checkout -b feature | Out-Null
+            $freeze = @{ schemaVersion = 1; allowedPaths = @('scripts') } | ConvertTo-Json
+            Set-Content .specify\frozen-edit-paths.json $freeze
+            Set-Content README.md 'outside'
+            git add README.md
+            git commit -m 'chore: change outside scope' | Out-Null
+
+            { & $scriptPath -WorkspaceRoot $tempDir -BaseRef main } | Should Throw
+        }
+        finally {
+            Pop-Location
+            Remove-Item $tempDir -Recurse -Force
+        }
+    }
+
+    It 'fails on introduced TODO(speckit) markers by default' {
+        $tempDir = New-SpeckitTestDirectory
+        try {
+            Push-Location $tempDir
+            git init -b main | Out-Null
+            git config user.email test@example.com
+            git config user.name 'Speckit Test'
+            New-Item -ItemType Directory -Path 'scripts','.specify' -Force | Out-Null
+            Set-Content scripts\guard.ps1 'base'
+            git add -A
+            git commit -m 'chore: seed' | Out-Null
+            git checkout -b feature | Out-Null
+            $freeze = @{ schemaVersion = 1; allowedPaths = @('scripts') } | ConvertTo-Json
+            Set-Content .specify\frozen-edit-paths.json $freeze
+            Set-Content scripts\guard.ps1 '# TODO(speckit): triage this'
+            git add scripts\guard.ps1
+            git commit -m 'chore: add todo' | Out-Null
+
+            { & $scriptPath -WorkspaceRoot $tempDir -BaseRef main } | Should Throw
+        }
+        finally {
+            Pop-Location
+            Remove-Item $tempDir -Recurse -Force
+        }
     }
 }
 
