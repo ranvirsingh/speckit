@@ -41,6 +41,7 @@ When a `PipelineContext` is available, `--scope pr` SHOULD additionally:
 - **`contextBudget.maxSourceLines` overrun**: warn (do NOT fail) if the cumulative line count of `contextBudget.loadedArtifacts` for any phase exceeds the budget. See [HANDOFF-SCHEMA.md § Context Budget](../../references/HANDOFF-SCHEMA.md#context-budget).
 - **`phaseVerdicts` consistency**: fail when any phase reports `"verdict": "blocked"` and the PR is marked ready-for-merge. Warn when a phase listed in the PR checklist has no entry in `phaseVerdicts`.
 - **`/memories/repo/` entries written by this PR**: spot-check that each new entry has all five required fields (`subject`, `fact`, `citations`, `reason`, `category`). Fail otherwise.
+- **Marker Block Size Limit**: check for oversized marker blocks using `.github/skills/speckit/scripts/verify-marker-budget.ps1`. Warn or fail if any `<!-- speckit-{phase}:start -->` block (e.g. in issue bodies or comments) exceeds the 500 line budget.
 
 ## Goal
 

@@ -147,9 +147,12 @@ Post the research findings as a GitHub Issue comment (do not write to `docs/rese
    <!-- speckit-research:start -->
    ### Research: #{issue-number} — {title}
 
-   **Date**: {today}
-   **Scope**: {brief description of what was researched}
    **Status**: Complete
+   **Decision summary**: {Brief 1-2 sentence summary of the key recommendation}
+   **Artifacts**:
+   - {List of URLs or paths produced by this research}
+   **Context budget**:
+   - {List of sources loaded/read to produce this research}
 
    #### Research Questions
 
