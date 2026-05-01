@@ -77,6 +77,17 @@ You **MUST** consider the user input before proceeding (if not empty).
 **Check for extension hooks (before implementation)**:
 Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_implement`.
 
+**Run bundled frozen-path guard**:
+After loading the GitHub issue body and before editing files, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/invoke-before-implement-guard.ps1 -WorkspaceRoot "." -IssueBody "{issue body markdown}"
+```
+
+This writes `.specify/frozen-edit-paths.json`. If the issue scope names broader
+directories instead of exact files, keep those directories; the `before_pr` guard
+will allow changes beneath them and block unrelated paths.
+
 ## GitHub Issue Gate (MANDATORY)
 
 This skill **requires a GitHub issue number** as input. The issue number can be provided via `$ARGUMENTS` (e.g., `#42` or `42`) or will be prompted for.
@@ -256,6 +267,12 @@ Skip all steps below — they are for the Full Implementation Flow only.
       If either rule fails, edit the PR body via `gh pr edit {pr_number} --body-file ...`
       until both rules pass. Then run extension hooks:
       Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_pr`.
+      Run the bundled guard before marking ready:
+      ```powershell
+      powershell -ExecutionPolicy Bypass -File scripts/invoke-before-pr-guard.ps1 -WorkspaceRoot "." -BaseRef "main"
+      ```
+      This fails on deletes/renames, changes outside `.specify/frozen-edit-paths.json`,
+      or introduced `TODO(speckit)` markers that have not been triaged.
 
       Once the body is valid, mark the PR ready for review:
       ```bash

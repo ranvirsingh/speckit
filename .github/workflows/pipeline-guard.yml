@@ -20,6 +20,11 @@ jobs:
   guard:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Validate PR body
         uses: actions/github-script@v7
         with:
@@ -56,3 +61,14 @@ jobs:
             } else {
               core.info('Speckit pipeline guard passed.');
             }
+
+      - name: Run before_pr guard
+        shell: pwsh
+        run: |
+          if (Test-Path ./scripts/invoke-before-pr-guard.ps1) {
+            ./scripts/invoke-before-pr-guard.ps1 -WorkspaceRoot "." -BaseRef "${{ github.event.pull_request.base.sha }}"
+          } elseif (Test-Path ./.github/skills/speckit/scripts/invoke-before-pr-guard.ps1) {
+            ./.github/skills/speckit/scripts/invoke-before-pr-guard.ps1 -WorkspaceRoot "." -BaseRef "${{ github.event.pull_request.base.sha }}"
+          } else {
+            throw "before_pr guard script not found."
+          }
