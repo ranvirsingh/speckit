@@ -22,6 +22,13 @@ On entry, advance the Issue State to "Plan". Read `.speckit-project.json` from t
 powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Plan"
 ```
 
+## PipelineContext Fields
+
+See [HANDOFF-SCHEMA.md](../../references/HANDOFF-SCHEMA.md) for the full schema.
+
+- **Reads**: `livingContext`, `research` (if present), `artifactIndex.researchCommentId`.
+- **Writes**: `artifactIndex.planCommentId` (GitHub comment ID for the `<!-- speckit-plan:start -->` block), `artifactIndex.dataModelPath` and `artifactIndex.openapiPath` when those living docs are produced/updated, and `phaseVerdicts.plan`.
+
 ## Next Steps (AUTO-CONTINUE — HANDOFF ONLY)
 
 After planning is complete, **hand off** to `speckit-implement #{issue-number}` by loading the implement skill as a new context. Do NOT start implementing within this skill's execution.

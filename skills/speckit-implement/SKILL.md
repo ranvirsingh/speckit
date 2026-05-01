@@ -30,7 +30,7 @@ After implementation is complete (including commit and push), **enrich the Pipel
 
 ### Enrich PipelineContext
 
-After creating the PR, add the `implementation` block to the PipelineContext:
+After creating the PR, add the `implementation` block to the PipelineContext, set `phaseVerdicts.implement`, and OPTIONALLY write durable facts to `/memories/repo/`:
 
 ```jsonc
 {
@@ -41,11 +41,16 @@ After creating the PR, add the `implementation` block to the PipelineContext:
     "commitSha": "{commit-sha}",
     "baseUrl": "{detected dev-server URL or null}",
     "authToken": null
+  },
+  "phaseVerdicts": {
+    "implement": { "verdict": "pass", "notes": "PR #{pr-number} opened." }
   }
 }
 ```
 
 Detect `baseUrl` from `package.json` scripts (the dev server port) or project configuration. If not detectable, leave as `null`.
+
+**Done-done memory writes**: at the end of implementation, if a decision or repo-fact uncovered during this work would help future tasks, write it to `/memories/repo/{slug}.md` using the convention in [HANDOFF-SCHEMA.md](../../references/HANDOFF-SCHEMA.md#memoriesrepo-write-convention).
 
 ### Invoke Test Agent
 

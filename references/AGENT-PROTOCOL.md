@@ -91,6 +91,16 @@ The router maintains `retryCount.{phase}` in the [PipelineContext](./HANDOFF-SCH
 If `retryCount.{phase} >= 2`, the router stops and escalates to the user.
 Counters reset per pipeline run. See HANDOFF-SCHEMA.md for the full schema.
 
+## Cross-Phase Memory
+
+Phases MAY persist durable, cross-phase facts as `/memories/repo/{slug}.md` entries
+using the existing VS Code Copilot repository-memory shape (`subject`, `fact`,
+`citations`, `reason`, `category`). VS Code auto-surfaces these to every future
+agent invocation as `<repository_memories>`, so they replace the originally
+proposed `reuseHints` schema field. See
+[HANDOFF-SCHEMA.md § /memories/repo/ Write Convention](./HANDOFF-SCHEMA.md#memoriesrepo-write-convention)
+for the full contract.
+
 ## Why frontmatter, not prose
 
 This document used to be ~250 lines of MUST/MUST NOT. In practice some models

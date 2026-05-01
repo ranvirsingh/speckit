@@ -355,3 +355,96 @@ Describe 'handoff schema' {
         $content | Should Match 'runSubagent.*speckit-test'
     }
 }
+
+Describe 'PipelineContext schema (#22) extensions' {
+    BeforeAll {
+        $speckitRoot = Split-Path $PSScriptRoot -Parent
+        $schemaPath  = Join-Path $speckitRoot 'references\HANDOFF-SCHEMA.md'
+        $schema      = Get-Content $schemaPath -Raw
+    }
+
+    It 'documents artifactIndex with all five required fixed keys' {
+        $schema | Should Match 'artifactIndex'
+        foreach ($key in 'researchCommentId','planCommentId','dataModelPath','openapiPath','e2eEvidenceDir') {
+            $schema | Should Match $key
+        }
+    }
+
+    It 'documents artifactIndex.extra with schemaVersion and entries' {
+        $schema | Should Match 'extra'
+        $schema | Should Match 'schemaVersion'
+        $schema | Should Match 'entries'
+    }
+
+    It 'documents contextBudget.maxSourceLines with default 1500 and advisory wording' {
+        $schema | Should Match 'contextBudget'
+        $schema | Should Match 'maxSourceLines'
+        $schema | Should Match '1500'
+        $schema | Should Match 'advisory'
+    }
+
+    It 'documents contextBudget.loadedArtifacts as an audit trail' {
+        $schema | Should Match 'loadedArtifacts'
+    }
+
+    It 'documents phaseVerdicts with pass, fail, blocked enum values' {
+        $schema | Should Match 'phaseVerdicts'
+        $schema | Should Match '"pass"'
+        $schema | Should Match '"fail"'
+        $schema | Should Match '"blocked"'
+    }
+
+    It 'documents the /memories/repo/ write convention with the five required fields' {
+        $schema | Should Match '/memories/repo/'
+        foreach ($field in 'subject','fact','citations','reason','category') {
+            $schema | Should Match $field
+        }
+    }
+
+    It 'states all new fields are optional / backward compatible' {
+        $schema | Should Match 'optional'
+        $schema | Should Match 'backward'
+    }
+
+    It 'AGENT-PROTOCOL.md cross-references the /memories/repo/ convention' {
+        $protocol = Get-Content (Join-Path $speckitRoot 'references\AGENT-PROTOCOL.md') -Raw
+        $protocol | Should Match '/memories/repo/'
+        $protocol | Should Match 'Cross-Phase Memory'
+    }
+
+    It 'speckit-research SKILL.md notes which PipelineContext fields it writes' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-research\SKILL.md') -Raw
+        $content | Should Match 'researchCommentId'
+        $content | Should Match 'phaseVerdicts.research'
+    }
+
+    It 'speckit-plan SKILL.md notes which PipelineContext fields it writes' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-plan\SKILL.md') -Raw
+        $content | Should Match 'planCommentId'
+        $content | Should Match 'phaseVerdicts.plan'
+    }
+
+    It 'speckit-implement SKILL.md notes phaseVerdicts.implement' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-implement\SKILL.md') -Raw
+        $content | Should Match 'phaseVerdicts'
+        $content | Should Match 'implement'
+    }
+
+    It 'speckit-verify SKILL.md notes the new PipelineContext checks' {
+        $content = Get-Content (Join-Path $speckitRoot 'skills\speckit-verify\SKILL.md') -Raw
+        $content | Should Match 'maxSourceLines'
+        $content | Should Match 'phaseVerdicts'
+    }
+
+    It 'speckit-test agent notes phaseVerdicts.test' {
+        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-test.agent.md') -Raw
+        $content | Should Match 'phaseVerdicts.test'
+    }
+
+    It 'speckit-e2e agent notes phaseVerdicts.e2e and e2eEvidenceDir' {
+        $content = Get-Content (Join-Path $speckitRoot 'agents\speckit-e2e.agent.md') -Raw
+        $content | Should Match 'phaseVerdicts.e2e'
+        $content | Should Match 'e2eEvidenceDir'
+    }
+}
+
