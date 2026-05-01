@@ -22,3 +22,10 @@ powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issu
 Run this after the GitHub Issue is created (you need the issue number).
 
 > **Note**: When the issue is first added to the project, the script automatically sets it to "Parking Lot" before advancing to the requested state.
+
+## Next Steps
+
+Once the spec is created, tell the user the spec is ready and suggest:
+- If the domain is unfamiliar or architecture is unclear, invoke `speckit-research #{issue-number}`
+- If the architecture is clear but planning is needed, invoke `speckit-plan #{issue-number}`
+- If it's a trivial change, invoke `speckit-implement #{issue-number}`

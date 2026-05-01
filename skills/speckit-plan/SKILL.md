@@ -251,10 +251,14 @@ The GitHub Issue body is the canonical spec created by **speckit-specify**. **Ne
 
    ```markdown
    <!-- speckit-plan:start -->
-   ## Design Notes
+   ### Plan: #{issue-number} — {title}
 
-   **Approach**: {key architecture decisions}
-   **Living docs updated**: {list — e.g. docs/data-model.md, docs/contracts/api.md}
+   **Status**: Complete
+   **Decision summary**: {key architecture decisions and approach}
+   **Artifacts**:
+   - {List of living docs updated, e.g. docs/data-model.md, docs/contracts/api.md}
+   **Context budget**:
+   - {List of sources loaded/read to produce this plan}
 
    {tasks checklist from above}
 

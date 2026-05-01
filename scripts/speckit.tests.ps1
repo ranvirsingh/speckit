@@ -448,3 +448,29 @@ Describe 'PipelineContext schema (#22) extensions' {
     }
 }
 
+Describe 'verify-marker-budget.ps1' {
+    BeforeAll {
+        $scriptPath = Join-Path $PSScriptRoot 'verify-marker-budget.ps1'
+    }
+
+    It 'returns valid=true when no blocks exist' {
+        $result = & $scriptPath -Text "Hello world" | ConvertFrom-Json
+        $result.valid | Should Be $true
+    }
+
+    It 'returns valid=true when block is under budget' {
+        $text = "<!-- speckit-research:start -->`nline1`nline2`n<!-- speckit-research:end -->"
+        $result = & $scriptPath -Text $text -MaxLines 5 | ConvertFrom-Json
+        $result.valid | Should Be $true
+        $result.violations.Count | Should Be 0
+    }
+
+    It 'returns valid=false when block is over budget' {
+        $text = "<!-- speckit-plan:start -->`nline1`nline2`nline3`n<!-- speckit-plan:end -->"
+        $result = & $scriptPath -Text $text -MaxLines 2 | ConvertFrom-Json
+        $result.valid | Should Be $false
+        $result.violations[0].Phase | Should Be 'plan'
+        $result.violations[0].Lines | Should Be 3
+    }
+}
+
