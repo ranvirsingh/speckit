@@ -11,6 +11,14 @@ Speckit is a coordinated system of [Agent Skills](https://agentskills.io/) and s
 
 You describe what to build. Speckit writes a structured spec, creates a GitHub Issue, classifies the complexity, routes through the right phases (research, plan, implement, test, e2e), and — at "done-done" — updates your project's living documentation so the next cycle starts smarter.
 
+## What's new in v2.1 (Agent Harness & Token Reduction)
+
+- **Context Budgets.** Explicit `contextBudget.maxSourceLines` limits prevent prompt explosion. Downstream phases warn if they ingest too much code at once.
+- **Artifact Indexing.** Re-discovery is eliminated. Phases now cache pointers (`artifactIndex`) to research comments, PR branches, and generated schemas so subsequent agents read exactly what they need.
+- **Repo Memories.** The `/memories/repo/` convention creates durable, cross-phase repository memory for architectural principles and decisions, leveraging Copilot's repository-level context.
+- **Phase Verdicts.** The pipeline now routes deterministically using `pass | fail | blocked` phase verdicts instead of conversational guesses.
+- **New Agent:** Added `speckit-report-discussant` to handle specialized reporting and pipeline blocking scenarios.
+
 ## What's new in v2.0
 
 - **Enforcement via frontmatter.** Every skill and agent declares its `tools:` allowlist; read-only subagents physically cannot edit files or run commands.
@@ -20,7 +28,7 @@ You describe what to build. Speckit writes a structured spec, creates a GitHub I
 - **Draft-first PR flow.** `speckit-implement` opens PRs as drafts, runs `pipeline-guard` locally, then marks ready only on a clean check.
 - **Dogfooded.** This repo runs its own pipeline (`.github/copilot-instructions.md`, PR template, issue templates, pipeline-guard workflow).
 
-Full notes: [v2.0.0 release](https://github.com/ranvirsingh/speckit/releases/tag/v2.0.0).
+Full notes: [Releases](https://github.com/ranvirsingh/speckit/releases).
 
 **Core principles:**
 
@@ -400,7 +408,7 @@ powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 
 The installer copies everything into `.github/` for VS Code discovery:
 - Sub-skills → `.github/skills/speckit-specify`, `speckit-plan`, `speckit-research`, `speckit-implement`, `speckit-verify`, `speckit-constitution`
-- Subagents → `.github/agents/speckit-web-researcher.agent.md`, `speckit-e2e-browser.agent.md`, `speckit-e2e-api.agent.md`, `speckit-test.agent.md`, `speckit-e2e.agent.md`
+- Subagents → `.github/agents/speckit-web-researcher.agent.md`, `speckit-e2e-browser.agent.md`, `speckit-e2e-api.agent.md`, `speckit-test.agent.md`, `speckit-e2e.agent.md`, `speckit-report-discussant.agent.md`
 - Canonical assets fanned out into `.github/` (PR template, issue templates, `pipeline-guard.yml` workflow)
 - Updates `.gitignore` to exclude the generated copies **and** `.github/skills/speckit/` itself
 
