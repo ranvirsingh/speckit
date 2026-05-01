@@ -1,46 +1,41 @@
-# Subagent Autonomy Protocol
+# Skill Protocol
 
-This is the short-form reference. Hard enforcement now lives in each
-`.agent.md` and `SKILL.md` frontmatter via the `tools:` allowlist —
-a subagent without `editFiles` in its tools physically cannot write,
-regardless of what its prose says.
+This is the short-form reference for the speckit skill architecture.
+All pipeline phases are implemented as **skills** (SKILL.md files). There are
+no subagents — each skill is self-contained and invoked by the router or by
+the external agent harness.
 
 ## Identity
 
-Every agent and subagent has a codename inspired by a notable figure
-(Curie, Turing, Berners-Lee, Lovelace, Nightingale). The codename is part
-of the agent's identity line in its frontmatter description and opening
-section.
+Every skill has a name matching its directory (`speckit-{phase}`). Skills
+are located under `skills/` in the speckit bundle and installed into
+`.github/skills/` by `install.ps1`.
 
 ## Roles by tool scope
 
 | Class | Examples | Tools | Purpose |
 |---|---|---|---|
-| **Read-only subagent** | web-researcher | `search`, `codebase`, `web`, `fetch`, `usages`, `githubRepo` | Investigate, summarise, escalate via `## Unresolved Questions` — never write |
-| **Artifact subagent** | e2e-browser, e2e-api | read-only set + `editFiles`, `runCommands`, `runTests` | Generate scoped artifacts under `e2e/`, `screenshots/`, `gifs/`, `test-results/` |
-| **Pipeline agent** | speckit-test, speckit-e2e | as needed for the phase | Autonomous (no `vscode_askQuestions`); orchestrates one phase end-to-end |
-| **User-invocable skill** | speckit-{specify, plan, research, implement, verify, constitution} | full toolset | Human-in-the-loop allowed; can ask questions |
+| **Read-only skill** | speckit-verify | `search`, `codebase`, `web`, `fetch`, `usages`, `githubRepo` | Investigate, audit, report — never write app code |
+| **Test skill** | speckit-test | read-only set + `runCommands`, `runTests` | UAT verification — reads code, runs tests, reports findings |
+| **Artifact skill** | speckit-e2e | read-only set + `editFiles`, `runCommands`, `runTests` | Generate scoped test artifacts under `e2e/`, `screenshots/`, `test-results/` |
+| **Implementation skill** | speckit-implement | full toolset | Code, commit, push, PR, update living docs |
+| **User-invocable skill** | speckit-{specify, plan, research, constitution} | full toolset | Human-in-the-loop allowed; can ask questions |
 
-## Autonomy Rules (still apply, now enforced by frontmatter)
+## Autonomy Rules
 
-1. **No direct user interaction** for subagents and pipeline agents. They never
-   prompt the user. They never use `vscode_askQuestions`. The `tools:` allowlist
-   omits the askQuestions capability for these roles.
-2. **Resolve what you can.** Use the read-only tools you have to answer your own
+1. **Skills invoked downstream of implement are autonomous.** They do not
+   prompt the user. The router or harness decides the next step.
+2. **Resolve what you can.** Use available tools to answer your own
    questions before escalating.
 3. **Escalate via structured response.** When a question genuinely cannot be
    answered, include an `## Unresolved Questions` block in your output (format
    below).
-4. **Single-shot by default.** Subagents complete their work in one invocation.
-   Re-invocation is the exception, not the rule.
+4. **Single-shot by default.** Skills complete their work in one invocation.
 
 ## Scope Discipline
 
-Each agent stays in its phase's lane. A test agent that finds a bug REPORTS it;
-it does NOT fix it. The frontmatter `tools:` allowlist for `speckit-test` lets
-it write to `docs/uat-reports/` and that's it; if it tries to edit `src/` the
-edit might succeed at the tool level but is a protocol violation that the
-parent (router) will reject during handoff.
+Each skill stays in its phase's lane. A test skill that finds a bug REPORTS it;
+it does NOT fix it.
 
 | Phase | What it does | NEVER does |
 |-------|--------------|------------|
@@ -52,7 +47,7 @@ parent (router) will reject during handoff.
 | e2e | Generate proof-of-work artifacts | Fix application code |
 | verify | Constitution + repo-hygiene audit (`--scope pr` or `--scope repo`) | Fix code, modify source files |
 
-## Re-Invocation Request Format
+## Escalation Format
 
 ```markdown
 ## Partial Results
@@ -61,8 +56,6 @@ parent (router) will reject during handoff.
 
 ## Unresolved Questions
 
-**reinvoke**: true
-**tokens_remaining**: {number}
 **questions**:
 1. {Specific, actionable question}
 
@@ -70,20 +63,6 @@ parent (router) will reject during handoff.
   {Summary of work completed so far. Keep under 50 lines. Summarise; do not
   paste raw file contents.}
 ```
-
-## Token Bucket
-
-Each subagent has a re-invocation budget per pipeline run. See individual
-`.agent.md` files for the bucket size. Buckets reset at the start of each
-new `speckit-specify` invocation.
-
-| Subagent | Budget |
-|----------|--------|
-| web-researcher | 3 |
-| e2e-browser | 3 |
-| e2e-api | 3 |
-| test | 2 |
-| e2e | 2 |
 
 ## Circuit Breaker
 
@@ -96,18 +75,24 @@ Counters reset per pipeline run. See HANDOFF-SCHEMA.md for the full schema.
 Phases MAY persist durable, cross-phase facts as `/memories/repo/{slug}.md` entries
 using the existing VS Code Copilot repository-memory shape (`subject`, `fact`,
 `citations`, `reason`, `category`). VS Code auto-surfaces these to every future
-agent invocation as `<repository_memories>`, so they replace the originally
+skill invocation as `<repository_memories>`, so they replace the originally
 proposed `reuseHints` schema field. See
 [HANDOFF-SCHEMA.md § /memories/repo/ Write Convention](./HANDOFF-SCHEMA.md#memoriesrepo-write-convention)
 for the full contract.
 
-## Why frontmatter, not prose
+## Deterministic Commands
 
-This document used to be ~250 lines of MUST/MUST NOT. In practice some models
-(particularly creative ones) ignored those rules and started implementing code
-during the test phase, or used `vscode_askQuestions` despite "you must not".
+Where possible, pipeline operations should be codified as deterministic scripts
+rather than left as free-form instructions for the model. The following scripts
+are canonical:
 
-`tools:` in agent frontmatter is enforced by VS Code itself — the model cannot
-call a tool that is not in the allowlist. So we moved the rules to the place
-that actually enforces them. This file is the rationale; the agent files are
-the truth.
+| Script | Purpose |
+|--------|---------|
+| `scripts/get-pipeline-state.ps1` | Returns JSON with issue state, branch, PR, checklist, phase markers |
+| `scripts/set-issue-state.ps1` | Advances issue state on the project board |
+| `scripts/check-constitution.ps1` | Validates project constitution exists and is complete |
+| `scripts/extract-constitution-rules.ps1` | Extracts MUST/NON-NEGOTIABLE rules for compliance checking |
+| `scripts/verify-marker-budget.ps1` | Validates marker block line budgets |
+
+An external harness can use `get-pipeline-state.ps1` to read the current phase
+and deterministically decide which skill to invoke next.

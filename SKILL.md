@@ -22,7 +22,7 @@ Script and skill paths are relative to the workspace root (where `.github/` live
 
 ## Pre-Execution: Ensure Installation
 
-Before routing, run the install script to ensure all skills and agents are linked:
+Before routing, run the install script to ensure all skills are linked:
 
 ```bash
 powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
@@ -78,27 +78,11 @@ Simple & scoped?                       specify → implement → test → e2e
 | **Research** | `speckit-research` | Technology unknowns — compare libraries, investigate patterns, assess options |
 | **Plan** | `speckit-plan` | Work involves schema changes, new/changed APIs, or unfamiliar domain |
 | **Implement** | `speckit-implement` | Ready to code — has a GitHub Issue number |
+| **Test** | `speckit-test` | Implementation done — verify it satisfies the spec (UAT) |
+| **E2E** | `speckit-e2e` | UAT passed — generate e2e test artifacts and attach to PR |
 | **Constitution** | `speckit-constitution` | Setting up or updating project governance principles |
 | **Verify** | `speckit-verify` | Check compliance of specs, plans, or code against the constitution |
 
-### Agents (invoked via `runSubagent` with PipelineContext)
-
-| Phase | Agent | Codename | Use When |
-|-------|-------|----------|----------|
-| **Test** | `speckit-test` | **Nightingale** | Implementation done — verify it satisfies the spec (UAT) |
-| **E2E** | `speckit-e2e` | **Lovelace** | UAT passed — generate e2e test artifacts and attach to PR |
-
-Living-doc updates and TODO triage happen at the tail end of `speckit-implement` ("done-done"). There is no separate retro phase — the cost of keeping docs in sync is tiny when done immediately and impossible weeks later.
-
-### Internal Subagents (`.agent.md` — invoked by agents/skills via `runSubagent`, not directly by users)
-
-All subagents operate under the [Subagent Autonomy Protocol](references/AGENT-PROTOCOL.md) — they do NOT follow human-in-the-loop. They resolve questions autonomously or escalate via a structured `## Unresolved Questions` block. Each has a **token bucket** limiting re-invocation attempts to prevent deadlocks.
-
-| Subagent | Codename | Bucket | Used By | Purpose |
-|----------|----------|--------|---------|----------|
-| `speckit-e2e-browser` | **Turing** | 3 | `speckit-e2e` | Browser automation for UI project e2e testing via Playwright |
-| `speckit-e2e-api` | **Berners-Lee** | 3 | `speckit-e2e` | API e2e testing via Playwright `request` context (JS/TS) or project-native test framework |
-| `speckit-web-researcher` | **Curie** | 3 | `speckit-research`, `speckit-plan` | External web research for libraries, APIs, and best practices |
 
 ## Routing Logic
 
@@ -116,24 +100,11 @@ Phase-to-state mapping: specify→Specify, research→Research, plan→Plan, imp
 2. **Issue exists, needs technology research?** → Advance state to "Research", route to `speckit-research`
 3. **Issue exists, needs design?** → Advance state to "Plan", route to `speckit-plan`
 4. **Issue exists, ready to code?** → Advance state to "Implement", route to `speckit-implement`
-5. **Code done, needs UAT?** → Advance state to "Test", invoke `speckit-test` via `runSubagent` with PipelineContext
-6. **UAT passed, need e2e?** → Advance state to "E2E", invoke `speckit-e2e` via `runSubagent` with PipelineContext
+5. **Code done, needs UAT?** → Advance state to "Test", route to `speckit-test`
+6. **UAT passed, need e2e?** → Advance state to "E2E", route to `speckit-e2e`
 7. **E2E done?** → Advance state to "Done". (Living-doc updates and TODO triage already happened inside `speckit-implement`.)
 8. **Setting up project governance?** → Route to `speckit-constitution`
 9. **Checking compliance or auditing repo hygiene?** → Route to `speckit-verify` (default `--scope pr`; pass `--scope repo` for hygiene audits)
-
-### Invoking Agent Phases (test, e2e)
-
-For phases 5–6, use `runSubagent` instead of loading a skill SKILL.md:
-
-```
-runSubagent(agentName: "speckit-test", prompt: JSON.stringify({ pipelineContext: ctx }))
-runSubagent(agentName: "speckit-e2e",  prompt: JSON.stringify({ pipelineContext: ctx }))
-```
-
-Each agent returns a structured JSON result. Use that result to:
-- Update the `PipelineContext` with the agent's output fields
-- Decide whether to proceed to the next phase or loop back (subject to circuit breaker)
 
 ## Pipeline Context (Handoff Protocol)
 
@@ -145,8 +116,8 @@ The router builds a `PipelineContext` JSON object incrementally across phases. S
 2. **research** (optional) → adds `research` summary
 3. **plan** (optional) → adds `plan` completion info
 4. **implement** → adds `implementation` with PR details, base URL, commit SHA; updates living docs and triages TODOs at done-done
-5. **test** (agent) → adds `uat` with verdict and report
-6. **e2e** (agent) → adds `e2e` with project type, pass/fail, artifacts
+5. **test** → adds `uat` with verdict and report
+6. **e2e** → adds `e2e` with project type, pass/fail, artifacts
 
 ### Staleness Check
 
@@ -193,13 +164,10 @@ Keep these artifacts separate:
 - Issue comments are supplementary discussion, not the canonical plan source
 - Never create `specs/`, `spec.md`, or per-feature doc folders
 
-## Skill & Agent Resolution Protocol
+## Skill Resolution Protocol
 
-When a phase says "invoke `speckit-X`", determine whether it's a **skill** or an **agent**:
+When a phase says "invoke `speckit-X`", resolve using this ordered fallback:
 
-### Skills (specify, research, plan, implement, constitution, verify)
-
-Resolve using this ordered fallback:
 
 1. **VS Code skill discovery** — if `speckit-X` appears in the available skills list, use it directly.
 2. **Direct file read** — if the skill is NOT in the available skills list, read the SKILL.md file:
@@ -212,14 +180,7 @@ Resolve using this ordered fallback:
    ```
    Then follow the instructions in the loaded file as if it were the active skill.
 
-### Agents (test, e2e)
-
-Invoke via `runSubagent` with `agentName: "speckit-X"` and pass the `PipelineContext` as input. The agent file lives at:
-```
-.github/agents/speckit-X.agent.md
-```
-
-**CRITICAL**: Never skip a pipeline step because "the skill/agent doesn't exist". The files are always present in the speckit installation directory — use `read_file` to load them directly if VS Code discovery fails.
+**CRITICAL**: Never skip a pipeline step because "the skill doesn't exist". The files are always present in the speckit installation directory — use `read_file` to load them directly if VS Code discovery fails.
 
 ## Key Principles
 

@@ -3,7 +3,7 @@ name: speckit-implement
 user-invocable: true
 model: Claude Sonnet 4.6 (copilot)
 tools: ['search', 'codebase', 'usages', 'editFiles', 'runCommands', 'runTasks', 'runTests', 'web', 'fetch', 'githubRepo', 'problems', 'changes']
-agents: ['speckit-test', 'speckit-e2e']
+agents: []
 handoffs:
   - label: Run UAT
     agent: speckit-test
@@ -26,7 +26,7 @@ powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issu
 
 ## Next Steps (AUTO-CONTINUE)
 
-After implementation is complete (including commit and push), **enrich the PipelineContext** with implementation details and **automatically proceed** to user acceptance testing via `runSubagent`.
+After implementation is complete (including commit and push), **enrich the PipelineContext** with implementation details and **automatically proceed** to user acceptance testing.
 
 ### Enrich PipelineContext
 
@@ -52,19 +52,15 @@ Detect `baseUrl` from `package.json` scripts (the dev server port) or project co
 
 **Done-done memory writes**: at the end of implementation, if a decision or repo-fact uncovered during this work would help future tasks, write it to `/memories/repo/{slug}.md` using the convention in [HANDOFF-SCHEMA.md](../../references/HANDOFF-SCHEMA.md#memoriesrepo-write-convention).
 
-### Invoke Test Agent
+### Invoke Test Skill
 
-Before invoking the test agent, advance Issue State to "Test":
+Before invoking the test skill, advance Issue State to "Test":
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Test"
 ```
 
-Use `runSubagent` with `agentName: "speckit-test"` and pass the enriched PipelineContext:
-
-```
-runSubagent(agentName: "speckit-test", prompt: JSON.stringify({ pipelineContext: ctx }))
-```
+Invoke `speckit-test` as a skill with the enriched PipelineContext.
 
 If no PipelineContext is available (standalone invocation), invoke `speckit-test #{issue-number}` as a skill instead.
 
@@ -308,7 +304,7 @@ For every change made, update the matching living doc IF it is now out of date:
 - **`docs/contracts/*.md`** — API changes, new endpoints, modified request/response shapes
 - **`docs/adr/adr-NNN-*.md`** — only if the implementation diverged from the plan in a way that needs explaining
 
-If no such doc exists yet and the change warrants one, create it. Use the templates under `agents/assets/` (legacy `RETRO.TEMPLATE.md` / `PARKING-LOT.TEMPLATE.md` assets are still useful starting points).
+If no such doc exists yet and the change warrants one, create it. Use the templates under `assets/` (`RETRO.TEMPLATE.md` / `PARKING-LOT.TEMPLATE.md` are useful starting points).
 
 ### 2. Triage TODO(speckit) markers
 
@@ -319,7 +315,7 @@ git diff main...HEAD | Select-String -Pattern 'TODO\(speckit\)' -Context 0,2
 For each marker introduced in this PR:
 
 - If the item is small enough to fit in a chore: open a chore issue immediately via `gh issue create --template chore.yml`.
-- Otherwise: append a row to `PARKING_LOT.md` (create the file if missing, using `agents/assets/PARKING-LOT.TEMPLATE.md` as a starting point).
+- Otherwise: append a row to `PARKING_LOT.md` (create the file if missing, using `assets/PARKING-LOT.TEMPLATE.md` as a starting point).
 
 ### 3. One-line retro summary
 
