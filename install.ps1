@@ -15,7 +15,7 @@
       & ([scriptblock]::Create((Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1)))
 
     Or if already installed:
-      powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+      pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 
     The script is idempotent -- safe to run multiple times.
 
@@ -51,6 +51,7 @@ $ErrorActionPreference = 'Stop'
 # Pass -NoForce or -NoUpdate to opt out.
 $script:ForceMode = -not $NoForce.IsPresent
 $Update           = -not $NoUpdate.IsPresent
+$downloadedTag    = $null
 
 # --- Download helper ----------------------------------------------------------
 function Get-SpeckitFromGitHub {
@@ -501,6 +502,7 @@ $manifest = @{
     version            = 3
     installedAt        = (Get-Date -Format 'o')
     speckitHash        = $speckitHash
+    speckitTag         = if ($downloadedTag) { $downloadedTag } else { $null }
     speckitRootLinked  = $SpeckitIsExternal
     skills             = $linkedSkills
     fanouts            = $fannedOut

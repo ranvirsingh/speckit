@@ -47,8 +47,8 @@ workspace-relative paths from the issue `## Scope`, `## Affected Files`,
 `## Files`, or `## Implementation Scope` section and writes
 `.specify/frozen-edit-paths.json`.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/invoke-before-implement-guard.ps1 `
+```pwsh
+pwsh -ExecutionPolicy Bypass -File scripts/invoke-before-implement-guard.ps1 `
   -WorkspaceRoot "." `
   -IssueBody "{issue body markdown}"
 ```
@@ -66,8 +66,8 @@ Run this hook before marking a PR ready. It checks the branch diff against
 - The branch introduces `TODO(speckit)` markers that have not been triaged into
   an issue or `docs/PARKING_LOT.md`.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/invoke-before-pr-guard.ps1 `
+```pwsh
+pwsh -ExecutionPolicy Bypass -File scripts/invoke-before-pr-guard.ps1 `
   -WorkspaceRoot "." `
   -BaseRef "main"
 ```

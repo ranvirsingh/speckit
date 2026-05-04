@@ -20,8 +20,8 @@ description: >-
 
 On entry, advance the Issue State to "Implement". Read `.speckit-project.json` from the workspace root for `projectNumber` and `owner`. If the file does not exist, skip silently.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Implement"
+```pwsh
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Implement"
 ```
 
 ## Next Steps (AUTO-CONTINUE)
@@ -56,8 +56,8 @@ Detect `baseUrl` from `package.json` scripts (the dev server port) or project co
 
 Before invoking the test skill, advance Issue State to "Test":
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Test"
+```pwsh
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Test"
 ```
 
 Invoke `speckit-test` as a skill with the enriched PipelineContext.
@@ -80,8 +80,8 @@ Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey =
 **Run bundled frozen-path guard**:
 After loading the GitHub issue body and before editing files, run:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/invoke-before-implement-guard.ps1 -WorkspaceRoot "." -IssueBody "{issue body markdown}"
+```pwsh
+pwsh -ExecutionPolicy Bypass -File scripts/invoke-before-implement-guard.ps1 -WorkspaceRoot "." -IssueBody "{issue body markdown}"
 ```
 
 This writes `.specify/frozen-edit-paths.json`. If the issue scope names broader
@@ -143,8 +143,8 @@ For bugs and chores, the issue body contains the fix description, affected files
    - Verify locally (run tests if applicable)
 3. Mark all verification items as complete
 4. **Constitution compliance check** before committing:
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
+   ```pwsh
+   pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
    ```
    For each MUST and NON-NEGOTIABLE rule, verify the implementation complies.
    If any NON-NEGOTIABLE rule is violated, fix the code before proceeding.
@@ -226,8 +226,8 @@ Skip all steps below — they are for the Full Implementation Flow only.
     - Report final status with summary of completed work
 
 10. **Constitution compliance check** before committing:
-    ```powershell
-    powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
+    ```pwsh
+    pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
     ```
     For each MUST and NON-NEGOTIABLE rule, verify the implementation complies (e.g., tests exist if required, naming conventions followed, documentation updated).
     If any NON-NEGOTIABLE rule is violated, fix the code before proceeding to commit.
@@ -269,8 +269,8 @@ Skip all steps below — they are for the Full Implementation Flow only.
       Then run extension hooks:
       Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_pr`.
       Run the bundled guard before marking ready:
-      ```powershell
-      powershell -ExecutionPolicy Bypass -File scripts/invoke-before-pr-guard.ps1 -WorkspaceRoot "." -BaseRef "main"
+      ```pwsh
+      pwsh -ExecutionPolicy Bypass -File scripts/invoke-before-pr-guard.ps1 -WorkspaceRoot "." -BaseRef "main"
       ```
       This fails on deletes/renames, changes outside `.specify/frozen-edit-paths.json`,
       or introduced `TODO(speckit)` markers that have not been triaged.

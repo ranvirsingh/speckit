@@ -383,8 +383,8 @@ See [HOOKS.md](references/HOOKS.md) for the full hook execution procedure.
 
 ### Quick install (recommended)
 
-```powershell
-# From the root of your project:
+```pwsh
+# From the root of your project (requires pwsh — see Requirements below):
 & ([scriptblock]::Create((Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1)))
 ```
 
@@ -396,14 +396,14 @@ This downloads the latest release zip, extracts it to `.github/skills/speckit/`,
 # 1. Download the latest release zip from GitHub
 # 2. Extract to .github/skills/speckit/
 # 3. Run the installer
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ```
 
 ### Updating
 
-```powershell
+```pwsh
 # Re-run the installer — it auto-updates from GitHub and overwrites by default
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ```
 
 The installer copies everything into `.github/` for VS Code discovery:
@@ -414,11 +414,15 @@ The installer copies everything into `.github/` for VS Code discovery:
 
 > **After cloning**: Since speckit is gitignored, each developer runs the install one-liner once after cloning the repo. The installer always pulls the latest release.
 
-To uninstall: `powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1 -Uninstall`
+To uninstall: `pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1 -Uninstall`
 
 ## Requirements
 
 - VS Code with GitHub Copilot
+- **[PowerShell Core (`pwsh`)](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell)** — cross-platform, required on all OSes:
+  - Windows: `winget install Microsoft.PowerShell` or [MSI installer](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows)
+  - macOS: `brew install --cask powershell`
+  - Linux: [package manager instructions](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-linux)
 - GitHub CLI (`gh`) for issue/PR management
 - Git for version control
 
