@@ -246,8 +246,10 @@ Skip all steps below — they are for the Full Implementation Flow only.
       ```
       If the script is not found at that path, try `.github/skills/speckit/skills/speckit-implement/scripts/validate-commit-msg.ps1` (inside the bundle).
       If output is not `VALID`, fix the message and re-validate. Do NOT commit until validated.
-    - Commit: `git commit -m "{type}({scope}): {subject}" -m "{body}" -m "Closes #{issue_number}"`
-    - Push: `git push origin {branch_name}`
+    - Commit: `git commit -m "{type}({scope}): {subject}" -m "{body}" -m "Closes #{issue_number}"`  
+      **NEVER add `--no-verify`** to this command or any git command. If a hook fails, fix the cause — do not bypass it.
+    - Push: `git push origin {branch_name}`  
+      **NEVER add `--no-verify`** to this command.
       If the push fails due to merge conflicts:
       1. Pull latest: `git pull origin main --rebase`
       2. Resolve conflicts (prefer the implementation changes for files in scope; keep upstream changes for unrelated files)
