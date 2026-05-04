@@ -18,8 +18,8 @@ description: >-
 
 On entry, advance the Issue State to "Plan". Read `.speckit-project.json` from the workspace root for `projectNumber` and `owner`. If the file does not exist, skip silently.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Plan"
+```pwsh
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "Plan"
 ```
 
 ## PipelineContext Fields
@@ -223,8 +223,8 @@ Before publishing to the GitHub Issue, run these checks. If any fail, fix them b
 2. **No orphan tasks**: Every task must trace back to a requirement, setup need, or polish item. Flag tasks with no clear origin.
 3. **Ambiguity check**: Scan the task descriptions for vague terms (`various`, `etc.`, `as needed`, `TBD`, `some`). Rewrite to be specific.
 4. **Constitution compliance check**: Extract constitution rules and verify the plan complies:
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
+   ```pwsh
+   pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
    ```
    For each MUST and NON-NEGOTIABLE rule, check whether the design decisions and task list satisfy it. If any NON-NEGOTIABLE rule is violated, fix the plan before proceeding. Report SHOULD violations as warnings.
 5. **Dependency order**: Tasks within each phase should be sequenced so no task depends on a later task. Flag circular or misordered dependencies.

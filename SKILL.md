@@ -24,8 +24,8 @@ Script and skill paths are relative to the workspace root (where `.github/` live
 
 Before routing, run the install script to ensure all skills are linked:
 
-```bash
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+```pwsh
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ```
 
 If the script reports all links as `[skip] Already linked`, proceed immediately. Do not wait for user confirmation.
@@ -36,8 +36,8 @@ If the script reports all links as `[skip] Already linked`, proceed immediately.
 
 After installation, check whether a project constitution exists:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/check-constitution.ps1 -WorkspaceRoot "."
+```pwsh
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/check-constitution.ps1 -WorkspaceRoot "."
 ```
 
 - If `exists` is `false`: **Route to `speckit-constitution` immediately** — the project needs governance principles before any pipeline work can begin. Tell the user: "No project constitution found. Let's establish one before proceeding."
@@ -51,7 +51,7 @@ This applies to both greenfield and brownfield projects.
 **Before starting the first pipeline phase** and **after the last phase completes**, ensure speckit is up to date:
 
 ```
-run_in_terminal: powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+run_in_terminal: pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 ```
 
 This always downloads the latest release from GitHub and overwrites existing links (Force + Update are on by default). The command is idempotent — safe to run every time.
@@ -89,8 +89,8 @@ Simple & scoped?                       specify → implement → test → e2e
 
 **Issue State Tracking**: Before routing to any phase, advance the Issue State on the GitHub Project board. Read `.speckit-project.json` from the workspace root for `projectNumber` and `owner`. If the file does not exist, skip state tracking silently.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "{phase}"
+```pwsh
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/set-issue-state.ps1 -ProjectNumber {projectNumber} -Owner {owner} -IssueNumber {issueNumber} -Repo {owner}/{repo} -State "{phase}"
 ```
 
 Phase-to-state mapping: specify→Specify, research→Research, plan→Plan, implement→Implement, test→Test, e2e→E2E. After e2e completes successfully (and `speckit-implement` has finished its done-done living-doc updates), advance to "Done".

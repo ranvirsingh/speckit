@@ -99,8 +99,8 @@ The audit is **read-only** — it never opens issues, comments on PRs, or rename
 
 Run the extraction script to get structured rules:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
+```pwsh
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
 ```
 
 Parse the JSON output. If `exists` is `false`, report: "No constitution found. Run speckit-constitution first." and stop.

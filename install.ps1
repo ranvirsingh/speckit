@@ -15,7 +15,7 @@
       & ([scriptblock]::Create((Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1)))
 
     Or if already installed:
-      powershell -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+      pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
 
     The script is idempotent -- safe to run multiple times.
 

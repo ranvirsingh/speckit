@@ -102,8 +102,8 @@ For each testable item:
 
 Extract constitution rules and verify the implementation as a whole:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
+```pwsh
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/scripts/extract-constitution-rules.ps1 -WorkspaceRoot "."
 ```
 
 Check each NON-NEGOTIABLE and MUST rule against the implementation. Record any violations.
