@@ -31,6 +31,10 @@ are located under `skills/` in the speckit bundle and installed into
    answered, include an `## Unresolved Questions` block in your output (format
    below).
 4. **Single-shot by default.** Skills complete their work in one invocation.
+5. **NEVER use `--no-verify`.** Passing `--no-verify` to `git commit` or
+   `git push` bypasses pre-commit and pre-push hooks, including
+   `validate-commit-msg.ps1`. This is prohibited without exception. If a
+   hook fails, fix the underlying issue — do not bypass it.
 
 ## Scope Discipline
 
