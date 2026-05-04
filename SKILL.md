@@ -48,15 +48,74 @@ This applies to both greenfield and brownfield projects.
 
 ## Auto-Freshness Check
 
-**Before starting the first pipeline phase** and **after the last phase completes**, ensure speckit is up to date:
+**Before starting the first pipeline phase** and **after the last phase completes**, ensure speckit is up to date. Do this automatically — no user confirmation needed.
+
+### Step 1 — Check the latest speckit version
+
+Fetch the latest release tag from GitHub:
 
 ```
-run_in_terminal: pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+GET https://api.github.com/repos/ranvirsingh/speckit/releases/latest
+→ read: tag_name
 ```
 
-This always downloads the latest release from GitHub and overwrites existing links (Force + Update are on by default). The command is idempotent — safe to run every time.
+Or check the releases page directly: `https://github.com/ranvirsingh/speckit/releases/latest`
 
-Pass `-NoUpdate` if you know the local copy is current (e.g., just installed). Pass `-NoForce` to skip overwriting existing links.
+### Step 2 — Compare against the installed version
+
+Read `.github/speckit-manifest.json` in the destination repo. Compare `speckitTag` (the installed release tag) against the `tag_name` from Step 1.
+
+- If `speckitTag` is absent or the installed tag is **behind** the latest → proceed to Step 3.
+- If already current → skip the update and proceed with the pipeline.
+
+### Step 3 — Update if behind (or on first install)
+
+Run the installer — it always fetches the latest release and is idempotent:
+
+```pwsh
+pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1
+```
+
+**Platform adaptation**: `pwsh` (PowerShell Core) works on Windows, macOS, and Linux. Adapt the invocation to the host platform:
+
+| Platform | Command |
+|---|---|
+| Windows (pwsh) | `pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1` |
+| macOS / Linux (pwsh) | `pwsh -File .github/skills/speckit/install.ps1` |
+| Bootstrap (no local copy) | `pwsh -c "& ([scriptblock]::Create((Invoke-RestMethod https://raw.githubusercontent.com/ranvirsingh/speckit/main/install.ps1)))"` |
+
+If the host environment lacks `pwsh`, direct the user to install PowerShell Core (`brew install --cask powershell` on macOS, `apt install powershell` on Debian/Ubuntu) before proceeding.
+
+Pass `-NoUpdate` if you know the local copy is current (e.g., just bootstrapped). Pass `-NoForce` to skip overwriting existing links.
+
+### Step 4 — Update AGENTS.md in the destination repo
+
+After installing or updating speckit, ensure the destination repo has an `AGENTS.md` (or the platform-equivalent file) that records speckit usage. This lets future agents and LLMs discover the pipeline without re-running research.
+
+**You may create or update this file automatically.** Check for existing conventions first:
+
+| Convention file | Platform |
+|---|---|
+| `.github/AGENTS.md` or `AGENTS.md` | OpenAI Codex, GitHub Copilot |
+| `CLAUDE.md` | Anthropic Claude Code |
+| `.cursorrules` | Cursor |
+| `.windsurfrules` | Windsurf |
+
+Add (or update) a speckit section in whichever file(s) are present. If none exist, create `.github/AGENTS.md`. Example section:
+
+```markdown
+## Speckit Pipeline
+
+This repo uses [speckit](https://github.com/ranvirsingh/speckit) for spec-driven development.
+
+- **Installed version**: <tag from .github/speckit-manifest.json → speckitTag>
+- **Skills**: `.github/skills/speckit-*` (discovered automatically by VS Code Copilot)
+- **Pipeline**: specify → [research] → [plan] → implement → test → e2e
+- **Entry point**: invoke the `speckit` skill or prompt to start any feature, bug, or chore
+- **Update**: `pwsh -ExecutionPolicy Bypass -File .github/skills/speckit/install.ps1`
+```
+
+Adapt the wording to match the repo's existing agent instructions style.
 
 ## Pipeline Flow
 
