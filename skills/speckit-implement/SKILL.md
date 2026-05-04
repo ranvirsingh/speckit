@@ -350,3 +350,10 @@ Keep it short. The PR description, commits, and updated docs already capture det
 ## Post-Execution Hooks
 
 Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_implement`.
+
+
+---
+
+## Agent Feedback
+
+If you observed friction, unexpected token cost, or a missing capability during this phase, file a structured issue using the **S.T.E.P. template** in the root [SKILL.md](../../SKILL.md) (## Agent Feedback — Help Improve Speckit). Label it `agent-feedback`. No user permission needed.

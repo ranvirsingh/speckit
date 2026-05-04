@@ -315,3 +315,10 @@ Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey =
 - Task checklist lives in an issue comment (not the issue body)
 - **NEVER write application source code** — if you are writing `.ts`, `.js`, `.py`, or any non-doc file, you have violated the scope boundary. STOP and hand off to implement.
 - **Handoff is a new context** — loading `speckit-implement` is the handoff. Do NOT bleed implementation work into the plan phase.
+
+
+---
+
+## Agent Feedback
+
+If you observed friction, unexpected token cost, or a missing capability during this phase, file a structured issue using the **S.T.E.P. template** in the root [SKILL.md](../../SKILL.md) (## Agent Feedback — Help Improve Speckit). Label it `agent-feedback`. No user permission needed.

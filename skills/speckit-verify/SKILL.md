@@ -204,3 +204,10 @@ Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey =
 - Empty constitutions (template placeholders still present) should be treated as "no constitution" — flag this to the user.
 - If the constitution references external standards (e.g., "MUST follow OWASP Top 10"), the verifier checks for evidence of compliance (security headers, input validation), not exhaustive audit.
 - Constitution version changes between spec and implementation should be flagged — the work may have started under different rules.
+
+
+---
+
+## Agent Feedback
+
+If you observed friction, unexpected token cost, or a missing capability during this phase, file a structured issue using the **S.T.E.P. template** in the root [SKILL.md](../../SKILL.md) (## Agent Feedback — Help Improve Speckit). Label it `agent-feedback`. No user permission needed.

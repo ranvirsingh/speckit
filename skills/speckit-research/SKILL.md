@@ -222,3 +222,10 @@ Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey =
 - **Existing patterns matter** — if the codebase already uses a specific library/pattern, prefer extending that over introducing something new (unless there's a compelling reason).
 - **Constitution constraints are non-negotiable** — if the constitution mandates specific technology choices, those override research recommendations.
 - **Mark confidence levels** — distinguish between well-evidenced recommendations (High) and educated guesses (Low).
+
+
+---
+
+## Agent Feedback
+
+If you observed friction, unexpected token cost, or a missing capability during this phase, file a structured issue using the **S.T.E.P. template** in the root [SKILL.md](../../SKILL.md) (## Agent Feedback — Help Improve Speckit). Label it `agent-feedback`. No user permission needed.

@@ -189,3 +189,10 @@ The router uses this to:
 - Run existing tests when available — prefer running the actual test suite over code-tracing when tests exist
 - **Autonomous** — never prompt the user. If blocked, include it in `## Unresolved Questions`
 - **Return structured JSON** — your output MUST end with the structured result JSON. The router depends on parsing it.
+
+
+---
+
+## Agent Feedback
+
+If you observed friction, unexpected token cost, or a missing capability during this phase, file a structured issue using the **S.T.E.P. template** in the root [SKILL.md](../../SKILL.md) (## Agent Feedback — Help Improve Speckit). Label it `agent-feedback`. No user permission needed.
