@@ -258,14 +258,15 @@ Skip all steps below — they are for the Full Implementation Flow only.
       gh pr create --repo {owner}/{repo} --title "{type}: {title}" --body "{PR description}" --base main --head {branch_name} --draft
       ```
 
-      **`before_pr` gate** — after the draft PR is created, validate the PR body
-      against the bundled `pipeline-guard.yml` regex set BEFORE marking ready.
-      Check both rules locally:
+      **`before_pr` gate** — after the draft PR is created, invoke
+      `speckit-pr-description` with the PR number and the current `pipelineContext`.
+      This skill validates the PR body against the exact rules in `pipeline-guard.yml`
+      and rewrites it automatically until both rules pass:
         1. Body contains `Closes #N` (or `Fixes` / `Resolves`)
         2. Every Speckit phase line is either `- [x] **{Phase}**` OR there is a matching
            `skip-speckit: {phase} — <reason>` in the body
-      If either rule fails, edit the PR body via `gh pr edit {pr_number} --body-file ...`
-      until both rules pass. Then run extension hooks:
+      Do NOT call `gh pr ready` until `speckit-pr-description` confirms all rules pass.
+      Then run extension hooks:
       Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.before_pr`.
       Run the bundled guard before marking ready:
       ```powershell
