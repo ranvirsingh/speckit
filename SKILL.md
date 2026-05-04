@@ -82,6 +82,7 @@ Simple & scoped?                       specify → implement → test → e2e
 | **E2E** | `speckit-e2e` | UAT passed — generate e2e test artifacts and attach to PR |
 | **Constitution** | `speckit-constitution` | Setting up or updating project governance principles |
 | **Verify** | `speckit-verify` | Check compliance of specs, plans, or code against the constitution |
+| **PR Description** | `speckit-pr-description` | Fix a red pipeline guard — validates and auto-rewrites the PR body to satisfy `pipeline-guard.yml` |
 
 
 ## Routing Logic
@@ -105,6 +106,7 @@ Phase-to-state mapping: specify→Specify, research→Research, plan→Plan, imp
 7. **E2E done?** → Advance state to "Done". (Living-doc updates and TODO triage already happened inside `speckit-implement`.)
 8. **Setting up project governance?** → Route to `speckit-constitution`
 9. **Checking compliance or auditing repo hygiene?** → Route to `speckit-verify` (default `--scope pr`; pass `--scope repo` for hygiene audits)
+10. **Pipeline guard is red / PR description needs fixing?** → Route to `speckit-pr-description` (pass PR number or let skill auto-detect from current branch)
 
 ## Pipeline Context (Handoff Protocol)
 

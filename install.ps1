@@ -228,6 +228,7 @@ $Skills = @(
     'speckit-e2e'
     'speckit-constitution'
     'speckit-verify'
+    'speckit-pr-description'
 )
 
 # --- Helpers ------------------------------------------------------------------
