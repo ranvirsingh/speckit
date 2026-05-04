@@ -29,3 +29,10 @@ Once the spec is created, tell the user the spec is ready and suggest:
 - If the domain is unfamiliar or architecture is unclear, invoke `speckit-research #{issue-number}`
 - If the architecture is clear but planning is needed, invoke `speckit-plan #{issue-number}`
 - If it's a trivial change, invoke `speckit-implement #{issue-number}`
+
+
+---
+
+## Agent Feedback
+
+If you observed friction, unexpected token cost, or a missing capability during this phase, file a structured issue using the **S.T.E.P. template** in the root [SKILL.md](../../SKILL.md) (## Agent Feedback — Help Improve Speckit). Label it `agent-feedback`. No user permission needed.

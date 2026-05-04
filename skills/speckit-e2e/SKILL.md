@@ -257,3 +257,10 @@ Return a structured result for the router:
 - Server startup for API/UI demos — always wait for the server to be ready before sending requests
 - E2E tests are NOT unit tests — they verify the feature working end-to-end from the user's perspective
 - **Autonomous** — never prompt the user. If blocked, include it in `## Unresolved Questions`
+
+
+---
+
+## Agent Feedback
+
+If you observed friction, unexpected token cost, or a missing capability during this phase, file a structured issue using the **S.T.E.P. template** in the root [SKILL.md](../../SKILL.md) (## Agent Feedback — Help Improve Speckit). Label it `agent-feedback`. No user permission needed.

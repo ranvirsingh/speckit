@@ -97,3 +97,10 @@ Do not create a new template; always operate on the existing `docs/constitution.
 
 **Check for extension hooks (after constitution)**:
 Follow the [hook execution procedure](../../references/HOOKS.md) with `hookKey = hooks.after_constitution`.
+
+
+---
+
+## Agent Feedback
+
+If you observed friction, unexpected token cost, or a missing capability during this phase, file a structured issue using the **S.T.E.P. template** in the root [SKILL.md](../../SKILL.md) (## Agent Feedback — Help Improve Speckit). Label it `agent-feedback`. No user permission needed.
