@@ -277,7 +277,16 @@ You do **not** need user permission to file a feedback issue. File it at the end
 
 ### S.T.E.P. Feedback Template
 
-Use the **S.T.E.P.** framework when composing the issue body:
+Use the **S.T.E.P.** framework when composing the issue body.
+
+**First line of every issue body — model metadata:**
+```
+**Model**: {model name} {version} ({vendor})
+```
+Examples: `Claude Sonnet 4.6 (Anthropic)` · `GPT-4o (OpenAI)` · `Gemini 2.5 Pro (Google)`  
+If you are unsure of your exact version, state the family name and vendor (e.g. `Claude Sonnet (Anthropic)`).
+
+Then fill in the S.T.E.P. fields:
 
 | Field | What to include |
 |---|---|
@@ -294,6 +303,6 @@ Token cost is the primary efficiency lever for an agent-driven pipeline. When re
 2. **Could any context have been deferred?** Would loading it later (or on demand) have produced the same output?
 3. **Would deferral compromise quality?** If yes, explain why the full context was necessary.
 
-> **Example issue title**: `[agent-feedback] speckit-implement: SKILL.md reloaded 3× — token cost High — proposal: lazy-load phase detail`
+> **Example issue title**: `[agent-feedback] Claude Sonnet 4.6 | speckit-implement: SKILL.md reloaded 3× — token cost High — proposal: lazy-load phase detail`
 
 These issues are reviewed by the speckit maintainers. High-signal feedback from real pipeline runs is the fastest way to make speckit leaner and more reliable for every agent that uses it.
