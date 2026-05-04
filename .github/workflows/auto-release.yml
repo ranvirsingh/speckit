@@ -1,0 +1,65 @@
+name: Auto Release
+
+# Creates a GitHub Release with a semver tag on every push to main.
+# Version bump is derived from the squashed merge-commit message prefix:
+#   feat!: / BREAKING CHANGE  → major
+#   feat:                      → minor
+#   anything else              → patch
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # need full history to read all tags
+
+      - name: Determine next version
+        id: semver
+        run: |
+          # ── Latest tag ────────────────────────────────────────────────
+          LATEST=$(git tag --list 'v*' --sort=-v:refname | head -n1)
+          if [[ -z "$LATEST" ]]; then
+            LATEST="v0.0.0"
+          fi
+          echo "Latest tag: $LATEST"
+
+          MAJOR=$(echo "$LATEST" | sed 's/^v//' | cut -d. -f1)
+          MINOR=$(echo "$LATEST" | sed 's/^v//' | cut -d. -f2)
+          PATCH=$(echo "$LATEST" | sed 's/^v//' | cut -d. -f3)
+
+          # ── Bump type from commit message ─────────────────────────────
+          MSG=$(git log -1 --format='%B')
+          echo "Commit message: $MSG"
+
+          if echo "$MSG" | grep -qiE '^feat(\([^)]*\))?!:|BREAKING CHANGE'; then
+            BUMP="major"
+            MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
+          elif echo "$MSG" | grep -qiE '^feat(\([^)]*\))?:'; then
+            BUMP="minor"
+            MINOR=$((MINOR + 1)); PATCH=0
+          else
+            BUMP="patch"
+            PATCH=$((PATCH + 1))
+          fi
+
+          NEXT="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "Bump: $BUMP  →  $NEXT"
+          echo "next_version=$NEXT" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.semver.outputs.next_version }}" \
+            --title "${{ steps.semver.outputs.next_version }}" \
+            --generate-notes \
+            --latest
